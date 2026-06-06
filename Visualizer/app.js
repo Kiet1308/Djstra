@@ -336,12 +336,12 @@
       tab: "Ý tưởng",
       kicker: "Kết phần 2",
       title: "Rút ra ý tưởng",
-      body: "Ta chưa cần mã giả. Chỉ cần nắm được vì sao luôn lấy đỉnh đang mở có cost nhỏ nhất.",
-      audienceTitle: "Ba bước cần nhớ",
+      body: "Từ câu hỏi làm sao tới K, ta đã đổi thành: giữ đường tốt nhất từ A tới từng đỉnh, rồi chốt dần những đỉnh đã chắc.",
+      audienceTitle: "Ta vừa tự rút ra",
       audienceBullets: [
-        "Chọn đỉnh đang mở có cost nhỏ nhất.",
-        "Chốt đỉnh đó vì không còn đường vòng nào rẻ hơn.",
-        "Mở hàng xóm và cập nhật cost nếu tìm được đường tốt hơn.",
+        "Mỗi đỉnh giữ một cost tốt nhất hiện biết từ A.",
+        "Trong các đỉnh đang mở, đỉnh có cost nhỏ nhất là đỉnh chắc chắn tiếp theo.",
+        "Chốt nó, mở hàng xóm, và cập nhật nếu đi qua nó rẻ hơn.",
       ],
       metricLabels: ["Đường cuối", "Tổng cost", "Dừng ở ý tưởng"],
       enter: enterPart2IdeaScene,
@@ -2218,9 +2218,9 @@
     setMetrics("A -> C -> B -> E -> F -> K", "10", "chưa vào code");
     el.metricStrip.classList.add("is-hidden");
     setComparisonCards([
-      { label: "Chọn nhỏ nhất", value: "1", body: "Luôn lấy đỉnh đang mở có cost nhỏ nhất.", tone: "" },
-      { label: "Chốt", value: "2", body: "Khi đã chốt, cost của đỉnh đó không đổi nữa.", tone: "better" },
-      { label: "Mở hàng xóm", value: "3", body: "Cập nhật cost nếu đường mới rẻ hơn.", tone: "next" },
+      { label: "Bài toán mới", value: "A-X", body: "Giữ cost tốt nhất hiện biết từ A tới từng đỉnh.", tone: "" },
+      { label: "Đỉnh chắc chắn", value: "min", body: "Trong phần đang mở, cost nhỏ nhất là đỉnh có thể chốt.", tone: "better" },
+      { label: "Mở rộng", value: "+", body: "Từ đỉnh vừa chốt, mở hàng xóm và chỉ cập nhật khi rẻ hơn.", tone: "next" },
     ]);
     el.comparisonPanel.setAttribute("aria-hidden", "false");
 
