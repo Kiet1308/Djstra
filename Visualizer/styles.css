@@ -549,38 +549,66 @@ button {
   filter: url(#tightGlow);
 }
 
-.problem-shift-arc {
-  stroke: rgba(66, 242, 161, 0.62);
-  stroke-width: 4.8;
-  stroke-dasharray: 2 12;
-  filter: url(#tightGlow);
-}
-
-.problem-shift-arc.is-bottom {
-  stroke: rgba(244, 201, 109, 0.68);
-}
-
-.problem-shift-label-bg {
-  fill: rgba(7, 9, 8, 0.88);
+.problem-overview-bg {
+  fill: rgba(7, 9, 8, 0.9);
   stroke: rgba(66, 242, 161, 0.34);
   stroke-width: 1;
 }
 
-.problem-shift-label.is-bottom .problem-shift-label-bg {
-  stroke: rgba(244, 201, 109, 0.34);
+.problem-overview-eyebrow {
+  fill: rgba(66, 242, 161, 0.86);
+  font-size: 11px;
+  font-weight: 860;
 }
 
-.problem-shift-title {
+.problem-overview-title {
+  fill: var(--text);
+  font-size: 22px;
+  font-weight: 920;
+}
+
+.problem-overview-note {
+  fill: rgba(244, 241, 232, 0.72);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.problem-node-slot-bg {
+  fill: rgba(7, 9, 8, 0.86);
+  stroke: rgba(244, 241, 232, 0.18);
+  stroke-width: 1;
+}
+
+.problem-node-slot.is-root .problem-node-slot-bg {
+  fill: rgba(66, 242, 161, 0.12);
+  stroke: rgba(66, 242, 161, 0.44);
+}
+
+.problem-node-slot.is-target .problem-node-slot-bg {
+  fill: rgba(244, 201, 109, 0.12);
+  stroke: rgba(244, 201, 109, 0.44);
+}
+
+.problem-node-slot-title {
   fill: var(--text);
   font-family: "Cascadia Mono", "Consolas", monospace;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 900;
 }
 
-.problem-shift-subtitle {
+.problem-node-slot-subtitle {
   fill: rgba(244, 241, 232, 0.66);
-  font-size: 11px;
-  font-weight: 760;
+  font-size: 10px;
+  font-weight: 780;
+}
+
+.problem-node-slot.is-root .problem-node-slot-title,
+.problem-node-slot.is-root .problem-node-slot-subtitle {
+  fill: var(--accent);
+}
+
+.problem-node-slot.is-target .problem-node-slot-title {
+  fill: var(--amber);
 }
 
 .route-cloud path {

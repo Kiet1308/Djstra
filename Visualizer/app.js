@@ -202,7 +202,7 @@
       audienceBullets: [
         "K phụ thuộc F/G.",
         "F và G lại phụ thuộc D/E.",
-        "D/E lại phụ thuộc các điểm gần A hơn, nên cuối cùng ta phải xây từ A lên.",
+        "D/E lại phụ thuộc các điểm gần A hơn, nên câu hỏi cứ bị kéo về phía A.",
       ],
       metricLabels: ["Đang hỏi", "Ứng viên", "Cần biết"],
       enter: () => enterPart2TraceScene(0),
@@ -244,7 +244,7 @@
       audienceBullets: [
         "Mỗi lần coi một đỉnh là đích mới, ta lại hỏi các đỉnh đứng trước nó.",
         "Cứ làm vậy, câu hỏi cuối cùng kéo về gần điểm xuất phát A.",
-        "Vì thế bước tiếp theo là đứng từ A và xem đỉnh nào có thể chắc chắn trước.",
+        "Đến đây ta mới nhìn lại: bài toán hiện tại thật sự đang bắt ta giải điều gì?",
       ],
       metricLabels: ["Đích tạm", "Ứng viên", "Quay về"],
       enter: () => enterPart2TraceScene(3),
@@ -253,14 +253,13 @@
       tab: "Đổi bài",
       kicker: "Kết luận",
       title: "Đổi bài toán",
-      body: "Trace ngược mãi thì câu hỏi quay về A. Vậy ta đổi hướng: xây từ A lên các đỉnh liên quan tới K.",
-      audienceTitle: "Kết luận sau khi truy ngược",
+      body: "Tìm đường ngắn nhất từ A tới từng đỉnh.",
+      audienceTitle: "Bài toán mới",
       audienceBullets: [
-        "Muốn biết K, ta cần biết tốt tới các điểm đứng trước cạnh cuối.",
-        "Nhưng các điểm đó lại kéo ngược về gần A.",
-        "Vì vậy cách tự nhiên là xây dần đường tốt nhất từ A lên.",
+        "Mỗi đỉnh X: đường ngắn nhất từ A tới X là bao nhiêu?",
+        "A = 0; các đỉnh còn lại chưa biết.",
       ],
-      metricLabels: ["Trace ngược", "Đổi hướng", "Mục tiêu"],
+      metricLabels: ["Bài toán cũ", "Bài toán mới", "Lặp lại"],
       enter: enterPart2ProblemShiftScene,
     },
     {
@@ -1043,10 +1042,10 @@
       nodeEl.classList.remove("is-muted", "is-open", "is-settled", "is-focus", "is-wrong", "is-correct", "is-clickable", "is-target", "is-context");
       if (row) {
         nodeEl.classList.add(`is-${row.status}`);
-        if (row.status === "unknown" && !focus.has(id) && !wrong.has(id) && !correct.has(id) && !clickable.has(id) && !context.has(id)) {
+        if (row.status === "unknown" && !focus.has(id) && !wrong.has(id) && !correct.has(id) && !clickable.has(id) && !context.has(id) && !target.has(id)) {
           nodeEl.classList.add("is-muted");
         }
-      } else if (getActivePart().id === "part2" && !context.has(id)) {
+      } else if (getActivePart().id === "part2" && !context.has(id) && !target.has(id)) {
         nodeEl.classList.add("is-muted");
       }
       if (focus.has(id)) nodeEl.classList.add("is-focus");
@@ -1197,11 +1196,14 @@
   }
 
   function drawDependencyRoutes(routes) {
+    const paths = [];
     routes.forEach((route, index) => {
       const offset = ((index % 3) - 1) * 7;
       const path = drawRoute(route, "route-path route-dependency", el.activeRouteLayer, offset);
       gsap.set(path, { opacity: index < 2 ? 0.74 : 0.52 });
+      paths.push(path);
     });
+    return paths;
   }
 
   function clearAnnotations() {
@@ -1331,51 +1333,46 @@
   }
 
   function drawProblemShiftVisual() {
-    const arcs = [
-      {
-        to: "F",
-        label: "tốt tới F?",
-        sub: "đi từ A qua nhiều bước",
-        d: `M ${nodes.A.x} ${nodes.A.y} C 252 244 468 206 ${nodes.F.x} ${nodes.F.y}`,
-        x: 442,
-        y: 246,
-        tone: "top",
-      },
-      {
-        to: "G",
-        label: "tốt tới G?",
-        sub: "đi từ A qua nhiều bước",
-        d: `M ${nodes.A.x} ${nodes.A.y} C 260 462 468 578 ${nodes.G.x} ${nodes.G.y}`,
-        x: 438,
-        y: 520,
-        tone: "bottom",
-      },
+    const group = svg("g", { class: "problem-shift-visual" });
+
+    const card = svg("g", { class: "problem-overview-card", transform: "translate(438 92)" });
+    card.appendChild(svg("rect", { x: 0, y: 0, width: 444, height: 108, rx: 8, class: "problem-overview-bg" }));
+    const eyebrow = svg("text", { x: 18, y: 24, class: "problem-overview-eyebrow" });
+    eyebrow.textContent = "Bài toán mới";
+    const title = svg("text", { x: 18, y: 56, class: "problem-overview-title" });
+    title.textContent = "đường ngắn nhất từ A tới mọi đỉnh";
+    const note = svg("text", { x: 18, y: 84, class: "problem-overview-note" });
+    note.textContent = "A = 0; các đỉnh còn lại là câu hỏi cần giải.";
+    card.appendChild(eyebrow);
+    card.appendChild(title);
+    card.appendChild(note);
+    group.appendChild(card);
+
+    const slots = [
+      { node: "A", value: "0", sub: "đã biết", x: 136, y: 282, tone: "root" },
+      { node: "C", value: "?", sub: "cần tìm", x: 318, y: 248 },
+      { node: "B", value: "?", sub: "cần tìm", x: 184, y: 458 },
+      { node: "D", value: "?", sub: "cần tìm", x: 322, y: 534 },
+      { node: "E", value: "?", sub: "cần tìm", x: 480, y: 388 },
+      { node: "F", value: "?", sub: "cần tìm", x: 674, y: 220 },
+      { node: "G", value: "?", sub: "cần tìm", x: 690, y: 526 },
+      { node: "K", value: "?", sub: "đích cuối", x: 744, y: 410, tone: "target" },
     ];
-    const paths = [];
 
-    arcs.forEach((arc) => {
-      const path = svg("path", {
-        d: arc.d,
-        class: `route-path problem-shift-arc is-${arc.tone}`,
-      });
-      el.activeRouteLayer.appendChild(path);
-      paths.push(path);
-
-      const label = svg("g", {
-        class: `problem-shift-label is-${arc.tone}`,
-        transform: `translate(${arc.x} ${arc.y})`,
-      });
-      label.appendChild(svg("rect", { x: 0, y: 0, width: 150, height: 54, rx: 8, class: "problem-shift-label-bg" }));
-      const title = svg("text", { x: 14, y: 22, class: "problem-shift-title" });
-      title.textContent = arc.label;
-      const sub = svg("text", { x: 14, y: 40, class: "problem-shift-subtitle" });
-      sub.textContent = arc.sub;
-      label.appendChild(title);
-      label.appendChild(sub);
-      el.annotationLayer.appendChild(label);
+    slots.forEach((slot) => {
+      const badge = svg("g", { class: `problem-node-slot${slot.tone ? ` is-${slot.tone}` : ""}`, transform: `translate(${slot.x} ${slot.y})` });
+      badge.appendChild(svg("rect", { x: 0, y: 0, width: 112, height: 48, rx: 8, class: "problem-node-slot-bg" }));
+      const label = svg("text", { x: 12, y: 21, class: "problem-node-slot-title" });
+      label.textContent = `${slot.node} = ${slot.value}`;
+      const sub = svg("text", { x: 12, y: 38, class: "problem-node-slot-subtitle" });
+      sub.textContent = slot.sub;
+      badge.appendChild(label);
+      badge.appendChild(sub);
+      group.appendChild(badge);
     });
 
-    return paths;
+    el.annotationLayer.appendChild(group);
+    return group;
   }
 
   function drawTraceStepCard(step) {
@@ -1508,6 +1505,8 @@
     const state = makePart2State({
       A: ["settled", 0, "-"],
       B: ["unknown", null, "?"],
+      C: ["unknown", null, "?"],
+      D: ["unknown", null, "?"],
       E: ["unknown", null, "?"],
       F: ["unknown", null, "?"],
       G: ["unknown", null, "?"],
@@ -1515,45 +1514,26 @@
     });
 
     setEdgeStates({
-      visible: [part2Edges.toK],
-      focus: [part2Edges.toK],
-      context: [[["A", "B"], ["B", "E"], ["E", "F"]]],
+      context: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE, part2Edges.fromD, part2Edges.toK],
     });
-    setNodeStates(state, { focus: ["A", "F", "G", "K"], target: ["K"], context: ["B", "E"] });
+    setNodeStates(state, { focus: part2NodeOrder, correct: ["A"], target: ["K"] });
     renderRouteList([
-      { label: "Vừa trace ngược", cost: "K <- F <- E <- B <- A", status: "current" },
-      { label: "Đổi hướng", cost: "xây từ A lên", status: "best" },
-      { label: "Điểm cần biết", cost: "F / G trước K", status: "best" },
+      { label: "Đã biết", cost: "A = 0", status: "best" },
+      { label: "Cần tìm", cost: "C, B, D, E = ?", status: "current" },
+      { label: "Cần tìm", cost: "F, G, K = ?", status: "current" },
     ]);
-    el.routeCountLabel.textContent = "đổi bài toán";
+    el.routeCountLabel.textContent = "mọi đỉnh";
     el.metricStrip.classList.add("is-hidden");
 
-    const shiftPaths = drawProblemShiftVisual();
-    drawFormulaCard(
-      530,
-      36,
-      "Sau khi truy ngược",
-      ["muốn giải K,", "phải biết tốt tới F/G.", "Vậy hãy xây từ A lên."],
-      "Không đoán cả đường; mở dần phần chắc chắn.",
-      { width: 432 },
-    );
-    setMetrics("K kéo về A", "xây từ A", "tới F/G");
+    drawProblemShiftVisual();
+    setMetrics("mọi đỉnh", "A = 0", "còn lại ?");
 
-    gsap.set(shiftPaths, { opacity: 0 });
+    gsap.set(".problem-overview-card, .problem-node-slot", { opacity: 0 });
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
-    tl.fromTo(".node-group.is-focus", { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, stagger: dur(0.06), duration: dur(0.44), ease: "back.out(1.5)" }, "<0.08");
-    tl.fromTo(".edge-group.is-focus", { opacity: 0.08 }, { opacity: 1, duration: dur(0.44), ease: "power2.out" }, "<0.06");
-    shiftPaths.forEach((path, index) => {
-      const length = path.getTotalLength();
-      tl.fromTo(
-        path,
-        { opacity: 0.74, strokeDasharray: length, strokeDashoffset: length },
-        { strokeDashoffset: 0, duration: dur(0.58), ease: "power2.out" },
-        index === 0 ? 0.42 : 0.52,
-      );
-    });
-    tl.fromTo(".problem-shift-label", { opacity: 0 }, { opacity: 1, stagger: dur(0.06), duration: dur(0.32), ease: "power3.out" }, 0.72);
-    tl.fromTo(el.annotationLayer.querySelectorAll(".formula-card, .formula-title, .formula-text, .formula-note"), { y: -10, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.02), duration: dur(0.32), ease: "power3.out" }, 0.74);
+    tl.fromTo(".edge-group.is-context", { opacity: 0 }, { opacity: 0.42, duration: dur(0.42), ease: "power2.out" }, 0.2);
+    tl.fromTo(".node-group.is-focus, .node-group.is-target", { scale: 0.84, opacity: 0 }, { scale: 1, opacity: 1, stagger: dur(0.045), duration: dur(0.44), ease: "back.out(1.45)" }, 0.28);
+    tl.fromTo(".problem-overview-card", { opacity: 0 }, { opacity: 1, duration: dur(0.38), ease: "power3.out" }, 0.62);
+    tl.fromTo(".problem-node-slot", { opacity: 0 }, { opacity: 1, stagger: dur(0.04), duration: dur(0.28), ease: "power3.out" }, 0.82);
 
     return tl;
   }
