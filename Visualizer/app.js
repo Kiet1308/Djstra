@@ -1272,7 +1272,7 @@
       const labelWidth = Math.max(30, labelText.length * 10 + 18);
       labelGroup = svg("g", {
         class: "route-ghost-label-group",
-        transform: `translate(${labelPoint.x} ${labelPoint.y})`,
+        transform: `translate(${labelPoint.x + (options.labelDx || 0)} ${labelPoint.y + (options.labelDy || 0)})`,
       });
       labelGroup.appendChild(svg("rect", { x: -labelWidth / 2, y: -12, width: labelWidth, height: 24, rx: 7, class: "route-ghost-label-bg" }));
       const label = svg("text", { x: 0, y: 1, class: "route-ghost-label" });
