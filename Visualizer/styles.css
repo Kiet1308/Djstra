@@ -963,6 +963,10 @@ button {
   display: none;
 }
 
+.workbench.is-action.is-manual-steps .workload-progress {
+  display: block;
+}
+
 .workbench[aria-hidden="true"] {
   display: none;
 }
@@ -1089,6 +1093,16 @@ button {
 
 .candidate-button.is-correct span {
   color: rgba(172, 255, 216, 0.76);
+}
+
+.candidate-button.is-next-step {
+  border-color: rgba(244, 201, 109, 0.58);
+  background: rgba(244, 201, 109, 0.12);
+  color: var(--amber);
+}
+
+.candidate-button.is-next-step span {
+  color: rgba(244, 201, 109, 0.82);
 }
 
 .candidate-button.is-wrong {

@@ -885,7 +885,7 @@
 
   function hideWorkbench() {
     el.workbench.setAttribute("aria-hidden", "true");
-    el.workbench.classList.remove("is-quiz", "is-action");
+    el.workbench.classList.remove("is-quiz", "is-action", "is-manual-steps");
     el.workloadGrid.innerHTML = "";
     el.workloadProgressFill.style.width = "0%";
     el.workloadCompare.setAttribute("aria-hidden", "true");
@@ -1175,7 +1175,7 @@
 
   function showPart2Workbench(kicker, title, status, mode) {
     showWorkbench(kicker, title, status, false);
-    el.workbench.classList.remove("is-quiz", "is-action");
+    el.workbench.classList.remove("is-quiz", "is-action", "is-manual-steps");
     el.workbench.classList.add(mode);
     el.workloadGrid.innerHTML = "";
   }
@@ -2074,23 +2074,6 @@
     ];
     const baseVisible = [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE];
 
-    showPart2Workbench("Chạy tiếp", "Chọn nhỏ nhất, chốt, mở hàng xóm", "4 bước", "is-action");
-    ["D", "F", "G", "K"].forEach((node) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "candidate-button";
-      chip.disabled = true;
-      chip.textContent = node;
-      el.workloadGrid.appendChild(chip);
-    });
-
-    setCameraView(part2Cameras.middle);
-    setEdgeStates({ visible: baseVisible, focus: [part2Edges.fromE], locked: [baseLocked] });
-    setNodeStates(part2States.afterE, { focus: ["D", "F", "G"], showNodeCosts: true });
-    renderDijkstraTable(part2States.afterE, { focus: ["D", "F", "G"] });
-    showBestRoute(["A", "C", "B", "E"]);
-    setMetrics("sau E", "D=5, F=6, G=9", "lấy D");
-
     const steps = [
       {
         node: "D",
@@ -2138,20 +2121,82 @@
       },
     ];
 
-    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
-    steps.forEach((step, index) => {
-      tl.to({}, { duration: dur(index === 0 ? 0.42 : 0.62) });
-      tl.call(() => {
-        setEdgeStates({ visible: step.visible, focus: step.edgeFocus, locked: step.locked });
-        setNodeStates(step.state, { focus: step.focus, correct: [step.node], showNodeCosts: true });
-        renderDijkstraTable(step.state, { focus: step.focus });
-        showBestRoute(step.route);
-        setMetrics(step.metrics[0], step.metrics[1], step.metrics[2]);
-        const chip = el.workloadGrid.children[index];
-        if (chip) chip.classList.add("is-correct");
-      });
-      if (step.camera) moveCameraOnTimeline(tl, step.camera.center, step.camera.scale, "<");
+    showPart2Workbench("Chạy tiếp", "Bấm từng bước để mở tiếp", "0/4", "is-action");
+    el.workbench.classList.add("is-manual-steps");
+    const stepButtons = steps.map((step, index) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "candidate-button manual-step-button";
+      chip.dataset.stepIndex = String(index);
+      chip.dataset.node = step.node;
+
+      const title = document.createElement("strong");
+      title.textContent = step.node;
+      chip.appendChild(title);
+
+      const subtitle = document.createElement("span");
+      subtitle.textContent = step.metrics[1];
+      chip.appendChild(subtitle);
+
+      chip.addEventListener("click", () => applyManualStep(index));
+      el.workloadGrid.appendChild(chip);
+      return chip;
     });
+
+    let currentManualStep = 0;
+
+    function updateManualButtons() {
+      const nextStep = steps[currentManualStep];
+      const progress = (currentManualStep / steps.length) * 100;
+      el.workbenchStatus.textContent = `${currentManualStep}/${steps.length}`;
+      el.workloadProgressFill.style.width = `${progress}%`;
+
+      stepButtons.forEach((button, index) => {
+        const isDone = index < currentManualStep;
+        const isNext = index === currentManualStep;
+        button.disabled = !isNext;
+        button.classList.toggle("is-correct", isDone);
+        button.classList.toggle("is-next-step", isNext);
+      });
+
+      activeNodeClickHandler = nextStep
+        ? (node) => {
+            if (node === nextStep.node) applyManualStep(currentManualStep);
+          }
+        : null;
+    }
+
+    function applyManualStep(index) {
+      if (index !== currentManualStep) return;
+      const step = steps[index];
+      const nextStep = steps[index + 1];
+      currentManualStep += 1;
+
+      clearLayer(el.cutLayer);
+      setEdgeStates({ visible: step.visible, focus: step.edgeFocus, locked: step.locked });
+      setNodeStates(step.state, {
+        focus: step.focus,
+        correct: [step.node],
+        clickable: nextStep ? [nextStep.node] : [],
+        showNodeCosts: true,
+      });
+      renderDijkstraTable(step.state, { focus: step.focus });
+      showBestRoute(step.route);
+      setMetrics(step.metrics[0], step.metrics[1], step.metrics[2]);
+      if (step.camera) animateCameraTo(step.camera, 0.58);
+      updateManualButtons();
+    }
+
+    setCameraView(part2Cameras.middle);
+    setEdgeStates({ visible: baseVisible, focus: [part2Edges.fromE], locked: [baseLocked] });
+    setNodeStates(part2States.afterE, { focus: ["D", "F", "G"], clickable: ["D"], showNodeCosts: true });
+    renderDijkstraTable(part2States.afterE, { focus: ["D", "F", "G"] });
+    showBestRoute(["A", "C", "B", "E"]);
+    setMetrics("sau E", "D=5, F=6, G=9", "bấm D");
+    updateManualButtons();
+
+    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
+    tl.fromTo(el.workbench, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.42), ease: "power3.out" }, "<0.1");
     return tl;
   }
 
