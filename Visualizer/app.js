@@ -48,9 +48,9 @@
       terminalNodes: ["A", "K"],
       nodes: {
         A: { x: 96, y: 332 },
-        C: { x: 250, y: 214 },
-        B: { x: 286, y: 424 },
-        D: { x: 392, y: 502 },
+        C: { x: 272, y: 186 },
+        B: { x: 300, y: 382 },
+        D: { x: 408, y: 522 },
         E: { x: 456, y: 360 },
         F: { x: 648, y: 248 },
         G: { x: 662, y: 500 },
@@ -393,6 +393,14 @@
       ["F", "K"],
       ["G", "K"],
     ],
+  };
+
+  const part2Cameras = {
+    aTight: { center: { x: 150, y: 350 }, scale: 1.9 },
+    frontier: { center: { x: 294, y: 348 }, scale: 1.36 },
+    middle: { center: { x: 442, y: 388 }, scale: 1.12 },
+    toK: { center: { x: 548, y: 386 }, scale: 1.02 },
+    full: { center: { x: 500, y: 380 }, scale: 0.96 },
   };
 
   const part2States = {
@@ -1086,6 +1094,7 @@
       if (!showUnknown && row.status === "unknown" && !focus.has(node)) return;
       const div = document.createElement("div");
       div.className = `state-row is-${row.status}${showPrev ? "" : " no-prev"}${showCosts ? "" : " no-cost"}${focus.has(node) ? " is-focus" : ""}`;
+      div.dataset.node = node;
 
       const label = document.createElement("strong");
       label.textContent = node;
@@ -1250,6 +1259,7 @@
           x2: leaderX,
           y2: leaderY,
           class: `candidate-leader is-${tone}`,
+          "data-candidate": node,
         }),
       );
 
@@ -1684,34 +1694,39 @@
     setNodeStates(state, { focus: ["A", "C", "B", "D", "E"] });
     renderDijkstraTable(state, { focus: ["C", "B", "D", "E"], showCosts: false });
     clearAnnotations();
-    drawCandidateBadges(state, ["C", "B", "D", "E"], {
-      showCosts: false,
-      labels: {
-        C: "mở từ A",
-        B: "mở từ A",
-        D: "mở từ A",
-        E: "mở từ A",
-      },
-    });
-    drawFormulaCard(
-      538,
-      184,
-      "Câu hỏi sắp tới",
-      ["Ta chỉ được chốt đỉnh khi chắc chắn.", "Những phần xa hơn chưa cần lộ ra."],
-      "Hãy nhìn vào phần đang mở, không nhìn toàn graph.",
-      { width: 412 },
-    );
     drawCandidateRoutes([
       ["A", "C"],
       ["A", "B"],
       ["A", "D"],
       ["A", "E"],
     ]);
-    setMetrics("A mở 4 đỉnh", "chưa chốt ai", "hãy suy luận");
+    setMetrics("A = 0", "chuẩn bị mở", "phần xa ẩn");
 
-    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
-    tl.fromTo(".state-row", { y: 10, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.035), duration: dur(0.35), ease: "power2.out" }, "<0.1");
-    tl.fromTo(".edge-group.is-focus", { opacity: 0.08 }, { opacity: 1, duration: dur(0.44), ease: "power2.out" }, "<");
+    const revealPlan = [
+      { node: "C", edge: "A:C", route: "A-C", at: 0.86 },
+      { node: "B", edge: "A:B", route: "A-B", at: 1.04 },
+      { node: "E", edge: "A:E", route: "A-E", at: 1.22 },
+      { node: "D", edge: "A:D", route: "A-D", at: 1.4 },
+    ];
+    const hiddenNodes = part2NodeOrder.filter((node) => node !== "A").map((node) => `.node-${node}`).join(", ");
+    const hiddenEdges = revealPlan.map((step) => `.edge-group[data-edge="${step.edge}"]`).join(", ");
+    const hiddenRoutes = revealPlan.map((step) => `.route-candidate[data-route="${step.route}"]`).join(", ");
+    const hiddenRows = revealPlan.map((step) => `.state-row[data-node="${step.node}"]`).join(", ");
+
+    gsap.set(hiddenNodes, { opacity: 0, scale: 0.86, transformOrigin: "center center" });
+    gsap.set(`${hiddenEdges}, ${hiddenRoutes}`, { opacity: 0 });
+    gsap.set(hiddenRows, { opacity: 0, y: 8 });
+
+    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" }, 0);
+    moveCameraOnTimeline(tl, part2Cameras.aTight.center, part2Cameras.aTight.scale, 0.02, 0.68);
+    tl.fromTo(".node-A", { scale: 0.92 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 0.46);
+    moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 0.74, 1.05);
+    revealPlan.forEach((step) => {
+      tl.to(`.edge-group[data-edge="${step.edge}"], .route-candidate[data-route="${step.route}"]`, { opacity: 1, duration: dur(0.28), ease: "power2.out" }, step.at);
+      tl.to(`.node-${step.node}`, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.45)" }, step.at + 0.02);
+      tl.to(`.state-row[data-node="${step.node}"]`, { opacity: 1, y: 0, duration: dur(0.25), ease: "power2.out" }, step.at + 0.08);
+    });
+    tl.call(() => setMetrics("A mở 4", "chưa chốt", "suy tiếp"), [], 1.72);
     return tl;
   }
 
@@ -1740,27 +1755,12 @@
       },
     };
 
+    setCameraView(part2Cameras.frontier);
     setEdgeStates({ visible: [part2Edges.fromA], focus: [part2Edges.fromA] });
     setNodeStates(state, { focus: candidates, clickable: candidates });
     renderDijkstraTable(state, { focus: candidates, showCosts: false });
     el.metricStrip.classList.add("is-hidden");
     clearAnnotations();
-    drawCandidateBadges(state, candidates, {
-      labels: {
-        C: "đường trực tiếp",
-        B: "đường trực tiếp",
-        D: "đường trực tiếp",
-        E: "đường trực tiếp",
-      },
-    });
-    drawFormulaCard(
-      538,
-      184,
-      "Thử chốt một đỉnh",
-      ["Nếu sai, ta vẽ đường vòng rẻ hơn.", "Nếu đúng, đỉnh đó được khóa xanh."],
-      "Hãy thử D hoặc B nếu muốn thấy phản ví dụ.",
-      { width: 410 },
-    );
     setMetrics("chọn một đỉnh", "đang mở", "chưa bật mí");
 
     setupCandidateQuiz({
@@ -1778,32 +1778,18 @@
         const info = wrongInfo[node];
         if (!info) return;
         clearAnnotations();
+        animateCameraTo(part2Cameras.frontier, 0.44);
         setEdgeStates({ visible: info.visible, focus: [routeToEdges(info.path)] });
         setNodeStates(state, { focus: candidates, wrong: [node], clickable: candidates });
         renderDijkstraTable(state, { focus: [node, "C"] });
         drawGhostRoute(info.path);
-        drawCandidateBadges(state, candidates, {
-          labels: {
-            C: "mở ra đường vòng",
-            B: "đang mở",
-            D: "đang mở",
-            E: "đang mở",
-          },
-          toneMap: {
-            [node]: "wrong",
-            C: "correct",
-          },
-        });
-        drawFormulaCard(538, 184, `${node} chưa chắc`, info.lines, "Phải mở đỉnh rẻ hơn trước.", {
-          width: 418,
-          tone: "danger",
-        });
         setMetrics(`${node} chưa chắc`, info.metric, "C mở ra phản ví dụ");
         el.workbenchStatus.textContent = "chưa chắc";
       },
       onCorrect: () => {
         clearLayer(el.cutLayer);
         clearAnnotations();
+        animateCameraTo(part2Cameras.frontier, 0.44);
         setEdgeStates({
           visible: [part2Edges.fromA, part2Edges.fromC],
           focus: [part2Edges.fromC],
@@ -1811,25 +1797,8 @@
         });
         setNodeStates(part2States.afterC, { focus: ["C", "B", "D"], correct: ["C"] });
         renderDijkstraTable(part2States.afterC, { focus: ["C", "B", "D"] });
-        drawCandidateBadges(part2States.afterC, ["C", "B", "D", "E"], {
-          labels: {
-            C: "đã chốt",
-            B: "giảm qua C",
-            D: "giảm qua C",
-            E: "giữ đường A",
-          },
-          toneMap: { C: "correct" },
-        });
-        drawFormulaCard(
-          538,
-          184,
-          "Vì sao C chắc chắn?",
-          ["C đang có cost 2.", "Mọi đỉnh mở khác bắt đầu từ >= 4.", "Đi thêm cạnh không làm cost giảm."],
-          "Không có đường vòng nào thắng được 2.",
-          { width: 420, tone: "success" },
-        );
         showBestRoute(["A", "C"]);
-        setMetrics("chốt C", "mọi đường vòng đều >= 4", "C chắc chắn");
+        setMetrics("chốt C", "vòng >= 4", "C chắc");
         el.workbenchStatus.textContent = "đúng";
       },
     });
@@ -1859,6 +1828,7 @@
       },
     };
 
+    setCameraView(part2Cameras.frontier);
     setEdgeStates({
       visible: [part2Edges.fromA, part2Edges.fromC],
       focus: [part2Edges.fromC],
@@ -1869,21 +1839,6 @@
     showBestRoute(["A", "C"]);
     el.metricStrip.classList.add("is-hidden");
     clearAnnotations();
-    drawCandidateBadges(part2States.afterC, candidates, {
-      labels: {
-        B: "đã giảm qua C",
-        D: "đã giảm qua C",
-        E: "giữ đường A",
-      },
-    });
-    drawFormulaCard(
-      538,
-      184,
-      "Lặp lại câu hỏi",
-      ["Một đỉnh rẻ hơn chưa mở vẫn có thể tạo đường mới.", "Vì vậy hãy xử lý đỉnh rẻ nhất trước."],
-      "Bấm thử D/E để thấy vì sao chưa nên nhảy qua.",
-      { width: 420 },
-    );
     setMetrics("C đã chốt", "B=3, D=5, E=6", "hãy chọn tiếp");
 
     setupCandidateQuiz({
@@ -1900,6 +1855,7 @@
         const info = wrongInfo[node];
         if (!info) return;
         clearAnnotations();
+        animateCameraTo(part2Cameras.frontier, 0.44);
         setEdgeStates({
           visible: info.visible,
           focus: info.focus,
@@ -1908,27 +1864,13 @@
         setNodeStates(part2States.afterC, { focus: ["B", node], wrong: [node], clickable: candidates });
         renderDijkstraTable(part2States.afterC, { focus: ["B", node] });
         drawGhostRoute(info.path);
-        drawCandidateBadges(part2States.afterC, candidates, {
-          labels: {
-            B: "mở trước",
-            D: "đang mở",
-            E: "đang mở",
-          },
-          toneMap: {
-            [node]: "wrong",
-            B: "correct",
-          },
-        });
-        drawFormulaCard(538, 184, `${node} chưa đủ chắc`, info.lines, info.note, {
-          width: 424,
-          tone: "danger",
-        });
-        setMetrics(`${node} chưa chắc`, "B=3 còn nhỏ hơn", "đường vòng có thể tồn tại");
+        setMetrics(`${node} chưa chắc`, "B=3 nhỏ hơn", "còn đường vòng");
         el.workbenchStatus.textContent = "chưa chắc";
       },
       onCorrect: () => {
         clearLayer(el.cutLayer);
         clearAnnotations();
+        animateCameraTo(part2Cameras.frontier, 0.44);
         setEdgeStates({
           visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB],
           focus: [part2Edges.fromB],
@@ -1936,22 +1878,6 @@
         });
         setNodeStates(part2States.afterB, { focus: ["B", "E"], correct: ["B"] });
         renderDijkstraTable(part2States.afterB, { focus: ["B", "E"] });
-        drawCandidateBadges(part2States.afterB, ["B", "D", "E"], {
-          labels: {
-            B: "đã chốt",
-            D: "giữ cost 5",
-            E: "giảm qua B",
-          },
-          toneMap: { B: "correct" },
-        });
-        drawFormulaCard(
-          538,
-          184,
-          "Vì sao B chắc chắn?",
-          ["B đang có cost 3.", "Các đỉnh mở còn lại >= 5.", "Đi thêm cạnh không làm cost giảm."],
-          "Không còn đường nào quay lại B với cost < 3.",
-          { width: 420, tone: "success" },
-        );
         showBestRoute(["A", "C", "B"]);
         setMetrics("chốt B", "E=4 qua B", "tiếp theo E");
         el.workbenchStatus.textContent = "đúng";
@@ -1966,6 +1892,7 @@
   function enterPart2MinRuleScene() {
     const tl = makeTimeline();
 
+    setCameraView(part2Cameras.frontier);
     setEdgeStates({
       visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB],
       focus: [part2Edges.fromB],
@@ -1976,25 +1903,6 @@
     showBestRoute(["A", "C", "B"]);
     el.metricStrip.classList.add("is-hidden");
     clearAnnotations();
-    drawCandidateBadges(part2States.afterB, ["D", "E"], {
-      showCosts: false,
-      labels: {
-        D: "đang mở",
-        E: "đang mở",
-      },
-      offsets: {
-        D: { x: 44, y: -58 },
-        E: { x: 44, y: -30 },
-      },
-    });
-    drawFormulaCard(
-      538,
-      184,
-      "Đừng chọn bằng cảm giác",
-      ["Hai đỉnh đều đang mở.", "Bật cost rồi lấy đỉnh nhỏ nhất."],
-      "Đây là lúc quy tắc min tự lộ ra.",
-      { width: 418 },
-    );
     setMetrics("D và E", "cost đang ẩn", "nhấn Hiện cost");
 
     setupActionButton(
@@ -2003,24 +1911,6 @@
         clearAnnotations();
       renderDijkstraTable(part2States.afterB, { focus: ["D", "E"] });
       setNodeStates(part2States.afterB, { focus: ["D", "E"], clickable: ["D", "E"] });
-      drawCandidateBadges(part2States.afterB, ["D", "E"], {
-        labels: {
-          D: "đang mở",
-          E: "đang mở",
-        },
-        offsets: {
-          D: { x: 44, y: -58 },
-          E: { x: 44, y: -30 },
-        },
-      });
-      drawFormulaCard(
-        538,
-        184,
-        "Bây giờ chỉ còn so sánh",
-        ["D = 5.", "E = 4.", "Đỉnh nhỏ hơn được chốt trước."],
-        "Nếu chốt D trước, ta bỏ qua một đỉnh rẻ hơn.",
-        { width: 418 },
-      );
       setMetrics("D=5, E=4", "E nhỏ nhất", "chọn E");
 
       setupCandidateQuiz({
@@ -2034,37 +1924,17 @@
         },
         onWrong: (node) => {
           clearAnnotations();
+          animateCameraTo(part2Cameras.frontier, 0.44);
           setNodeStates(part2States.afterB, { focus: ["E", node], wrong: [node], clickable: ["D", "E"] });
           renderDijkstraTable(part2States.afterB, { focus: ["E", node] });
           drawGhostRoute(["A", "C", "B", "E"]);
-          drawCandidateBadges(part2States.afterB, ["D", "E"], {
-            labels: {
-              D: "đắt hơn",
-              E: "mở trước",
-            },
-            toneMap: {
-              D: "wrong",
-              E: "correct",
-            },
-            offsets: {
-              D: { x: 44, y: -58 },
-              E: { x: 44, y: -30 },
-            },
-          });
-          drawFormulaCard(
-            538,
-            184,
-            "D chưa nên chốt",
-            ["D = 5.", "E = 4 còn đang mở.", "Một đỉnh rẻ hơn phải được xử lý trước."],
-            "Vì vậy lựa chọn chắc chắn lúc này là E.",
-            { width: 424, tone: "danger" },
-          );
           setMetrics(`${node} chưa chắc`, "E=4 còn nhỏ hơn", "chọn E");
-          el.workbenchStatus.textContent = "xem lại cost";
+          el.workbenchStatus.textContent = "chọn E";
         },
         onCorrect: () => {
           clearLayer(el.cutLayer);
           clearAnnotations();
+          animateCameraTo(part2Cameras.middle, 0.68);
           setEdgeStates({
             visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE],
             focus: [part2Edges.fromE],
@@ -2072,28 +1942,6 @@
           });
           setNodeStates(part2States.afterE, { focus: ["E", "F", "G"], correct: ["E"] });
           renderDijkstraTable(part2States.afterE, { focus: ["E", "F", "G"] });
-          drawCandidateBadges(part2States.afterE, ["D", "E", "F", "G"], {
-            labels: {
-              D: "vẫn mở",
-              E: "đã chốt",
-              F: "mở từ E",
-              G: "mở từ E",
-            },
-            toneMap: { E: "correct" },
-            offsets: {
-              E: { x: -164, y: -28 },
-              F: { x: 40, y: 118 },
-              G: { x: 40, y: -52 },
-            },
-          });
-          drawFormulaCard(
-            538,
-            184,
-            "Quy tắc đã lộ ra",
-            ["Lấy cost nhỏ nhất trong phần đang mở.", "Chốt đỉnh đó.", "Rồi mới mở hàng xóm của nó."],
-            "Từ đây chỉ cần lặp lại nhịp này tới K.",
-            { width: 424, tone: "success" },
-          );
           showBestRoute(["A", "C", "B", "E"]);
           setMetrics("chốt E", "F=6, G=9", "tiếp tục");
           el.workbenchStatus.textContent = "đúng";
@@ -2117,7 +1965,7 @@
     ];
     const baseVisible = [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE];
 
-    showPart2Workbench("Chạy tiếp", "Chọn nhỏ nhất, chốt, mở hàng xóm", "D -> F -> G -> K", "is-action");
+    showPart2Workbench("Chạy tiếp", "Chọn nhỏ nhất, chốt, mở hàng xóm", "4 bước", "is-action");
     ["D", "F", "G", "K"].forEach((node) => {
       const chip = document.createElement("button");
       chip.type = "button";
@@ -2127,6 +1975,7 @@
       el.workloadGrid.appendChild(chip);
     });
 
+    setCameraView(part2Cameras.middle);
     setEdgeStates({ visible: baseVisible, focus: [part2Edges.fromE], locked: [baseLocked] });
     setNodeStates(part2States.afterE, { focus: ["D", "F", "G"] });
     renderDijkstraTable(part2States.afterE, { focus: ["D", "F", "G"] });
@@ -2143,6 +1992,7 @@
         edgeFocus: [part2Edges.fromD],
         locked: [baseLocked, [["C", "D"]]],
         metrics: ["chốt D", "D = 5", "F vẫn 6"],
+        camera: part2Cameras.middle,
       },
       {
         node: "F",
@@ -2153,6 +2003,7 @@
         edgeFocus: [[["F", "K"]]],
         locked: [baseLocked, [["C", "D"], ["E", "F"]]],
         metrics: ["chốt F", "K = 10", "qua F"],
+        camera: part2Cameras.toK,
       },
       {
         node: "G",
@@ -2163,6 +2014,7 @@
         edgeFocus: [[["G", "K"]]],
         locked: [baseLocked, [["C", "D"], ["E", "F"], ["E", "G"]]],
         metrics: ["chốt G", "qua G = 11", "K giữ 10"],
+        camera: part2Cameras.toK,
       },
       {
         node: "K",
@@ -2172,7 +2024,8 @@
         visible: [baseVisible, part2Edges.fromD, part2Edges.toK],
         edgeFocus: [[["F", "K"]]],
         locked: [baseLocked, [["E", "F"], ["F", "K"]]],
-        metrics: ["chốt K", "cost = 10", "đã tới đích"],
+        metrics: ["chốt K", "cost = 10", "tới K"],
+        camera: part2Cameras.full,
       },
     ];
 
@@ -2188,6 +2041,7 @@
         const chip = el.workloadGrid.children[index];
         if (chip) chip.classList.add("is-correct");
       });
+      if (step.camera) moveCameraOnTimeline(tl, step.camera.center, step.camera.scale, "<");
     });
     return tl;
   }
@@ -2897,6 +2751,11 @@
     }
   }
 
+  function setCameraView(camera) {
+    if (!el.cameraLayer || !camera) return;
+    el.cameraLayer.setAttribute("transform", cameraMatrix(camera.center, camera.scale));
+  }
+
   function cameraMatrix(center, scale) {
     const point = typeof center === "string" ? nodes[center] : center;
     const safeScale = scale || 1;
@@ -2905,16 +2764,25 @@
     return `matrix(${safeScale} 0 0 ${safeScale} ${tx} ${ty})`;
   }
 
-  function moveCameraOnTimeline(tl, center, scale, position) {
+  function moveCameraOnTimeline(tl, center, scale, position, duration = 0.72) {
     tl.to(
       el.cameraLayer,
       {
         attr: { transform: cameraMatrix(center, scale) },
-        duration: dur(0.72),
+        duration: dur(duration),
         ease: "power3.inOut",
       },
       position,
     );
+  }
+
+  function animateCameraTo(camera, duration = 0.58) {
+    if (!el.cameraLayer || !camera) return;
+    gsap.to(el.cameraLayer, {
+      attr: { transform: cameraMatrix(camera.center, camera.scale) },
+      duration: dur(duration),
+      ease: "power3.inOut",
+    });
   }
 
   function clamp(value, min, max) {
