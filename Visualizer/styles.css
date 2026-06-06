@@ -300,18 +300,32 @@ button {
 }
 
 .edge-label-bg {
-  fill: rgba(7, 9, 8, 0.82);
-  stroke: rgba(244, 241, 232, 0.16);
-  stroke-width: 1;
+  fill: rgba(4, 6, 5, 0.94);
+  stroke: rgba(244, 201, 109, 0.34);
+  stroke-width: 1.35;
 }
 
 .edge-label {
-  fill: rgba(244, 241, 232, 0.9);
+  fill: rgba(255, 252, 242, 0.98);
   font-family: "Cascadia Mono", "Consolas", monospace;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   text-anchor: middle;
   dominant-baseline: middle;
+}
+
+.edge-label-group {
+  pointer-events: none;
+  transition: opacity 300ms var(--ease-heavy);
+}
+
+.edge-label-group.is-hidden-edge {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.edge-label-group.is-context:not(.is-focus):not(.is-locked) {
+  opacity: 0.54 !important;
 }
 
 .node-halo {
@@ -331,6 +345,39 @@ button {
   font-weight: 800;
   text-anchor: middle;
   dominant-baseline: middle;
+}
+
+.node-cost-badge {
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 220ms var(--ease-heavy),
+    transform 220ms var(--ease-snap);
+}
+
+.node-group.has-node-cost .node-cost-badge {
+  opacity: 1;
+}
+
+.node-cost-bg {
+  fill: rgba(244, 201, 109, 0.95);
+  stroke: rgba(3, 5, 4, 0.72);
+  stroke-width: 1.35;
+}
+
+.node-cost-text {
+  fill: #07100c;
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.node-group.is-settled .node-cost-bg,
+.node-group.is-correct .node-cost-bg {
+  fill: rgba(66, 242, 161, 0.96);
+  stroke: rgba(3, 5, 4, 0.72);
 }
 
 .node-group.is-terminal .node-dot {
@@ -461,13 +508,15 @@ button {
   stroke-width: 2.6;
 }
 
-.edge-group.is-context:not(.is-focus):not(.is-locked) .edge-label-bg {
-  fill: rgba(7, 9, 8, 0.54);
-  stroke: rgba(244, 241, 232, 0.1);
+.edge-group.is-context:not(.is-focus):not(.is-locked) .edge-label-bg,
+.edge-label-group.is-context:not(.is-focus):not(.is-locked) .edge-label-bg {
+  fill: rgba(4, 6, 5, 0.66);
+  stroke: rgba(244, 241, 232, 0.14);
 }
 
-.edge-group.is-context:not(.is-focus):not(.is-locked) .edge-label {
-  fill: rgba(244, 241, 232, 0.5);
+.edge-group.is-context:not(.is-focus):not(.is-locked) .edge-label,
+.edge-label-group.is-context:not(.is-focus):not(.is-locked) .edge-label {
+  fill: rgba(244, 241, 232, 0.58);
 }
 
 .edge-group.is-focus .edge-line {
@@ -481,9 +530,11 @@ button {
 }
 
 .edge-group.is-focus .edge-label-bg,
-.edge-group.is-locked .edge-label-bg {
-  stroke: rgba(244, 241, 232, 0.28);
-  fill: rgba(7, 9, 8, 0.9);
+.edge-group.is-locked .edge-label-bg,
+.edge-label-group.is-focus .edge-label-bg,
+.edge-label-group.is-locked .edge-label-bg {
+  stroke: rgba(255, 252, 242, 0.46);
+  fill: rgba(3, 5, 4, 0.96);
 }
 
 .route-path {
@@ -533,6 +584,25 @@ button {
   stroke-width: 7;
   stroke-dasharray: 16 10;
   filter: url(#tightGlow);
+}
+
+.route-ghost-group {
+  pointer-events: none;
+}
+
+.route-ghost-label-bg {
+  fill: rgba(34, 8, 7, 0.96);
+  stroke: rgba(255, 165, 146, 0.72);
+  stroke-width: 1.4;
+}
+
+.route-ghost-label {
+  fill: rgba(255, 236, 229, 0.98);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .route-candidate {

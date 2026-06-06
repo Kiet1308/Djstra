@@ -395,6 +395,22 @@
     ],
   };
 
+  const part2EdgeLabelPlacements = {
+    "A:C": { t: 0.58, n: 0 },
+    "A:B": { t: 0.42, n: 0 },
+    "A:D": { t: 0.55, n: 0 },
+    "A:E": { t: 0.5, n: 0 },
+    "B:C": { t: 0.38, n: 0 },
+    "C:D": { t: 0.52, n: 0 },
+    "B:E": { t: 0.58, n: 0 },
+    "E:F": { t: 0.5, n: 0 },
+    "E:G": { t: 0.54, n: 0 },
+    "D:F": { t: 0.48, n: 0 },
+    "D:G": { t: 0.56, n: 0 },
+    "F:K": { t: 0.52, n: 0 },
+    "G:K": { t: 0.52, n: 0 },
+  };
+
   const part2Cameras = {
     aTight: { center: { x: 150, y: 350 }, scale: 1.9 },
     frontier: { center: { x: 294, y: 348 }, scale: 1.36 },
@@ -494,6 +510,7 @@
     routeCloud: document.getElementById("routeCloud"),
     activeRouteLayer: document.getElementById("activeRouteLayer"),
     cutLayer: document.getElementById("cutLayer"),
+    edgeLabels: document.getElementById("edgeLabels"),
     nodeLayer: document.getElementById("nodeLayer"),
     annotationLayer: document.getElementById("annotationLayer"),
     brandKicker: document.getElementById("brandKicker"),
@@ -548,6 +565,7 @@
   let activeTimeline = null;
   let bestRouteElement = null;
   let activeRouteTween = null;
+  let ghostRouteTween = null;
   let activeNodeClickHandler = null;
   let paused = false;
   let allRoutes = [];
@@ -592,6 +610,7 @@
     buildGraphIndex();
     if (part.id === "part1") buildPart1RouteData();
     clearLayer(el.baseEdges);
+    clearLayer(el.edgeLabels);
     clearLayer(el.nodeLayer);
     renderBaseEdges();
     renderNodes();
@@ -626,10 +645,13 @@
       const a = nodes[from];
       const b = nodes[to];
       const d = linePath(from, to);
-      const mid = pointBetween(a, b, 0.5);
+      const labelPlacement = getEdgeLabelPlacement(from, to);
+      const labelPoint = pointBetween(a, b, labelPlacement.t);
       const normal = lineNormal(a, b);
-      const labelX = mid.x + normal.x * 14;
-      const labelY = mid.y + normal.y * 14;
+      const labelX = labelPoint.x + normal.x * labelPlacement.n;
+      const labelY = labelPoint.y + normal.y * labelPlacement.n;
+      const labelText = String(cost);
+      const labelWidth = Math.max(32, labelText.length * 10 + 18);
 
       const group = svg("g", {
         class: "edge-group",
@@ -638,13 +660,14 @@
       group.appendChild(svg("path", { d, class: "edge-underlay" }));
       group.appendChild(svg("path", { d, class: "edge-line" }));
 
-      const labelGroup = svg("g", { transform: `translate(${labelX} ${labelY})` });
-      labelGroup.appendChild(svg("rect", { x: -15, y: -11, width: 30, height: 22, rx: 6, class: "edge-label-bg" }));
+      const key = edgeKey(from, to);
+      const labelGroup = svg("g", { class: "edge-label-group", transform: `translate(${labelX} ${labelY})`, "data-edge": key });
+      labelGroup.appendChild(svg("rect", { x: -labelWidth / 2, y: -12, width: labelWidth, height: 24, rx: 7, class: "edge-label-bg" }));
       const label = svg("text", { x: 0, y: 1, class: "edge-label" });
-      label.textContent = cost;
+      label.textContent = labelText;
       labelGroup.appendChild(label);
-      group.appendChild(labelGroup);
       el.baseEdges.appendChild(group);
+      el.edgeLabels.appendChild(labelGroup);
     });
   }
 
@@ -661,6 +684,12 @@
       const label = svg("text", { x: 0, y: 1, class: "node-label" });
       label.textContent = id;
       group.appendChild(label);
+      const costBadge = svg("g", { class: "node-cost-badge", transform: "translate(-29 -29)", "aria-hidden": "true" });
+      costBadge.appendChild(svg("rect", { x: -15, y: -12, width: 30, height: 24, rx: 7, class: "node-cost-bg" }));
+      const costText = svg("text", { x: 0, y: 1, class: "node-cost-text" });
+      costText.textContent = "";
+      costBadge.appendChild(costText);
+      group.appendChild(costBadge);
       group.addEventListener("click", () => {
         if (activeNodeClickHandler) activeNodeClickHandler(id);
       });
@@ -779,8 +808,10 @@
   function resetVisualState() {
     if (activeTimeline) activeTimeline.kill();
     if (activeRouteTween) activeRouteTween.kill();
+    if (ghostRouteTween) ghostRouteTween.kill();
     gsap.killTweensOf("*");
     activeRouteTween = null;
+    ghostRouteTween = null;
     activeNodeClickHandler = null;
     clearLayer(el.routeCloud);
     clearLayer(el.activeRouteLayer);
@@ -795,10 +826,11 @@
     renderRouteList([]);
     resetGraphClasses();
     resetCamera();
-    gsap.set([".node-group", ".edge-group"], { clearProps: "visibility" });
-    gsap.set([el.baseEdges, el.nodeLayer, el.mapTexture], { opacity: 1 });
+    gsap.set([".node-group", ".edge-group", ".edge-label-group"], { clearProps: "visibility" });
+    gsap.set([el.baseEdges, el.edgeLabels, el.nodeLayer, el.mapTexture], { opacity: 1 });
     gsap.set(".node-group", { opacity: 1, scale: 1, transformOrigin: "center center" });
     gsap.set(".edge-group", { opacity: 1 });
+    gsap.set(".edge-label-group", { opacity: 1 });
     gsap.set(".edge-line", { opacity: 1 });
   }
 
@@ -982,10 +1014,13 @@
 
   function resetGraphClasses() {
     document.querySelectorAll(".node-group").forEach((node) => {
-      node.classList.remove("is-muted", "is-open", "is-settled", "is-focus", "is-wrong", "is-correct", "is-clickable", "is-target", "is-context");
+      node.classList.remove("is-muted", "is-open", "is-settled", "is-focus", "is-wrong", "is-correct", "is-clickable", "is-target", "is-context", "has-node-cost");
     });
     document.querySelectorAll(".edge-group").forEach((edge) => {
       edge.classList.remove("is-hidden-edge", "is-revealed", "is-focus", "is-locked", "is-context");
+    });
+    document.querySelectorAll(".edge-label-group").forEach((label) => {
+      label.classList.remove("is-hidden-edge", "is-revealed", "is-focus", "is-locked", "is-context");
     });
   }
 
@@ -1034,6 +1069,18 @@
       edge.classList.toggle("is-locked", lockedSet.has(key));
       edge.classList.toggle("is-context", contextSet.has(key));
     });
+    document.querySelectorAll(".edge-label-group").forEach((label) => {
+      const key = label.dataset.edge;
+      label.classList.remove("is-hidden-edge", "is-revealed", "is-focus", "is-locked", "is-context");
+      if (getActivePart().id !== "part2") return;
+
+      const isVisible = visibleSet.has(key) || focusSet.has(key) || lockedSet.has(key) || contextSet.has(key);
+      label.classList.toggle("is-hidden-edge", !isVisible);
+      label.classList.toggle("is-revealed", isVisible);
+      label.classList.toggle("is-focus", focusSet.has(key));
+      label.classList.toggle("is-locked", lockedSet.has(key));
+      label.classList.toggle("is-context", contextSet.has(key));
+    });
   }
 
   function setNodeStates(state, options = {}) {
@@ -1043,11 +1090,13 @@
     const clickable = new Set(options.clickable || []);
     const target = new Set(options.target || []);
     const context = new Set(options.context || []);
+    const showNodeCosts = options.showNodeCosts === true;
+    const nodeCostFilter = new Set(options.nodeCostNodes || []);
 
     document.querySelectorAll(".node-group").forEach((nodeEl) => {
       const id = nodeEl.dataset.node;
       const row = state && state[id];
-      nodeEl.classList.remove("is-muted", "is-open", "is-settled", "is-focus", "is-wrong", "is-correct", "is-clickable", "is-target", "is-context");
+      nodeEl.classList.remove("is-muted", "is-open", "is-settled", "is-focus", "is-wrong", "is-correct", "is-clickable", "is-target", "is-context", "has-node-cost");
       if (row) {
         nodeEl.classList.add(`is-${row.status}`);
         if (row.status === "unknown" && !focus.has(id) && !wrong.has(id) && !correct.has(id) && !clickable.has(id) && !context.has(id) && !target.has(id)) {
@@ -1071,6 +1120,16 @@
         nodeEl.removeAttribute("role");
         nodeEl.removeAttribute("aria-label");
       }
+
+      const costText = nodeEl.querySelector(".node-cost-text");
+      const canShowCost =
+        showNodeCosts &&
+        row &&
+        row.cost != null &&
+        row.status !== "unknown" &&
+        (!nodeCostFilter.size || nodeCostFilter.has(id));
+      if (costText) costText.textContent = canShowCost ? String(row.cost) : "";
+      nodeEl.classList.toggle("has-node-cost", canShowCost);
     });
   }
 
@@ -1116,6 +1175,7 @@
 
   function showPart2Workbench(kicker, title, status, mode) {
     showWorkbench(kicker, title, status, false);
+    el.workbench.classList.remove("is-quiz", "is-action");
     el.workbench.classList.add(mode);
     el.workloadGrid.innerHTML = "";
   }
@@ -1185,15 +1245,62 @@
     el.workloadGrid.appendChild(button);
   }
 
-  function drawGhostRoute(route) {
+  function drawGhostRoute(route, options = {}) {
+    if (ghostRouteTween) {
+      ghostRouteTween.kill();
+      ghostRouteTween = null;
+    }
     clearLayer(el.cutLayer);
-    const path = drawRoute(route, "route-path route-ghost", el.cutLayer);
+    const dataRoute = options.label || (Array.isArray(route) ? route.join("-") : "ghost");
+    const pathData = options.pathData || (typeof route === "string" ? route : routePath(route, options.offset || 0));
+    const group = svg("g", {
+      class: "route-ghost-group",
+      "data-route": dataRoute,
+    });
+    const path = svg("path", {
+      d: pathData,
+      class: "route-path route-ghost",
+      "data-route": dataRoute,
+    });
+    group.appendChild(path);
+    el.cutLayer.appendChild(group);
     const length = path.getTotalLength();
-    gsap.fromTo(
+    let labelGroup = null;
+    if (options.costLabel) {
+      const labelPoint = path.getPointAtLength(length * (options.labelT || 0.55));
+      const labelText = String(options.costLabel);
+      const labelWidth = Math.max(30, labelText.length * 10 + 18);
+      labelGroup = svg("g", {
+        class: "route-ghost-label-group",
+        transform: `translate(${labelPoint.x} ${labelPoint.y})`,
+      });
+      labelGroup.appendChild(svg("rect", { x: -labelWidth / 2, y: -12, width: labelWidth, height: 24, rx: 7, class: "route-ghost-label-bg" }));
+      const label = svg("text", { x: 0, y: 1, class: "route-ghost-label" });
+      label.textContent = labelText;
+      labelGroup.appendChild(label);
+      group.appendChild(labelGroup);
+    }
+    ghostRouteTween = gsap.timeline({
+      onComplete: () => {
+        if (group.parentNode === el.cutLayer) group.remove();
+        ghostRouteTween = null;
+        if (typeof options.onComplete === "function") options.onComplete();
+      },
+    });
+    ghostRouteTween.fromTo(
       path,
       { opacity: 0.2, strokeDasharray: length, strokeDashoffset: length },
       { opacity: 0.88, strokeDashoffset: 0, duration: dur(0.36), ease: "power2.out" },
     );
+    if (labelGroup) {
+      ghostRouteTween.fromTo(
+        labelGroup,
+        { opacity: 0, scale: 0.86, transformOrigin: "center center" },
+        { opacity: 1, scale: 1, duration: dur(0.22), ease: "back.out(1.6)" },
+        "<0.12",
+      );
+    }
+    ghostRouteTween.to(group, { opacity: 0, duration: dur(0.34), ease: "power2.in" }, "+=2.35");
     return path;
   }
 
@@ -1506,7 +1613,7 @@
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
     tl.fromTo(el.annotationLayer.children, { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.42), ease: "power3.out" }, "<0.12");
     tl.fromTo(".node-group.is-focus", { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, stagger: dur(0.08), duration: dur(0.45), ease: "back.out(1.55)" }, "<0.08");
-    tl.fromTo(".edge-group.is-focus", { opacity: 0 }, { opacity: 1, duration: dur(0.45), ease: "power2.out" }, "<0.1");
+    tl.fromTo(".edge-group.is-focus, .edge-label-group.is-focus", { opacity: 0 }, { opacity: 1, duration: dur(0.45), ease: "power2.out" }, "<0.1");
     return tl;
   }
 
@@ -1540,7 +1647,7 @@
 
     gsap.set(".problem-overview-card, .problem-node-slot", { opacity: 0 });
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
-    tl.fromTo(".edge-group.is-context", { opacity: 0 }, { opacity: 0.42, duration: dur(0.42), ease: "power2.out" }, 0.2);
+    tl.fromTo(".edge-group.is-context, .edge-label-group.is-context", { opacity: 0 }, { opacity: 0.42, duration: dur(0.42), ease: "power2.out" }, 0.2);
     tl.fromTo(".node-group.is-focus, .node-group.is-target", { scale: 0.84, opacity: 0 }, { scale: 1, opacity: 1, stagger: dur(0.045), duration: dur(0.44), ease: "back.out(1.45)" }, 0.28);
     tl.fromTo(".problem-overview-card", { opacity: 0 }, { opacity: 1, duration: dur(0.38), ease: "power3.out" }, 0.62);
     tl.fromTo(".problem-node-slot", { opacity: 0 }, { opacity: 1, stagger: dur(0.04), duration: dur(0.28), ease: "power3.out" }, 0.82);
@@ -1668,8 +1775,9 @@
 
     const enteringNodes = camera ? ".node-group.is-focus:not(.is-context):not(.is-target)" : ".node-group.is-focus";
     const enteringEdges = camera ? ".edge-group.is-focus:not(.is-context)" : ".edge-group.is-focus";
+    const enteringLabels = camera ? ".edge-label-group.is-focus:not(.is-context)" : ".edge-label-group.is-focus";
     gsap.set(enteringNodes, { scale: 0.84, autoAlpha: 0, transformOrigin: "center center" });
-    gsap.set(enteringEdges, { autoAlpha: 0 });
+    gsap.set(`${enteringEdges}, ${enteringLabels}`, { autoAlpha: 0 });
     gsap.set(".route-dependency", { opacity: 0, strokeDashoffset: 40 });
 
     const annotationAt = camera ? 0.5 : 0.1;
@@ -1681,7 +1789,7 @@
     tl.fromTo(el.annotationLayer.children, { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.42), ease: "power3.out" }, annotationAt);
     tl.fromTo(enteringNodes, { scale: 0.84, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, stagger: dur(0.06), duration: dur(0.42), ease: "back.out(1.45)" }, revealAt);
     tl.fromTo(".route-dependency", { opacity: 0, strokeDashoffset: 40 }, { opacity: 0.62, strokeDashoffset: 0, stagger: dur(0.035), duration: dur(0.45), ease: "power2.out" }, routeAt);
-    tl.fromTo(enteringEdges, { autoAlpha: 0 }, { autoAlpha: 1, duration: dur(0.46), ease: "power2.out" }, "<");
+    tl.fromTo(`${enteringEdges}, ${enteringLabels}`, { autoAlpha: 0 }, { autoAlpha: 1, duration: dur(0.46), ease: "power2.out" }, "<");
 
     return tl;
   }
@@ -1710,11 +1818,12 @@
     ];
     const hiddenNodes = part2NodeOrder.filter((node) => node !== "A").map((node) => `.node-${node}`).join(", ");
     const hiddenEdges = revealPlan.map((step) => `.edge-group[data-edge="${step.edge}"]`).join(", ");
+    const hiddenLabels = revealPlan.map((step) => `.edge-label-group[data-edge="${step.edge}"]`).join(", ");
     const hiddenRoutes = revealPlan.map((step) => `.route-candidate[data-route="${step.route}"]`).join(", ");
     const hiddenRows = revealPlan.map((step) => `.state-row[data-node="${step.node}"]`).join(", ");
 
     gsap.set(hiddenNodes, { opacity: 0, scale: 0.86, transformOrigin: "center center" });
-    gsap.set(`${hiddenEdges}, ${hiddenRoutes}`, { opacity: 0 });
+    gsap.set(`${hiddenEdges}, ${hiddenLabels}, ${hiddenRoutes}`, { opacity: 0 });
     gsap.set(hiddenRows, { opacity: 0, y: 8 });
 
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" }, 0);
@@ -1722,7 +1831,7 @@
     tl.fromTo(".node-A", { scale: 0.92 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 0.46);
     moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 0.74, 1.05);
     revealPlan.forEach((step) => {
-      tl.to(`.edge-group[data-edge="${step.edge}"], .route-candidate[data-route="${step.route}"]`, { opacity: 1, duration: dur(0.28), ease: "power2.out" }, step.at);
+      tl.to(`.edge-group[data-edge="${step.edge}"], .edge-label-group[data-edge="${step.edge}"], .route-candidate[data-route="${step.route}"]`, { opacity: 1, duration: dur(0.28), ease: "power2.out" }, step.at);
       tl.to(`.node-${step.node}`, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.45)" }, step.at + 0.02);
       tl.to(`.state-row[data-node="${step.node}"]`, { opacity: 1, y: 0, duration: dur(0.25), ease: "power2.out" }, step.at + 0.08);
     });
@@ -1737,21 +1846,21 @@
     const wrongInfo = {
       B: {
         path: ["A", "C", "B"],
-        metric: "A -> C -> B = 3 < 4",
-        visible: [part2Edges.fromA, part2Edges.fromC],
-        lines: ["Đang thấy: A -> B = 4.", "Nhưng mở C sẽ có A -> C -> B = 3.", "Vậy B chưa thể chốt."],
+        metric: "A -> C -> B = 3",
+        ghostLabel: "3",
+        labelT: 0.72,
+        labelDx: 16,
+        labelDy: 6,
       },
       D: {
         path: ["A", "C", "D"],
-        metric: "A -> C -> D = 5 < 7",
-        visible: [part2Edges.fromA, part2Edges.fromC],
-        lines: ["Đang thấy: A -> D = 7.", "Nhưng mở C sẽ có A -> C -> D = 5.", "Vậy D chưa thể chốt."],
+        metric: "A -> C -> D = 5",
+        ghostLabel: "5",
       },
       E: {
-        path: ["A", "C", "B", "E"],
-        metric: "A -> C -> B -> E = 4 < 6",
-        visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB],
-        lines: ["Đang thấy: A -> E = 6.", "Nhưng mở C rồi B sẽ có E = 4.", "Vậy E chưa thể chốt."],
+        path: ["A", "C", "E"],
+        metric: "A -> C -> E = 5",
+        ghostLabel: "5",
       },
     };
 
@@ -1779,10 +1888,15 @@
         if (!info) return;
         clearAnnotations();
         animateCameraTo(part2Cameras.frontier, 0.44);
-        setEdgeStates({ visible: info.visible, focus: [routeToEdges(info.path)] });
         setNodeStates(state, { focus: candidates, wrong: [node], clickable: candidates });
         renderDijkstraTable(state, { focus: [node, "C"] });
-        drawGhostRoute(info.path);
+        drawGhostRoute(info.path, {
+          offset: 22,
+          costLabel: info.ghostLabel,
+          labelT: info.labelT,
+          labelDx: info.labelDx,
+          labelDy: info.labelDy,
+        });
         setMetrics(`${node} chưa chắc`, info.metric, "C mở ra phản ví dụ");
         el.workbenchStatus.textContent = "chưa chắc";
       },
@@ -1813,25 +1927,23 @@
     const candidates = ["B", "D", "E"];
     const wrongInfo = {
       D: {
-        visible: [part2Edges.fromA, part2Edges.fromC],
-        path: ["A", "C", "B"],
-        focus: [[["A", "C"], ["C", "B"]]],
-        lines: ["D đang là 5.", "Nhưng B = 3 vẫn chưa được mở.", "B có thể mở ra đường rẻ hơn trước."],
-        note: "Ta chưa có quyền nhảy qua B.",
+        pathData: () => virtualArc("B", "D", 58),
+        metric: "B = 3",
+        status: "đợi B trước",
+        ghostLabel: "3",
       },
       E: {
-        visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB],
-        path: ["A", "C", "B", "E"],
-        focus: [[["A", "C"], ["C", "B"], ["B", "E"]]],
-        lines: ["E đang là 6.", "Nhưng qua B thì E trở thành 4.", "Vậy E chưa thể chốt."],
-        note: "Đỉnh rẻ hơn có thể sửa cost của đỉnh đắt hơn.",
+        pathData: () => virtualArc("B", "E", -34),
+        metric: "qua B = 4",
+        status: "chưa chốt E",
+        ghostLabel: "4",
       },
     };
 
     setCameraView(part2Cameras.frontier);
     setEdgeStates({
       visible: [part2Edges.fromA, part2Edges.fromC],
-      focus: [part2Edges.fromC],
+      focus: [[["C", "B"]]],
       locked: [[["A", "C"]]],
     });
     setNodeStates(part2States.afterC, { focus: candidates, clickable: candidates });
@@ -1856,15 +1968,10 @@
         if (!info) return;
         clearAnnotations();
         animateCameraTo(part2Cameras.frontier, 0.44);
-        setEdgeStates({
-          visible: info.visible,
-          focus: info.focus,
-          locked: [[["A", "C"]]],
-        });
         setNodeStates(part2States.afterC, { focus: ["B", node], wrong: [node], clickable: candidates });
         renderDijkstraTable(part2States.afterC, { focus: ["B", node] });
-        drawGhostRoute(info.path);
-        setMetrics(`${node} chưa chắc`, "B=3 nhỏ hơn", "còn đường vòng");
+        drawGhostRoute(info.pathData ? info.pathData() : info.path, { offset: info.offset || 22, label: `${node}-wrong`, costLabel: info.ghostLabel });
+        setMetrics(`${node} chưa chắc`, info.metric, info.status);
         el.workbenchStatus.textContent = "chưa chắc";
       },
       onCorrect: () => {
@@ -1892,6 +1999,48 @@
   function enterPart2MinRuleScene() {
     const tl = makeTimeline();
 
+    const revealCostQuiz = () => {
+      clearAnnotations();
+      renderDijkstraTable(part2States.afterB, { focus: ["D", "E"] });
+      setNodeStates(part2States.afterB, { focus: ["D", "E"], clickable: ["D", "E"], showNodeCosts: true, nodeCostNodes: ["D", "E"] });
+      setMetrics("D=5, E=4", "E nhỏ nhất", "chọn E");
+
+      setupCandidateQuiz({
+        candidates: ["D", "E"],
+        answer: "E",
+        title: "Đỉnh nào nhỏ hơn?",
+        status: "D/E",
+        candidateMeta: {
+          D: "cost 5",
+          E: "cost 4",
+        },
+        onWrong: (node) => {
+          clearAnnotations();
+          animateCameraTo(part2Cameras.frontier, 0.44);
+          setNodeStates(part2States.afterB, { focus: ["E", node], wrong: [node], clickable: ["D", "E"], showNodeCosts: true, nodeCostNodes: ["D", "E"] });
+          renderDijkstraTable(part2States.afterB, { focus: ["E", node] });
+          drawGhostRoute(virtualArc("E", "D", -44), { label: `${node}-wrong-min`, costLabel: "4" });
+          setMetrics(`${node} chưa chắc`, "E = 4", "chọn E");
+          el.workbenchStatus.textContent = "chọn E";
+        },
+        onCorrect: () => {
+          clearLayer(el.cutLayer);
+          clearAnnotations();
+          animateCameraTo(part2Cameras.middle, 0.68);
+          setEdgeStates({
+            visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE],
+            focus: [part2Edges.fromE],
+            locked: [[["A", "C"], ["C", "B"], ["B", "E"]]],
+          });
+          setNodeStates(part2States.afterE, { focus: ["E", "F", "G"], correct: ["E"], showNodeCosts: true });
+          renderDijkstraTable(part2States.afterE, { focus: ["E", "F", "G"] });
+          showBestRoute(["A", "C", "B", "E"]);
+          setMetrics("chốt E", "F=6, G=9", "tiếp tục");
+          el.workbenchStatus.textContent = "đúng";
+        },
+      });
+    };
+
     setCameraView(part2Cameras.frontier);
     setEdgeStates({
       visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB],
@@ -1907,47 +2056,7 @@
 
     setupActionButton(
       "Hiện cost",
-      () => {
-        clearAnnotations();
-      renderDijkstraTable(part2States.afterB, { focus: ["D", "E"] });
-      setNodeStates(part2States.afterB, { focus: ["D", "E"], clickable: ["D", "E"] });
-      setMetrics("D=5, E=4", "E nhỏ nhất", "chọn E");
-
-      setupCandidateQuiz({
-        candidates: ["D", "E"],
-        answer: "E",
-        title: "Đỉnh nào nhỏ hơn?",
-        status: "D/E",
-        candidateMeta: {
-          D: "cost 5",
-          E: "cost 4",
-        },
-        onWrong: (node) => {
-          clearAnnotations();
-          animateCameraTo(part2Cameras.frontier, 0.44);
-          setNodeStates(part2States.afterB, { focus: ["E", node], wrong: [node], clickable: ["D", "E"] });
-          renderDijkstraTable(part2States.afterB, { focus: ["E", node] });
-          drawGhostRoute(["A", "C", "B", "E"]);
-          setMetrics(`${node} chưa chắc`, "E=4 còn nhỏ hơn", "chọn E");
-          el.workbenchStatus.textContent = "chọn E";
-        },
-        onCorrect: () => {
-          clearLayer(el.cutLayer);
-          clearAnnotations();
-          animateCameraTo(part2Cameras.middle, 0.68);
-          setEdgeStates({
-            visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE],
-            focus: [part2Edges.fromE],
-            locked: [[["A", "C"], ["C", "B"], ["B", "E"]]],
-          });
-          setNodeStates(part2States.afterE, { focus: ["E", "F", "G"], correct: ["E"] });
-          renderDijkstraTable(part2States.afterE, { focus: ["E", "F", "G"] });
-          showBestRoute(["A", "C", "B", "E"]);
-          setMetrics("chốt E", "F=6, G=9", "tiếp tục");
-          el.workbenchStatus.textContent = "đúng";
-        },
-      });
-      },
+      revealCostQuiz,
       { title: "Bật cost để so sánh", status: "chờ" },
     );
 
@@ -1977,7 +2086,7 @@
 
     setCameraView(part2Cameras.middle);
     setEdgeStates({ visible: baseVisible, focus: [part2Edges.fromE], locked: [baseLocked] });
-    setNodeStates(part2States.afterE, { focus: ["D", "F", "G"] });
+    setNodeStates(part2States.afterE, { focus: ["D", "F", "G"], showNodeCosts: true });
     renderDijkstraTable(part2States.afterE, { focus: ["D", "F", "G"] });
     showBestRoute(["A", "C", "B", "E"]);
     setMetrics("sau E", "D=5, F=6, G=9", "lấy D");
@@ -2034,7 +2143,7 @@
       tl.to({}, { duration: dur(index === 0 ? 0.42 : 0.62) });
       tl.call(() => {
         setEdgeStates({ visible: step.visible, focus: step.edgeFocus, locked: step.locked });
-        setNodeStates(step.state, { focus: step.focus, correct: [step.node] });
+        setNodeStates(step.state, { focus: step.focus, correct: [step.node], showNodeCosts: true });
         renderDijkstraTable(step.state, { focus: step.focus });
         showBestRoute(step.route);
         setMetrics(step.metrics[0], step.metrics[1], step.metrics[2]);
@@ -2058,7 +2167,7 @@
     ];
 
     setEdgeStates({ visible: allEdges, locked: [finalEdges] });
-    setNodeStates(part2States.final, { focus: ["A", "C", "B", "E", "F", "K"] });
+    setNodeStates(part2States.final, { focus: ["A", "C", "B", "E", "F", "K"], showNodeCosts: true });
     renderDijkstraTable(part2States.final, { focus: ["K"] });
     showBestRoute(part2FinalPath);
     setMetrics("A -> C -> B -> E -> F -> K", "10", "chưa vào code");
@@ -2116,7 +2225,7 @@
     setMetrics(`0/${totalRoutes}`, "0 đoạn", "-");
 
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
-    tl.to(el.baseEdges, { opacity: 0.72, duration: dur(0.3) }, "<");
+    tl.to([el.baseEdges, el.edgeLabels], { opacity: 0.72, duration: dur(0.3) }, "<");
 
     routes.forEach((route, index) => {
       const routeEl = drawRoute(route.path, "route-path route-active", el.activeRouteLayer);
@@ -2180,7 +2289,7 @@
     setMetrics(`${allRoutes.length} tuyến`, "phải tính", "-");
 
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
-    tl.to([el.baseEdges, el.nodeLayer], { opacity: 0.5, duration: dur(0.4) }, "<");
+    tl.to([el.baseEdges, el.edgeLabels, el.nodeLayer], { opacity: 0.5, duration: dur(0.4) }, "<");
     tl.to(routeEls, { opacity: 1, stagger: dur(0.025), duration: dur(0.2), ease: "power2.out" }, "<0.15");
     tl.to(
       counter,
@@ -2232,7 +2341,7 @@
 
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
     tl.fromTo(el.pruneLens, { y: -14, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.48), ease: "power3.out" }, "<0.05");
-    tl.to(el.baseEdges, { opacity: 0.62, duration: dur(0.32) }, "<");
+    tl.to([el.baseEdges, el.edgeLabels], { opacity: 0.62, duration: dur(0.32) }, "<");
     animatePathOnTimeline(tl, benchmarkEl, 0.72, "<0.06", 0.5);
     tl.call(() => {
       updatePruneLens(demoSafeInfo, bestCost);
@@ -2285,7 +2394,7 @@
 
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
     tl.fromTo(el.pruneLens, { y: -14, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.48), ease: "power3.out" }, "<0.05");
-    tl.to(el.baseEdges, { opacity: 0.62, duration: dur(0.32) }, "<");
+    tl.to([el.baseEdges, el.edgeLabels], { opacity: 0.62, duration: dur(0.32) }, "<");
 
     routes.forEach((route, index) => {
       const bestBefore = { path: currentBest.path, cost: currentBest.cost };
@@ -2716,6 +2825,14 @@
     return parts.join(" ");
   }
 
+  function virtualArc(from, to, offset = 48) {
+    const start = nodes[from];
+    const end = nodes[to];
+    const mid = pointBetween(start, end, 0.5);
+    const normal = lineNormal(start, end);
+    return `M ${start.x} ${start.y} Q ${mid.x + normal.x * offset} ${mid.y + normal.y * offset} ${end.x} ${end.y}`;
+  }
+
   function linePath(from, to) {
     return `M ${nodes[from].x} ${nodes[from].y} L ${nodes[to].x} ${nodes[to].y}`;
   }
@@ -2743,6 +2860,14 @@
       x: -dy / length,
       y: dx / length,
     };
+  }
+
+  function getEdgeLabelPlacement(from, to) {
+    const key = edgeKey(from, to);
+    if (getActivePart().id === "part2" && part2EdgeLabelPlacements[key]) {
+      return part2EdgeLabelPlacements[key];
+    }
+    return { t: 0.5, n: 14 };
   }
 
   function resetCamera() {
