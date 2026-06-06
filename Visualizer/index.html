@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visualizer Phần 1 - Tìm đường ngắn nhất</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar" aria-label="Thanh điều hướng visualizer">
+        <div class="brand-block">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <p class="brand-kicker" id="brandKicker">Phần 1</p>
+            <h1 id="brandTitle">Google Maps tìm đường như thế nào?</h1>
+          </div>
+        </div>
+
+        <div class="topbar-navigation">
+          <nav class="part-switcher" id="partSwitcher" aria-label="Chọn phần visualizer"></nav>
+          <nav class="scene-tabs" id="sceneTabs" aria-label="Các cảnh thuyết trình"></nav>
+        </div>
+      </header>
+
+      <main class="presenter-grid">
+        <section class="stage-shell" aria-label="Visualizer bản đồ và graph">
+          <div class="stage-glow" aria-hidden="true"></div>
+          <svg
+            id="graphSvg"
+            class="graph-svg"
+            viewBox="0 0 1000 640"
+            role="img"
+            aria-label="Bản đồ graph minh họa các tuyến đường từ A đến B"
+          >
+            <defs>
+              <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="6" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="tightGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="2.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <g id="cameraLayer" class="camera-layer">
+              <g id="mapTexture" class="map-texture"></g>
+              <g id="baseEdges" class="base-edges"></g>
+              <g id="routeCloud" class="route-cloud"></g>
+              <g id="activeRouteLayer" class="active-route-layer"></g>
+              <g id="cutLayer" class="cut-layer"></g>
+              <g id="nodeLayer" class="node-layer"></g>
+            </g>
+            <g id="annotationLayer" class="annotation-layer"></g>
+          </svg>
+
+          <div class="stage-copy">
+            <p class="scene-kicker" id="sceneKicker"></p>
+            <h2 id="sceneTitle"></h2>
+            <p id="sceneBody"></p>
+          </div>
+
+          <div class="metric-strip" aria-label="Số liệu minh họa" aria-live="polite">
+            <div>
+              <span class="metric-label" id="currentRouteMetricLabel">Đang thử</span>
+              <strong id="currentRouteLabel">-</strong>
+            </div>
+            <div>
+              <span class="metric-label" id="currentCostMetricLabel">Chi phí</span>
+              <strong id="currentCostLabel">-</strong>
+            </div>
+            <div>
+              <span class="metric-label" id="bestCostMetricLabel">Tốt nhất</span>
+              <strong id="bestCostLabel">-</strong>
+            </div>
+          </div>
+
+          <div class="workbench" id="workbench" aria-hidden="true">
+            <div class="workbench-head">
+              <div>
+                <p class="panel-kicker" id="workbenchKicker">Workload</p>
+                <h3 id="workbenchTitle">Các tuyến phải xét</h3>
+              </div>
+              <strong id="workbenchStatus">0/0</strong>
+            </div>
+            <div class="workload-progress" aria-hidden="true">
+              <span id="workloadProgressFill"></span>
+            </div>
+            <div class="workload-grid" id="workloadGrid" aria-label="Mỗi ô là một tuyến đường"></div>
+            <div class="workload-compare" id="workloadCompare" aria-hidden="true">
+              <div class="compare-row">
+                <span>Thử tất cả</span>
+                <div><i id="bruteBar"></i></div>
+                <strong id="bruteSegmentsLabel">0 đoạn</strong>
+              </div>
+              <div class="compare-row is-pruned">
+                <span>Cắt nhánh</span>
+                <div><i id="prunedBar"></i></div>
+                <strong id="prunedSegmentsLabel">0 đoạn</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="prune-lens" id="pruneLens" aria-hidden="true" data-state="walk">
+            <div class="prune-lens-head">
+              <p class="panel-kicker">Một tuyến đang thử</p>
+              <strong id="pruneDecision">Tiếp tục</strong>
+            </div>
+            <div class="prune-equation">
+              <div>
+                <span>Chi phí đang đi</span>
+                <strong id="pruneCurrentCost">0</strong>
+              </div>
+              <em id="pruneOperator">&le;</em>
+              <div>
+                <span>Mốc hiện tại</span>
+                <strong id="pruneBestCost">16</strong>
+              </div>
+            </div>
+            <div class="prune-route-line">
+              <span id="prunePrefix">A</span>
+              <i></i>
+              <span id="pruneRemaining">B</span>
+            </div>
+            <p id="pruneReason">Chưa vượt mốc tốt nhất, tuyến này vẫn được đi tiếp.</p>
+          </div>
+
+          <div class="comparison-panel" id="comparisonPanel" aria-hidden="true">
+            <div class="comparison-col">
+              <span>Thử tất cả</span>
+              <strong id="bruteCount">0</strong>
+              <p>Đi đến cuối rất nhiều tuyến rồi mới so sánh.</p>
+            </div>
+            <div class="comparison-col is-better">
+              <span>Cắt nhánh</span>
+              <strong id="pruneCount">0</strong>
+              <p>Dừng sớm khi chi phí đã vượt đường tốt nhất.</p>
+            </div>
+            <div class="comparison-col is-next">
+              <span>Điểm còn thiếu</span>
+              <strong>?</strong>
+              <p>Ta vẫn đang thử đường. Cần một cách nghĩ khác.</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="guide-panel" aria-label="Nội dung dành cho khán giả">
+          <div class="guide-header">
+            <p class="panel-kicker">Ý chính</p>
+            <h2 id="audienceTitle"></h2>
+          </div>
+          <ul id="audienceBullets" class="audience-list"></ul>
+
+          <div class="route-panel">
+            <div class="route-panel-head">
+              <p class="panel-kicker">Bảng theo dõi</p>
+              <span id="routeCountLabel">0 tuyến</span>
+            </div>
+            <div class="route-list" id="routeList" aria-live="polite"></div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="control-bar">
+        <button class="control-button" id="prevButton" type="button">Lùi</button>
+        <button class="control-button" id="replayButton" type="button">Chạy lại</button>
+        <button class="control-button control-button-muted" id="pauseButton" type="button" aria-pressed="false">Tạm dừng</button>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <button class="control-button control-button-primary" id="nextButton" type="button">Tiếp</button>
+      </footer>
+    </div>
+
+    <script src="./vendor/gsap.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
