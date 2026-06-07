@@ -475,6 +475,65 @@
     },
   ];
 
+  const part4Scenes = [
+    {
+      tab: "Đếm bước",
+      kicker: "Độ phức tạp",
+      title: "Mỗi vòng tốn bao nhiêu việc?",
+      body: "Ta không học thuộc O(V²). Ta nhìn lại chính code vừa viết: mỗi lần chọn min phải quét các đỉnh, rồi mỗi đỉnh được chốt sẽ mở các cạnh kề.",
+      audienceTitle: "Đếm từ code",
+      audienceBullets: [
+        "FOR 1: mỗi vòng nhìn lại danh sách đỉnh để tìm cost nhỏ nhất.",
+        "Vòng đó lặp nhiều lần, nên phần quét đỉnh tạo ra V x V.",
+        "FOR 2: cộng thêm lượng cạnh kề được mở trong cả quá trình.",
+      ],
+      metricLabels: ["Vòng", "FOR 1", "FOR 2"],
+      enter: enterPart4ComplexityScene,
+    },
+    {
+      tab: "Tối ưu min",
+      kicker: "Cấu trúc dữ liệu",
+      title: "Điểm chậm nằm ở chọn min",
+      body: "Nếu ta có một cấu trúc luôn để cost nhỏ nhất ở đầu, việc chọn min không còn phải nhìn lại toàn bộ đỉnh mỗi vòng.",
+      audienceTitle: "Tối ưu tự nhiên",
+      audienceBullets: [
+        "Bản mảng: hỏi min là quét lại các đỉnh đang mở.",
+        "Priority queue giữ ứng viên theo cost, lấy min nhanh hơn.",
+        "Độ phức tạp thường viết thành O((V + E) log V).",
+      ],
+      metricLabels: ["Bản mảng", "Priority queue", "Giảm ở min"],
+      enter: enterPart4HeapScene,
+    },
+    {
+      tab: "Cạnh âm",
+      kicker: "Giới hạn",
+      title: "Khi cost âm phá lời hứa",
+      body: "Dijkstra đúng vì khi đã chốt một đỉnh, ta tin không có đường đi muộn nào kéo nó xuống thấp hơn. Cạnh âm phá đúng niềm tin đó.",
+      audienceTitle: "Điều kiện cần",
+      audienceBullets: [
+        "Thuật toán chốt sớm đường ngắn nhất đến một đỉnh.",
+        "Nếu cạnh âm xuất hiện muộn, cost của đỉnh đã chốt có thể giảm.",
+        "Vì vậy thuật toán cần graph không có cạnh âm.",
+      ],
+      metricLabels: ["Đang xét", "d[B]", "Đường đúng"],
+      enter: enterPart4NegativeScene,
+    },
+    {
+      tab: "Tên gọi",
+      kicker: "Kết bài",
+      title: "Đó chính là Dijkstra",
+      body: "Ta vừa xây thuật toán từ các câu hỏi rất đời thường. Tên Dijkstra chỉ đến sau khi ý tưởng đã tự hiện ra.",
+      audienceTitle: "Điều cần nhớ",
+      audienceBullets: [
+        "Không cần bắt đầu bằng công thức hay tên thuật toán.",
+        "Luật cốt lõi: chốt đỉnh đang mở có cost nhỏ nhất.",
+        "Dijkstra là tên gọi của ý tưởng ta vừa tự suy luận được.",
+      ],
+      metricLabels: ["Tên gọi", "Điều kiện", "Độ phức tạp"],
+      enter: enterPart4FinalScene,
+    },
+  ];
+
   const parts = [
     {
       id: "part1",
@@ -498,6 +557,14 @@
       title: "Từ ý tưởng thành mã giả",
       graph: graphProfiles.part2,
       scenes: part3Scenes,
+      lastScene: 0,
+    },
+    {
+      id: "part4",
+      label: "Phần 4",
+      title: "Độ phức tạp và giới hạn",
+      graph: graphProfiles.part2,
+      scenes: part4Scenes,
       lastScene: 0,
     },
   ];
@@ -954,6 +1021,148 @@
     "replay",
   ];
 
+  const part4Order = ["A", "B", "C", "D", "E", "F"];
+  const part4ComplexityDemoRounds = 2;
+  const part4Nodes = {
+    A: { x: 110, y: 335 },
+    B: { x: 285, y: 150 },
+    C: { x: 285, y: 520 },
+    D: { x: 520, y: 150 },
+    E: { x: 520, y: 520 },
+    F: { x: 710, y: 335 },
+  };
+  const part4Edges = [
+    ["A", "B", 4],
+    ["A", "C", 1],
+    ["B", "C", 2],
+    ["B", "D", 5],
+    ["B", "E", 1],
+    ["C", "E", 3],
+    ["D", "F", 1],
+    ["E", "D", 2],
+    ["E", "F", 6],
+  ];
+  const part4Adjacency = part4Order.reduce((acc, node) => {
+    acc[node] = [];
+    return acc;
+  }, {});
+  part4Edges.forEach(([from, to, cost]) => {
+    part4Adjacency[from].push({ from, to, cost });
+    part4Adjacency[to].push({ from: to, to: from, cost });
+  });
+  part4Order.forEach((node) => part4Adjacency[node].sort((a, b) => a.to.localeCompare(b.to)));
+
+  const part4CodeLineKeys = [
+    "fn",
+    "costArray",
+    "visitedArray",
+    "prevArray",
+    "seedCost",
+    "while",
+    "min",
+    "for1",
+    "ifMin",
+    "ifMinBetter",
+    "setMin",
+    "closeIfMinBetter",
+    "closeIfMinReachable",
+    "closeFor1",
+    "empty",
+    "end",
+    "closeOpen",
+    "for2",
+    "setKe",
+    "newCost",
+    "ifRelax",
+    "setDist",
+    "setPrev",
+    "closeIfRelax",
+    "closeFor2",
+    "closeWhile",
+    "return",
+    "fnClose",
+  ];
+  const part4CodeLines = part3CodeStates.replay.lines.map((text, index) => ({
+    key: part4CodeLineKeys[index] || `line${index + 1}`,
+    text,
+  }));
+
+  const part4NegativeStepLabels = [
+    "Khởi tạo d[A]=0",
+    "Relax cạnh đi ra từ A",
+    "B bị chốt quá sớm",
+    "Cạnh âm tạo đường tốt hơn",
+    "Kết luận: lời hứa bị phá",
+  ];
+
+  const part4NegativeStates = [
+    {
+      title: "Khởi tạo",
+      text: "Ta muốn tìm đường ngắn nhất từ A đến B. Ban đầu chỉ A có khoảng cách 0.",
+      dist: { A: 0, B: Infinity, C: Infinity },
+      node: { A: "source" },
+      edge: {},
+      statuses: { A: "source", B: "open", C: "open" },
+      result: "Chưa có kết quả cho B.",
+      dijkstraB: "?",
+      compare: "Cạnh âm chưa làm hỏng gì ở bước đầu. Nó chỉ trở thành vấn đề khi xuất hiện sau lúc B đã bị chốt.",
+      callout: "Luật Dijkstra: khi một đỉnh đã được chọn là nhỏ nhất, thuật toán sẽ không mở lại nó nữa.",
+      resultTone: "",
+    },
+    {
+      title: "Relax từ A",
+      text: "Từ A ta thấy B có d=2 và C có d=5. Trong các đỉnh đang mở, B nhỏ nhất.",
+      dist: { A: 0, B: 2, C: 5 },
+      node: { A: "final", B: "frontier", C: "frontier" },
+      edge: { AB: "active", AC: "active" },
+      statuses: { A: "final", B: "open / d=2", C: "open / d=5" },
+      result: "B đang có nhãn tạm thời 2.",
+      dijkstraB: "2",
+      compare: "Nếu mọi cạnh không âm, không có đường đi muộn nào có thể kéo B xuống dưới 2.",
+      callout: "Sau A: d[B]=2, d[C]=5. Dijkstra chuẩn bị chọn B vì 2 < 5.",
+      resultTone: "good",
+    },
+    {
+      title: "Chốt B quá sớm",
+      text: "Dijkstra chọn B vì B có d nhỏ nhất trong open. B được xem là final và không được cập nhật nữa.",
+      dist: { A: 0, B: 2, C: 5 },
+      node: { A: "final", B: "locked", C: "frontier" },
+      edge: { AB: "good" },
+      statuses: { A: "final", B: "final / locked", C: "open / d=5" },
+      result: "Dijkstra tạm tin d[B]=2 là đáp án cuối.",
+      dijkstraB: "2",
+      compare: "Đây là lời hứa quan trọng của Dijkstra: đã chốt thì không quay lại.",
+      callout: "B đã bị khóa. Nếu sau này có đường tốt hơn đến B, bản chuẩn vẫn bỏ qua.",
+      resultTone: "",
+    },
+    {
+      title: "Cạnh âm xuất hiện muộn",
+      text: "Sau đó thuật toán mới xét C. Cạnh C -> B có trọng số -4, nên A -> C -> B có cost 5 + (-4) = 1.",
+      dist: { A: 0, B: 2, C: 5 },
+      node: { A: "final", B: "locked", C: "current" },
+      edge: { CB: "failed" },
+      statuses: { A: "final", B: "final / không mở lại", C: "đang xét" },
+      result: "Có đề xuất tốt hơn cho B: 1, nhưng B đã final.",
+      dijkstraB: "2",
+      compare: "Nếu được relax lại, B phải thành 1. Nhưng thuật toán không cập nhật đỉnh đã chốt.",
+      callout: "Cạnh âm đề xuất d[B] = d[C] + (-4) = 1, nhỏ hơn 2. Đây là lúc thuật toán gãy.",
+      resultTone: "",
+    },
+    {
+      title: "Kết luận",
+      text: "Dijkstra trả A -> B với cost 2, trong khi đường thật ngắn nhất là A -> C -> B với cost 1.",
+      dist: { A: 0, B: 2, C: 5 },
+      node: { A: "final", B: "wrong", C: "frontier" },
+      edge: { AB: "bad", AC: "good", CB: "good" },
+      statuses: { A: "final", B: "sai / đáng ra là 1", C: "đường đúng đi qua C" },
+      result: "Sai: Dijkstra giữ 2, đáp án đúng là 1.",
+      dijkstraB: "2",
+      compare: "Cốt lõi: Dijkstra cần mọi cạnh không âm để đảm bảo đỉnh nhỏ nhất hiện tại không thể bị cải thiện bởi đường đi xuất hiện muộn.",
+      callout: "Không phải do code bug. Giả định toán học của Dijkstra đã bị cạnh âm phá vỡ.",
+      resultTone: "bad",
+    },
+  ];
+
   const el = {
     svg: document.getElementById("graphSvg"),
     presenterGrid: document.querySelector(".presenter-grid"),
@@ -1016,6 +1225,43 @@
     costMemory: document.getElementById("costMemory"),
     visitedMemory: document.getElementById("visitedMemory"),
     prevMemory: document.getElementById("prevMemory"),
+    part4Workspace: document.getElementById("part4Workspace"),
+    part4ComplexityView: document.getElementById("part4ComplexityView"),
+    part4HeapView: document.getElementById("part4HeapView"),
+    part4NegativeView: document.getElementById("part4NegativeView"),
+    part4FinalView: document.getElementById("part4FinalView"),
+    part4CodePhase: document.getElementById("part4CodePhase"),
+    part4CodeStatus: document.getElementById("part4CodeStatus"),
+    part4CodeBlock: document.getElementById("part4CodeBlock"),
+    part4PhaseTitle: document.getElementById("part4PhaseTitle"),
+    part4PhaseBadge: document.getElementById("part4PhaseBadge"),
+    part4GraphSvg: document.getElementById("part4GraphSvg"),
+    part4OverlayTitle: document.getElementById("part4OverlayTitle"),
+    part4OverlayText: document.getElementById("part4OverlayText"),
+    part4ScanStrip: document.getElementById("part4ScanStrip"),
+    part4Formula: document.getElementById("part4Formula"),
+    part4FormulaNote: document.getElementById("part4FormulaNote"),
+    part4RoundCounter: document.getElementById("part4RoundCounter"),
+    part4ScanCounter: document.getElementById("part4ScanCounter"),
+    part4EdgeCounter: document.getElementById("part4EdgeCounter"),
+    part4BackButton: document.getElementById("part4BackButton"),
+    part4ResetButton: document.getElementById("part4ResetButton"),
+    part4TreeButton: document.getElementById("part4TreeButton"),
+    part4DistTable: document.getElementById("part4DistTable"),
+    part4Result: document.getElementById("part4Result"),
+    part4ArrayBar: document.getElementById("part4ArrayBar"),
+    part4HeapBar: document.getElementById("part4HeapBar"),
+    part4ArrayRow: document.getElementById("part4ArrayRow"),
+    part4HeapStack: document.getElementById("part4HeapStack"),
+    part4NegativeTitle: document.getElementById("part4NegativeTitle"),
+    part4NegativeText: document.getElementById("part4NegativeText"),
+    part4NegativeSteps: document.getElementById("part4NegativeSteps"),
+    part4NegativeResult: document.getElementById("part4NegativeResult"),
+    part4NegativeDijkstra: document.getElementById("part4NegativeDijkstra"),
+    part4NegativeResultText: document.getElementById("part4NegativeResultText"),
+    part4NegativeCallout: document.getElementById("part4NegativeCallout"),
+    part4NegativeDistGrid: document.getElementById("part4NegativeDistGrid"),
+    part4NegativeCompare: document.getElementById("part4NegativeCompare"),
     progressFill: document.getElementById("progressFill"),
     prevButton: document.getElementById("prevButton"),
     replayButton: document.getElementById("replayButton"),
@@ -1033,6 +1279,7 @@
   let pendingCodeReveal = false;
   let pendingCodePayload = null;
   let pendingVisualAdvance = null;
+  let pendingVisualLabel = null;
   let visualAdvanceBlocked = false;
   let activeCodeRevealTween = null;
   let paused = false;
@@ -1042,6 +1289,10 @@
   let demoScanRoutes = [];
   let pathIndex = new Map();
   let adjacency = new Map();
+  let part4ComplexityState = null;
+  let part4ComplexityHistory = [];
+  let part4AutoAdvanceTimer = null;
+  let part4NegativeIndex = 0;
 
   init();
 
@@ -1264,6 +1515,7 @@
     el.nextButton.addEventListener("click", handleNext);
     el.replayButton.addEventListener("click", () => loadScene(currentScene));
     el.pauseButton.addEventListener("click", togglePause);
+    bindPart4Controls();
 
     document.addEventListener("keydown", (event) => {
       const tag = event.target && event.target.tagName;
@@ -1289,7 +1541,21 @@
     });
   }
 
+  function bindPart4Controls() {
+    if (el.part4BackButton) el.part4BackButton.addEventListener("click", restorePreviousPart4ComplexityStep);
+    if (el.part4ResetButton) el.part4ResetButton.addEventListener("click", restartPart4ComplexityScene);
+    if (el.part4TreeButton) {
+      el.part4TreeButton.addEventListener("click", () => {
+        if (!part4ComplexityState || activeTimeline) return;
+        part4ComplexityState.showTree = !part4ComplexityState.showTree;
+        renderPart4Complexity();
+      });
+    }
+  }
+
   function handleNext() {
+    if (visualAdvanceBlocked) return;
+
     if (pendingVisualAdvance) {
       advancePendingVisual();
       return;
@@ -1324,6 +1590,7 @@
     if (activeRouteTween) activeRouteTween.kill();
     if (ghostRouteTween) ghostRouteTween.kill();
     if (activeCodeRevealTween) activeCodeRevealTween.kill();
+    clearPart4AutoAdvanceTimer();
     gsap.killTweensOf("*");
     activeRouteTween = null;
     ghostRouteTween = null;
@@ -1332,7 +1599,9 @@
     pendingCodePayload = null;
     activeNodeClickHandler = null;
     pendingVisualAdvance = null;
+    pendingVisualLabel = null;
     visualAdvanceBlocked = false;
+    hidePart4Views();
     clearLayer(el.routeCloud);
     clearLayer(el.activeRouteLayer);
     clearLayer(el.cutLayer);
@@ -1359,8 +1628,12 @@
 
   function updateWorkspaceMode() {
     const isCodeWorkspace = getActivePart().id === "part3";
+    const isPart4Workspace = getActivePart().id === "part4";
     el.presenterGrid.classList.toggle("is-code-workspace", isCodeWorkspace);
+    el.presenterGrid.classList.toggle("is-part4-workspace", isPart4Workspace);
     el.stageShell.classList.toggle("is-code-workspace", isCodeWorkspace);
+    el.stageShell.classList.toggle("is-part4-workspace", isPart4Workspace);
+    if (el.part4Workspace) el.part4Workspace.setAttribute("aria-hidden", isPart4Workspace ? "false" : "true");
   }
 
   function setSceneCopy(scene) {
@@ -1397,7 +1670,11 @@
     el.prevButton.disabled = currentScene === 0;
     el.nextButton.disabled = visualAdvanceBlocked || (currentScene === scenes.length - 1 && !pendingCodeReveal && !pendingVisualAdvance);
     const isCodeEdit = pendingCodePayload && ((pendingCodePayload.changed || []).length > 0 || /sửa/.test(pendingCodePayload.status || ""));
-    el.nextButton.textContent = pendingCodeReveal ? (isCodeEdit ? "Sửa code" : "Viết code") : "Tiếp";
+    if (pendingVisualAdvance && pendingVisualLabel) {
+      el.nextButton.textContent = pendingVisualLabel;
+    } else {
+      el.nextButton.textContent = pendingCodeReveal ? (isCodeEdit ? "Sửa code" : "Viết code") : "Tiếp";
+    }
     el.pauseButton.disabled = !activeTimeline;
   }
 
@@ -1597,8 +1874,9 @@
     updateControlAvailability();
   }
 
-  function prepareVisualAdvance(handler) {
+  function prepareVisualAdvance(handler, label = null) {
     pendingVisualAdvance = typeof handler === "function" ? handler : null;
+    pendingVisualLabel = pendingVisualAdvance ? label : null;
     visualAdvanceBlocked = false;
     updateControlAvailability();
   }
@@ -1613,6 +1891,7 @@
       activeTimeline = null;
     }
     pendingVisualAdvance = null;
+    pendingVisualLabel = null;
     handler();
     updatePauseButton();
     updateControlAvailability();
@@ -5025,6 +5304,755 @@
     tl.fromTo(".part3-prev-chain-final", { opacity: 0, y: 8, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.36), ease: "power2.out" }, 27.82);
     tl.fromTo(".replay-final-trace", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 27.9);
     tl.to(".replay-final-trace .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(1.18), ease: "power2.out" }, 27.98);
+    return tl;
+  }
+
+  function hidePart4Views() {
+    if (!el.part4Workspace) return;
+    [el.part4ComplexityView, el.part4HeapView, el.part4NegativeView, el.part4FinalView].forEach((view) => {
+      if (view) view.classList.remove("is-active");
+    });
+  }
+
+  function showPart4View(view) {
+    if (!el.part4Workspace) return;
+    hidePart4Views();
+    el.part4Workspace.setAttribute("aria-hidden", "false");
+    if (view) view.classList.add("is-active");
+  }
+
+  function p4Fmt(value) {
+    return value === Infinity ? "∞" : String(value);
+  }
+
+  function part4EdgeKey(from, to) {
+    return [from, to].sort().join(":");
+  }
+
+  function resetPart4ComplexityState() {
+    const dist = {};
+    const prev = {};
+    const visited = {};
+    part4Order.forEach((node) => {
+      dist[node] = Infinity;
+      prev[node] = null;
+      visited[node] = false;
+    });
+    dist.A = 0;
+    part4ComplexityState = {
+      dist,
+      prev,
+      visited,
+      phase: "scan",
+      round: 1,
+      best: null,
+      current: null,
+      scanning: null,
+      activeEdge: null,
+      updatedNode: null,
+      showTree: false,
+      scanOps: 0,
+      edgeOps: 0,
+      sampleStopped: false,
+      codeFocusKeys: ["seedCost"],
+      codeStatusText: "Bắt đầu bằng Cost[start] = 0. FOR 1 sẽ quét A -> F để tìm đỉnh có cost nhỏ nhất chưa Visited.",
+    };
+  }
+
+  function snapshotPart4Complexity() {
+    const s = part4ComplexityState;
+    if (!s) return null;
+    return {
+      dist: { ...s.dist },
+      prev: { ...s.prev },
+      visited: { ...s.visited },
+      phase: s.phase,
+      round: s.round,
+      best: s.best,
+      current: s.current,
+      scanning: s.scanning,
+      activeEdge: s.activeEdge,
+      updatedNode: s.updatedNode,
+      showTree: s.showTree,
+      scanOps: s.scanOps,
+      edgeOps: s.edgeOps,
+      sampleStopped: s.sampleStopped,
+      codeFocusKeys: [...s.codeFocusKeys],
+      codeStatusText: s.codeStatusText,
+    };
+  }
+
+  function restorePart4Complexity(snapshot) {
+    if (!snapshot) return;
+    part4ComplexityState = {
+      dist: { ...snapshot.dist },
+      prev: { ...snapshot.prev },
+      visited: { ...snapshot.visited },
+      phase: snapshot.phase,
+      round: snapshot.round,
+      best: snapshot.best,
+      current: snapshot.current,
+      scanning: snapshot.scanning,
+      activeEdge: snapshot.activeEdge,
+      updatedNode: snapshot.updatedNode,
+      showTree: snapshot.showTree,
+      scanOps: snapshot.scanOps,
+      edgeOps: snapshot.edgeOps,
+      sampleStopped: snapshot.sampleStopped,
+      codeFocusKeys: [...snapshot.codeFocusKeys],
+      codeStatusText: snapshot.codeStatusText,
+    };
+    renderPart4Complexity();
+    preparePart4ComplexityAdvance();
+  }
+
+  function pushPart4ComplexityHistory() {
+    const snapshot = snapshotPart4Complexity();
+    if (!snapshot) return;
+    part4ComplexityHistory.push(snapshot);
+    if (part4ComplexityHistory.length > 80) part4ComplexityHistory.shift();
+  }
+
+  function restorePreviousPart4ComplexityStep() {
+    if (activeTimeline || getActivePart().id !== "part4" || currentScene !== 0) return;
+    const snapshot = part4ComplexityHistory.pop();
+    if (!snapshot) return;
+    restorePart4Complexity(snapshot);
+  }
+
+  function restartPart4ComplexityScene() {
+    if (getActivePart().id !== "part4" || currentScene !== 0) return;
+    clearPart4AutoAdvanceTimer();
+    if (activeTimeline) {
+      activeTimeline.kill();
+      activeTimeline = null;
+    }
+    part4ComplexityHistory = [];
+    resetPart4ComplexityState();
+    renderPart4Complexity();
+    preparePart4ComplexityAdvance();
+    schedulePart4ComplexityAutoAdvance(420);
+    updatePauseButton();
+  }
+
+  function clearPart4AutoAdvanceTimer() {
+    if (!part4AutoAdvanceTimer) return;
+    window.clearTimeout(part4AutoAdvanceTimer);
+    part4AutoAdvanceTimer = null;
+  }
+
+  function shouldAutoAdvancePart4Complexity() {
+    return getActivePart().id === "part4" && currentScene === 0 && part4ComplexityState && part4ComplexityState.phase !== "finished";
+  }
+
+  function schedulePart4ComplexityAutoAdvance(delay = 560) {
+    clearPart4AutoAdvanceTimer();
+    if (!shouldAutoAdvancePart4Complexity()) return;
+    part4AutoAdvanceTimer = window.setTimeout(() => {
+      part4AutoAdvanceTimer = null;
+      if (!shouldAutoAdvancePart4Complexity()) return;
+      if (activeTimeline || visualAdvanceBlocked) {
+        schedulePart4ComplexityAutoAdvance(260);
+        return;
+      }
+      if (pendingVisualAdvance) advancePendingVisual();
+    }, prefersReducedMotion ? Math.min(delay, 180) : delay);
+  }
+
+  function setPart4CodeFocus(keys, text) {
+    const s = part4ComplexityState;
+    if (!s) return;
+    s.codeFocusKeys = Array.isArray(keys) ? keys : [keys];
+    s.codeStatusText = text;
+  }
+
+  function getPart4NodeState(node) {
+    const s = part4ComplexityState;
+    if (!s) return "unknown";
+    if (s.visited[node]) return "visited";
+    if (node === s.current && s.phase === "edges") return "current";
+    if (node === s.scanning) return "scan";
+    if (node === s.best) return "best";
+    if (s.dist[node] < Infinity) return "frontier";
+    return "unknown";
+  }
+
+  function getPart4TreeEdges() {
+    const s = part4ComplexityState;
+    const result = new Set();
+    if (!s || !s.showTree) return result;
+    part4Order.forEach((node) => {
+      if (s.prev[node]) result.add(part4EdgeKey(node, s.prev[node]));
+    });
+    return result;
+  }
+
+  function getPart4ActiveCodeKeys() {
+    const s = part4ComplexityState;
+    if (!s) return new Set();
+    if (s.phase === "scan") return new Set(["while", "min", "for1", "ifMin", "ifMinBetter", "setMin"]);
+    if (s.phase === "edges") return new Set(["closeOpen", "for2", "setKe", "newCost", "ifRelax", "setDist", "setPrev"]);
+    return new Set(["return"]);
+  }
+
+  function getPart4DoneCodeKeys() {
+    const s = part4ComplexityState;
+    const done = new Set();
+    if (!s) return done;
+    ["fn", "costArray", "visitedArray", "prevArray", "seedCost"].forEach((key) => done.add(key));
+    if (s.phase === "edges" || s.phase === "finished") {
+      ["while", "min", "for1", "ifMin", "ifMinBetter", "setMin", "closeIfMinBetter", "closeIfMinReachable", "closeFor1", "empty", "end", "closeOpen"].forEach((key) => done.add(key));
+    }
+    if (s.phase === "scan" && s.round > 1) {
+      ["for2", "setKe", "newCost", "ifRelax", "setDist", "setPrev", "closeIfRelax", "closeFor2", "closeWhile"].forEach((key) => done.add(key));
+    }
+    if (s.phase === "finished") part4CodeLines.forEach((line) => done.add(line.key));
+    return done;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+
+  function renderPart4Code() {
+    const s = part4ComplexityState;
+    if (!s || !el.part4CodeBlock) return;
+    const trace = getPart4ActiveCodeKeys();
+    const done = getPart4DoneCodeKeys();
+    const active = new Set(s.codeFocusKeys && s.codeFocusKeys.length ? s.codeFocusKeys : [...trace]);
+
+    el.part4CodeBlock.innerHTML = part4CodeLines
+      .map((line) => {
+        const classes = ["part4-code-line"];
+        if (!line.text) classes.push("is-dim");
+        if (done.has(line.key)) classes.push("is-done");
+        if (trace.has(line.key) && !active.has(line.key)) classes.push("is-trace");
+        if (active.has(line.key)) classes.push(s.phase === "edges" ? "is-active-2" : "is-active");
+        return `<span class="${classes.join(" ")}">${escapeHtml(line.text || " ")}</span>`;
+      })
+      .join("");
+
+    const focusLine = el.part4CodeBlock.querySelector(".is-active, .is-active-2");
+    if (focusLine) {
+      el.part4CodeBlock.scrollTop = Math.max(0, focusLine.offsetTop - el.part4CodeBlock.clientHeight * 0.35);
+    }
+    el.part4CodeStatus.textContent = s.codeStatusText;
+    el.part4CodePhase.textContent = s.phase === "scan" ? "FOR 1" : s.phase === "edges" ? "FOR 2" : "DONE";
+  }
+
+  function renderPart4Graph() {
+    const s = part4ComplexityState;
+    if (!s || !el.part4GraphSvg) return;
+    clearLayer(el.part4GraphSvg);
+
+    const defs = svg("defs");
+    defs.innerHTML = `
+      <filter id="part4EdgeGlow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur>
+        <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+      </filter>
+      <filter id="part4TreeGlow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur>
+        <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+      </filter>
+    `;
+    el.part4GraphSvg.appendChild(defs);
+
+    const tree = getPart4TreeEdges();
+    part4Edges.forEach(([from, to, cost]) => {
+      const a = part4Nodes[from];
+      const b = part4Nodes[to];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const length = Math.hypot(dx, dy) || 1;
+      const nx = -dy / length;
+      const ny = dx / length;
+      const d = `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
+      const key = part4EdgeKey(from, to);
+      const edgeClasses = ["part4-edge"];
+      if (s.activeEdge === key) edgeClasses.push("is-active");
+      if (tree.has(key)) edgeClasses.push("is-tree");
+
+      el.part4GraphSvg.appendChild(svg("path", { d, class: "part4-edge-shadow" }));
+      el.part4GraphSvg.appendChild(svg("path", { d, class: edgeClasses.join(" ") }));
+
+      const labelX = (a.x + b.x) / 2 + nx * 20;
+      const labelY = (a.y + b.y) / 2 + ny * 20 - 2;
+      el.part4GraphSvg.appendChild(svg("rect", { x: labelX - 18, y: labelY - 17, width: 36, height: 24, rx: 8, class: "part4-weight-bg" }));
+      const text = svg("text", { x: labelX, y: labelY, "text-anchor": "middle", class: "part4-weight" });
+      text.textContent = String(cost);
+      el.part4GraphSvg.appendChild(text);
+    });
+
+    part4Order.forEach((node) => {
+      const p = part4Nodes[node];
+      const group = svg("g", {
+        class: `part4-node is-${getPart4NodeState(node)}${s.updatedNode === node ? " is-updated" : ""}`,
+      });
+      group.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 48, class: "part4-node-halo" }));
+      group.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 31, class: "part4-node-dot" }));
+      const label = svg("text", { x: p.x, y: p.y + 7, class: "part4-node-label" });
+      label.textContent = node;
+      group.appendChild(label);
+      const dist = svg("text", { x: p.x, y: p.y + 54, class: "part4-node-dist" });
+      dist.textContent = `d=${p4Fmt(s.dist[node])}`;
+      group.appendChild(dist);
+      el.part4GraphSvg.appendChild(group);
+    });
+  }
+
+  function renderPart4Strip() {
+    const s = part4ComplexityState;
+    if (!s || !el.part4ScanStrip) return;
+    el.part4ScanStrip.innerHTML = part4Order
+      .map((node) => {
+        const classes = ["part4-scan-cell"];
+        if (node === s.scanning) classes.push("is-scan");
+        if (node === s.best) classes.push("is-best");
+        if (s.visited[node]) classes.push("is-visited");
+        return `<div class="${classes.join(" ")}"><strong>${node}</strong><span>d=${p4Fmt(s.dist[node])}</span></div>`;
+      })
+      .join("");
+  }
+
+  function renderPart4Table() {
+    const s = part4ComplexityState;
+    if (!s || !el.part4DistTable) return;
+    el.part4DistTable.innerHTML = `
+      <tr><th>Đỉnh</th><th>d[v]</th><th>open</th><th>prev</th></tr>
+      ${part4Order
+        .map((node) => {
+          const isFocus = node === s.scanning || node === s.best || node === s.current || node === s.updatedNode;
+          return `<tr class="${isFocus ? "is-focus" : ""}"><td><b>${node}</b></td><td>${p4Fmt(s.dist[node])}</td><td>${s.visited[node] ? "0" : "1"}</td><td>${s.prev[node] || "-"}</td></tr>`;
+        })
+        .join("")}
+    `;
+  }
+
+  function getPart4FinalPath(target) {
+    const s = part4ComplexityState;
+    if (!s || s.dist[target] === Infinity) return [];
+    const path = [];
+    const seen = new Set();
+    let current = target;
+    while (current && !seen.has(current)) {
+      path.push(current);
+      if (current === "A") break;
+      seen.add(current);
+      current = s.prev[current];
+    }
+    return path[path.length - 1] === "A" ? path.reverse() : [];
+  }
+
+  function renderPart4Text() {
+    const s = part4ComplexityState;
+    if (!s) return;
+    el.part4RoundCounter.textContent = s.round;
+    el.part4ScanCounter.textContent = s.scanOps;
+    el.part4EdgeCounter.textContent = s.edgeOps;
+    el.part4TreeButton.textContent = s.showTree ? "Ẩn cây" : "Hiện cây";
+    el.part4BackButton.disabled = Boolean(activeTimeline) || part4ComplexityHistory.length === 0;
+    el.part4ResetButton.disabled = Boolean(activeTimeline);
+    el.part4TreeButton.disabled = Boolean(activeTimeline);
+
+    if (s.phase === "scan") {
+      el.part4PhaseTitle.textContent = "FOR 1: quét toàn bộ đỉnh";
+      el.part4PhaseBadge.textContent = "O(V)";
+      el.part4OverlayTitle.textContent = s.scanning ? `Đang nhìn ô ${s.scanning}` : "Sẵn sàng chạy FOR 1";
+      el.part4OverlayText.textContent = s.best
+        ? `Min tạm thời là ${s.best} với d=${p4Fmt(s.dist[s.best])}, nhưng FOR 1 vẫn phải nhìn hết các ô còn lại.`
+        : "Thuật toán scan A -> F, bỏ qua đỉnh đã đóng open và chọn d[v] nhỏ nhất.";
+      el.part4Formula.textContent = "V lần x V đỉnh";
+      el.part4FormulaNote.textContent = "Mỗi vòng chọn min tốn một lượt quét qua danh sách đỉnh.";
+      el.part4Result.textContent = "Demo đang tự chạy một vài lượt để thấy pattern, không chạy hết thuật toán.";
+      setMetrics(`vòng ${s.round}`, `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
+    } else if (s.phase === "edges") {
+      el.part4PhaseTitle.textContent = `FOR 2: duyệt cạnh của ${s.current}`;
+      el.part4PhaseBadge.textContent = "+E";
+      el.part4OverlayTitle.textContent = `Đã chọn min: ${s.current}`;
+      el.part4OverlayText.textContent = `Bây giờ chỉ mở các cạnh kề của ${s.current}. Toàn bộ thuật toán cộng lại sẽ đi qua các cạnh kề này.`;
+      el.part4Formula.textContent = "O(V^2 + E)";
+      el.part4FormulaNote.textContent = "Phần chọn min là V^2, phần mở hàng xóm cộng theo số cạnh.";
+      el.part4Result.innerHTML = `Đỉnh <b>${s.current}</b> đã được đánh dấu Visited. Demo sẽ tự duyệt một lượt cạnh kề rồi qua vòng scan kế tiếp.`;
+      setMetrics(`u = ${s.current}`, `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
+    } else {
+      const path = getPart4FinalPath("F");
+      el.part4PhaseTitle.textContent = s.sampleStopped ? "Đủ mẫu để đếm bước" : "Hoàn tất đếm bước";
+      el.part4PhaseBadge.textContent = "O(V^2)";
+      el.part4OverlayTitle.textContent = "Đã thấy nguồn gốc O(V^2)";
+      el.part4OverlayText.textContent = s.sampleStopped
+        ? "Không cần chạy tới mọi đỉnh. Chỉ cần thấy mỗi vòng đều quét V ô, và các cạnh được cộng dồn theo E."
+        : "Vì E không vượt quá V^2 trong graph hữu hạn, bản quét mảng thường được rút gọn thành O(V^2).";
+      el.part4Formula.textContent = "O(V^2 + E) -> O(V^2)";
+      el.part4FormulaNote.textContent = "Với bản code vừa xây, điểm nghẽn là chọn min bằng cách quét mảng.";
+      el.part4Result.innerHTML = s.sampleStopped
+        ? `Dừng minh họa sau <b>${s.round}</b> vòng: đã đủ để suy ra phần scan là V lần x V đỉnh, còn FOR 2 tính theo số cạnh.`
+        : path.length
+          ? `Ví dụ đường tốt tới F: <b>${path.join(" -> ")}</b>, cost <b>${s.dist.F}</b>.`
+          : "Thuật toán đã kết thúc.";
+      setMetrics(s.sampleStopped ? "mẫu đủ" : "xong", `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
+    }
+  }
+
+  function renderPart4Complexity() {
+    if (!part4ComplexityState) return;
+    renderPart4Graph();
+    renderPart4Strip();
+    renderPart4Table();
+    renderPart4Text();
+    renderPart4Code();
+  }
+
+  function part4ReachableDone() {
+    const s = part4ComplexityState;
+    return !s || part4Order.every((node) => s.visited[node] || s.dist[node] === Infinity);
+  }
+
+  function part4ComplexityNextLabel() {
+    const s = part4ComplexityState;
+    if (!s || s.phase === "finished") return null;
+    return s.phase === "scan" ? "Tự chạy FOR 1" : `Tự chạy cạnh ${s.current}`;
+  }
+
+  function preparePart4ComplexityAdvance() {
+    const label = part4ComplexityNextLabel();
+    prepareVisualAdvance(label ? advancePart4Complexity : null, label);
+  }
+
+  function finishPart4InternalStep() {
+    activeTimeline = null;
+    visualAdvanceBlocked = false;
+    const s = part4ComplexityState;
+    if (s && s.phase !== "finished") {
+      preparePart4ComplexityAdvance();
+      schedulePart4ComplexityAutoAdvance(520);
+    } else {
+      pendingVisualAdvance = null;
+      pendingVisualLabel = null;
+      updateControlAvailability();
+    }
+    updatePauseButton();
+    renderPart4Complexity();
+  }
+
+  function beginPart4InternalTimeline() {
+    clearPart4AutoAdvanceTimer();
+    visualAdvanceBlocked = true;
+    pendingVisualAdvance = null;
+    pendingVisualLabel = null;
+    updateControlAvailability();
+    const tl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      onComplete: finishPart4InternalStep,
+    });
+    activeTimeline = tl;
+    paused = false;
+    updatePauseButton();
+    return tl;
+  }
+
+  function advancePart4Complexity() {
+    const s = part4ComplexityState;
+    if (!s || s.phase === "finished") return;
+    pushPart4ComplexityHistory();
+    if (s.phase === "scan") runPart4ScanLoop();
+    else runPart4EdgesLoop();
+  }
+
+  function runPart4ScanLoop() {
+    const s = part4ComplexityState;
+    const tl = beginPart4InternalTimeline();
+    s.best = null;
+    s.current = null;
+    s.activeEdge = null;
+    s.updatedNode = null;
+
+    tl.call(() => {
+      setPart4CodeFocus(["while", "min"], `Vòng ${s.round}: đặt min = null trước khi quét FOR 1.`);
+      renderPart4Complexity();
+    });
+    tl.to({}, { duration: dur(0.18) });
+    tl.call(() => {
+      setPart4CodeFocus(["for1"], "Bắt đầu FOR 1: duyệt từng ô Cost để tìm đỉnh nhỏ nhất chưa Visited.");
+      renderPart4Complexity();
+    });
+    tl.to({}, { duration: dur(0.18) });
+
+    part4Order.forEach((node) => {
+      tl.call(() => {
+        s.scanning = node;
+        s.scanOps += 1;
+        const bestText = s.best ? `${s.best} với d=${p4Fmt(s.dist[s.best])}` : "chưa có";
+        setPart4CodeFocus(["for1", "ifMin"], `dinh = ${node}: Visited=${s.visited[node] ? "true" : "false"}, Cost=${p4Fmt(s.dist[node])}; min hiện tại: ${bestText}.`);
+        renderPart4Complexity();
+      });
+      tl.to({}, { duration: dur(0.24) });
+      tl.call(() => {
+        if (!s.visited[node] && s.dist[node] < Infinity && (s.best === null || s.dist[node] < s.dist[s.best])) {
+          const oldMin = s.best ? p4Fmt(s.dist[s.best]) : "∞";
+          s.best = node;
+          setPart4CodeFocus(["ifMinBetter", "setMin"], `${node} tốt hơn min cũ ${oldMin}, nên gán min = ${node}.`);
+        } else if (s.visited[node]) {
+          setPart4CodeFocus(["ifMin"], `${node} đã Visited, FOR 1 bỏ qua.`);
+        } else if (s.dist[node] === Infinity) {
+          setPart4CodeFocus(["ifMin"], `${node} chưa tới được, nên chưa thể là min.`);
+        } else {
+          setPart4CodeFocus(["ifMinBetter"], `${node} có Cost=${p4Fmt(s.dist[node])}, không nhỏ hơn Cost[min] của ${s.best}.`);
+        }
+        renderPart4Complexity();
+      });
+      tl.to({}, { duration: dur(0.22) });
+    });
+
+    tl.call(() => {
+      s.scanning = null;
+      if (!s.best) {
+        s.phase = "finished";
+        s.showTree = true;
+        setPart4CodeFocus(["empty", "return"], "Không còn đỉnh reachable trong Cost, thuật toán break và trả kết quả.");
+        renderPart4Complexity();
+        return;
+      }
+      s.current = s.best;
+      s.visited[s.current] = true;
+      if (s.round >= part4ComplexityDemoRounds) {
+        s.phase = "finished";
+        s.sampleStopped = true;
+        s.showTree = true;
+        setPart4CodeFocus(
+          ["closeOpen", "return"],
+          "Dừng mẫu ở đây: đã thấy FOR 1 phải quét lại toàn bộ danh sách ở vòng tiếp theo.",
+        );
+        renderPart4Complexity();
+        return;
+      }
+      s.phase = "edges";
+      setPart4CodeFocus(["end", "closeOpen"], `FOR 1 kết thúc: chọn min = ${s.current}, đánh dấu Visited[${s.current}] = true.`);
+      renderPart4Complexity();
+    });
+  }
+
+  function runPart4EdgesLoop() {
+    const s = part4ComplexityState;
+    const tl = beginPart4InternalTimeline();
+    const current = s.current;
+    const neighbors = current ? part4Adjacency[current] : [];
+    s.best = null;
+    s.updatedNode = null;
+
+    tl.call(() => {
+      setPart4CodeFocus(["for2"], `Bắt đầu FOR 2: chỉ duyệt canh of map[min] với min = ${current}.`);
+      renderPart4Complexity();
+    });
+    tl.to({}, { duration: dur(0.18) });
+
+    neighbors.forEach((edge) => {
+      tl.call(() => {
+        s.activeEdge = part4EdgeKey(edge.from, edge.to);
+        s.updatedNode = null;
+        s.edgeOps += 1;
+        setPart4CodeFocus(["for2", "setKe", "newCost"], `Đang xét cạnh ${edge.from} -> ${edge.to}: ke = ${edge.to}, newCost = Cost[min] + ${edge.cost}.`);
+        renderPart4Complexity();
+      });
+      tl.to({}, { duration: dur(0.22) });
+      tl.call(() => {
+        if (s.visited[edge.to]) {
+          setPart4CodeFocus(["ifRelax"], `${edge.to} đã Visited, không relax lại.`);
+          renderPart4Complexity();
+          return;
+        }
+        const candidate = s.dist[current] + edge.cost;
+        setPart4CodeFocus(["ifRelax"], `Ứng viên tới ${edge.to}: ${p4Fmt(s.dist[current])} + ${edge.cost} = ${candidate}, so với Cost[${edge.to}] = ${p4Fmt(s.dist[edge.to])}.`);
+        renderPart4Complexity();
+      });
+      tl.to({}, { duration: dur(0.24) });
+      tl.call(() => {
+        if (!s.visited[edge.to]) {
+          const candidate = s.dist[current] + edge.cost;
+          if (candidate < s.dist[edge.to]) {
+            s.dist[edge.to] = candidate;
+            s.prev[edge.to] = current;
+            s.updatedNode = edge.to;
+            setPart4CodeFocus(["setDist", "setPrev"], `Cập nhật Cost[${edge.to}] = ${candidate} và Prev[${edge.to}] = ${current}.`);
+          } else {
+            setPart4CodeFocus(["ifRelax"], `Không cập nhật ${edge.to} vì ứng viên không rẻ hơn số đang giữ.`);
+          }
+        }
+        renderPart4Complexity();
+      });
+      tl.to({}, { duration: dur(0.22) });
+    });
+
+    tl.call(() => {
+      s.activeEdge = null;
+      s.updatedNode = null;
+      if (part4ReachableDone() || s.round >= part4ComplexityDemoRounds) {
+        s.phase = "finished";
+        s.showTree = true;
+        s.sampleStopped = !part4ReachableDone();
+        setPart4CodeFocus(
+          ["closeWhile", "return"],
+          s.sampleStopped
+            ? "Dừng mẫu ở đây: đã thấy while lặp lại FOR 1, và FOR 2 chỉ cộng theo các cạnh được mở."
+            : "Không còn đỉnh cần xử lý. Đếm lại thấy phần scan là V x V, phần cạnh là E.",
+        );
+      } else {
+        s.round += 1;
+        s.phase = "scan";
+        s.current = null;
+        setPart4CodeFocus(["while", "min"], `Quay lại while cho vòng ${s.round}: chuẩn bị tìm min tiếp.`);
+      }
+      renderPart4Complexity();
+    });
+  }
+
+  function enterPart4ComplexityScene() {
+    showPart4View(el.part4ComplexityView);
+    part4ComplexityHistory = [];
+    resetPart4ComplexityState();
+    renderPart4Complexity();
+    preparePart4ComplexityAdvance();
+    const tl = makeTimeline();
+    tl.fromTo(".part4-complexity-view > *", { y: 16, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.08), duration: dur(0.42), ease: "power3.out" });
+    tl.call(() => schedulePart4ComplexityAutoAdvance(420));
+    return tl;
+  }
+
+  function enterPart4HeapScene() {
+    showPart4View(el.part4HeapView);
+    pendingVisualAdvance = null;
+    pendingVisualLabel = null;
+    setMetrics("O(V^2)", "O(log V)", "min nhanh hơn");
+    el.part4ArrayRow.innerHTML = ["A:0", "C:2", "B:3", "E:4", "D:5", "F:6", "G:9", "K:10"]
+      .map((label) => `<span class="part4-array-chip">${label}</span>`)
+      .join("");
+    el.part4HeapStack.innerHTML = ["C:2", "B:3", "E:4", "D:5", "F:6"]
+      .map((label, index) => `<span class="part4-heap-chip ${index === 0 ? "is-top" : ""}">${label}</span>`)
+      .join("");
+    gsap.set([el.part4ArrayBar, el.part4HeapBar], { width: "0%" });
+    const tl = makeTimeline();
+    tl.fromTo(".part4-heap-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.5), ease: "power3.out" });
+    tl.fromTo(".part4-compare-card", { y: 18, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.12), duration: dur(0.46), ease: "power3.out" }, "<0.08");
+    tl.to(el.part4ArrayBar, { width: "94%", duration: dur(0.72), ease: "power3.out" }, "<0.1");
+    tl.to(el.part4HeapBar, { width: "42%", duration: dur(0.72), ease: "power3.out" }, "<0.14");
+    tl.fromTo(".part4-array-chip, .part4-heap-chip", { scale: 0.9 }, { scale: 1, stagger: dur(0.035), duration: dur(0.28), ease: "back.out(1.45)" }, "<0.15");
+    return tl;
+  }
+
+  function negPart4Fmt(value) {
+    return value === Infinity ? "∞" : String(value);
+  }
+
+  function setPart4NegativeClass(id, className) {
+    const target = document.getElementById(id);
+    if (target) target.setAttribute("class", className);
+  }
+
+  function setPart4NegativeEdge(edge, state = "") {
+    const edgeEl = document.getElementById(`part4NegEdge${edge}`);
+    const weightEl = document.getElementById(`part4NegWeight${edge}`);
+    if (!edgeEl || !weightEl) return;
+    const isNegative = edge === "CB";
+    const edgeClasses = ["part4-neg-edge"];
+    const weightClasses = ["part4-neg-weight"];
+    if (isNegative) {
+      edgeClasses.push("is-negative");
+      weightClasses.push("is-negative");
+    }
+    if (state) {
+      edgeClasses.push(`is-${state}`);
+      weightClasses.push(`is-${state}`);
+    }
+    const markerMap = {
+      active: "url(#part4NegArrowActive)",
+      good: "url(#part4NegArrowGood)",
+      failed: "url(#part4NegArrowBad)",
+      bad: "url(#part4NegArrowBad)",
+    };
+    edgeEl.setAttribute("class", edgeClasses.join(" "));
+    edgeEl.setAttribute("marker-end", markerMap[state] || (isNegative ? "url(#part4NegArrowBad)" : "url(#part4NegArrow)"));
+    weightEl.setAttribute("class", weightClasses.join(" "));
+  }
+
+  function renderPart4Negative() {
+    const state = part4NegativeStates[part4NegativeIndex];
+    if (!state || !el.part4NegativeTitle) return;
+    el.part4NegativeTitle.textContent = state.title;
+    el.part4NegativeText.textContent = state.text;
+    el.part4NegativeDijkstra.textContent = state.dijkstraB;
+    el.part4NegativeResultText.textContent = state.result;
+    el.part4NegativeCompare.textContent = state.compare;
+    el.part4NegativeCallout.textContent = state.callout;
+    el.part4NegativeResult.className = `part4-negative-result ${state.resultTone ? `is-${state.resultTone}` : ""}`.trim();
+    el.part4NegativeSteps.innerHTML = part4NegativeStepLabels
+      .map((label, index) => {
+        const cls = index < part4NegativeIndex ? "is-done" : index === part4NegativeIndex ? "is-active" : "";
+        return `<li class="${cls}">${label}</li>`;
+      })
+      .join("");
+
+    ["A", "B", "C"].forEach((node) => {
+      const nodeState = state.node[node] || "";
+      setPart4NegativeClass(`part4NegNode${node}`, `part4-neg-node ${nodeState ? `is-${nodeState}` : ""}`.trim());
+      const dist = document.getElementById(`part4NegNodeDist${node}`);
+      if (dist) dist.textContent = `d=${negPart4Fmt(state.dist[node])}`;
+    });
+    ["AB", "AC", "CB"].forEach((edge) => setPart4NegativeEdge(edge, state.edge[edge] || ""));
+
+    el.part4NegativeDistGrid.innerHTML = ["A", "B", "C"]
+      .map((node) => {
+        const nodeState = state.node[node] || "";
+        const tone = nodeState === "wrong" || nodeState === "locked" ? "is-bad" : nodeState === "frontier" || nodeState === "current" ? "is-warn" : nodeState ? "is-focus" : "";
+        return `<div class="${tone}"><span>${node}</span><strong>${negPart4Fmt(state.dist[node])}</strong><small>${state.statuses[node] || "open"}</small></div>`;
+      })
+      .join("");
+    setMetrics(`${part4NegativeIndex + 1}/${part4NegativeStates.length}`, state.dijkstraB, "1");
+  }
+
+  function advancePart4Negative() {
+    if (part4NegativeIndex >= part4NegativeStates.length - 1) return;
+    part4NegativeIndex += 1;
+    renderPart4Negative();
+    const tl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      onComplete: () => {
+        activeTimeline = null;
+        if (part4NegativeIndex < part4NegativeStates.length - 1) prepareVisualAdvance(advancePart4Negative, "Bước tiếp");
+        else updateControlAvailability();
+        updatePauseButton();
+      },
+    });
+    activeTimeline = tl;
+    visualAdvanceBlocked = true;
+    updateControlAvailability();
+    tl.fromTo(".part4-negative-story, .part4-negative-side", { y: 8 }, { y: 0, duration: dur(0.24) });
+    tl.fromTo(".part4-neg-node, .part4-neg-edge", { opacity: 0.68 }, { opacity: 1, duration: dur(0.28) }, "<");
+    tl.call(() => {
+      visualAdvanceBlocked = false;
+    });
+  }
+
+  function enterPart4NegativeScene() {
+    showPart4View(el.part4NegativeView);
+    part4NegativeIndex = 0;
+    renderPart4Negative();
+    prepareVisualAdvance(advancePart4Negative, "Bước tiếp");
+    const tl = makeTimeline();
+    tl.fromTo(".part4-negative-view > *", { y: 16, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.08), duration: dur(0.42), ease: "power3.out" });
+    return tl;
+  }
+
+  function enterPart4FinalScene() {
+    showPart4View(el.part4FinalView);
+    pendingVisualAdvance = null;
+    pendingVisualLabel = null;
+    setMetrics("Dijkstra", "không cạnh âm", "O(V^2)");
+    const tl = makeTimeline();
+    tl.fromTo(".part4-final-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.52), ease: "power3.out" });
+    tl.fromTo(".part4-final-grid > div", { y: 22, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.12), duration: dur(0.48), ease: "power3.out" }, "<0.1");
     return tl;
   }
 

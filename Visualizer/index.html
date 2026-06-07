@@ -177,6 +177,191 @@
             </div>
           </div>
 
+          <div class="part4-workspace" id="part4Workspace" aria-hidden="true">
+            <section class="part4-view part4-complexity-view" id="part4ComplexityView" aria-label="Phần 4 độ phức tạp">
+              <aside class="part4-code-card">
+                <div class="part4-card-head">
+                  <div>
+                    <p class="panel-kicker">Mã giả đang chạy</p>
+                    <h3>FOR 1 và FOR 2</h3>
+                  </div>
+                  <strong id="part4CodePhase">FOR 1</strong>
+                </div>
+                <p class="part4-status" id="part4CodeStatus">Sẵn sàng quét mảng để tìm đỉnh có cost nhỏ nhất.</p>
+                <pre class="part4-code-block" id="part4CodeBlock"></pre>
+              </aside>
+
+              <div class="part4-graph-card">
+                <div class="part4-graph-head">
+                  <div>
+                    <p class="panel-kicker">Đếm việc phải làm</p>
+                    <h3 id="part4PhaseTitle">FOR 1: quét toàn bộ đỉnh</h3>
+                  </div>
+                  <span id="part4PhaseBadge">O(V)</span>
+                </div>
+                <svg id="part4GraphSvg" class="part4-graph-svg" viewBox="0 0 820 680" role="img" aria-label="Graph minh họa vòng quét mảng và duyệt cạnh"></svg>
+                <div class="part4-overlay">
+                  <strong id="part4OverlayTitle">Sẵn sàng chạy FOR 1</strong>
+                  <span id="part4OverlayText">Mỗi lượt chọn min phải nhìn qua các ô dist đang có.</span>
+                </div>
+                <div class="part4-scan-strip" id="part4ScanStrip" aria-label="Thứ tự scan các đỉnh"></div>
+              </div>
+
+              <aside class="part4-side-card">
+                <div class="part4-formula">
+                  <span>Array scan model</span>
+                  <strong id="part4Formula">O(V^2 + E)</strong>
+                  <small id="part4FormulaNote">FOR 1 tạo phần V lần x V đỉnh, FOR 2 cộng thêm số cạnh đã duyệt.</small>
+                </div>
+                <div class="part4-counters">
+                  <div>
+                    <strong id="part4RoundCounter">1</strong>
+                    <span>vòng lặp</span>
+                  </div>
+                  <div>
+                    <strong id="part4ScanCounter">0</strong>
+                    <span>đỉnh đã scan</span>
+                  </div>
+                  <div>
+                    <strong id="part4EdgeCounter">0</strong>
+                    <span>cạnh đã xét</span>
+                  </div>
+                </div>
+                <div class="part4-mini-controls" aria-label="Điều khiển phụ phần độ phức tạp">
+                  <button class="part4-mini-button" id="part4BackButton" type="button">Lùi bước</button>
+                  <button class="part4-mini-button" id="part4ResetButton" type="button">Đặt lại</button>
+                  <button class="part4-mini-button" id="part4TreeButton" type="button">Hiện cây</button>
+                </div>
+                <table class="part4-dist-table" id="part4DistTable" aria-label="Bảng dist và open"></table>
+                <div class="part4-result" id="part4Result">Nhấn Tiếp để chạy một vòng FOR.</div>
+              </aside>
+            </section>
+
+            <section class="part4-view part4-heap-view" id="part4HeapView" aria-label="Phần 4 tối ưu chọn min">
+              <div class="part4-heap-copy">
+                <p class="panel-kicker">Tối ưu điểm nghẽn</p>
+                <h2>Không quét lại hết mọi đỉnh</h2>
+                <p>
+                  Nếu có một cấu trúc luôn để cost nhỏ nhất nổi lên đầu, bước chọn min không còn cần quét cả mảng.
+                  Ta trả thêm một ít công khi cập nhật, nhưng mỗi lần lấy min chỉ còn cỡ log V.
+                </p>
+              </div>
+              <div class="part4-compare-board">
+                <div class="part4-compare-card">
+                  <span>Quét mảng</span>
+                  <strong>O(V^2)</strong>
+                  <div class="part4-bar"><i id="part4ArrayBar"></i></div>
+                  <p>Mỗi vòng hỏi min bằng cách nhìn lại toàn bộ danh sách đỉnh.</p>
+                </div>
+                <div class="part4-compare-card is-better">
+                  <span>Priority Queue</span>
+                  <strong>O((V + E) log V)</strong>
+                  <div class="part4-bar"><i id="part4HeapBar"></i></div>
+                  <p>Min được giữ ở đầu hàng đợi, lấy ra nhanh hơn nhiều khi graph lớn.</p>
+                </div>
+              </div>
+              <div class="part4-heap-visual" aria-hidden="true">
+                <div class="part4-array-row" id="part4ArrayRow"></div>
+                <div class="part4-heap-stack" id="part4HeapStack"></div>
+              </div>
+            </section>
+
+            <section class="part4-view part4-negative-view" id="part4NegativeView" aria-label="Phần 4 cạnh âm">
+              <aside class="part4-negative-story">
+                <p class="panel-kicker">Điều kiện chạy đúng</p>
+                <h2 id="part4NegativeTitle">Khởi tạo</h2>
+                <p id="part4NegativeText">Ta muốn tìm đường ngắn nhất từ A đến B. Ban đầu chỉ A có khoảng cách 0.</p>
+                <ol class="part4-negative-steps" id="part4NegativeSteps"></ol>
+                <div class="part4-negative-result" id="part4NegativeResult">
+                  <span>Dijkstra giữ d[B]</span>
+                  <strong id="part4NegativeDijkstra">?</strong>
+                  <small id="part4NegativeResultText">Chưa có kết quả cho B.</small>
+                </div>
+              </aside>
+
+              <div class="part4-negative-graph">
+                <svg id="part4NegativeSvg" viewBox="0 0 760 430" role="img" aria-label="Ví dụ cạnh âm làm Dijkstra sai">
+                  <defs>
+                    <marker id="part4NegArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L12,6 L0,12 Z" fill="#6f7971"></path>
+                    </marker>
+                    <marker id="part4NegArrowActive" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L12,6 L0,12 Z" fill="#f4c96d"></path>
+                    </marker>
+                    <marker id="part4NegArrowGood" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L12,6 L0,12 Z" fill="#42f2a1"></path>
+                    </marker>
+                    <marker id="part4NegArrowBad" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L12,6 L0,12 Z" fill="#ff7659"></path>
+                    </marker>
+                  </defs>
+                  <path id="part4NegEdgeAB" class="part4-neg-edge" marker-end="url(#part4NegArrow)" d="M 160 205 C 265 132, 390 118, 526 146"></path>
+                  <text id="part4NegWeightAB" class="part4-neg-weight" x="338" y="118" text-anchor="middle">+2</text>
+                  <path id="part4NegEdgeAC" class="part4-neg-edge" marker-end="url(#part4NegArrow)" d="M 160 235 C 268 304, 390 350, 526 326"></path>
+                  <text id="part4NegWeightAC" class="part4-neg-weight" x="340" y="360" text-anchor="middle">+5</text>
+                  <path id="part4NegEdgeCB" class="part4-neg-edge is-negative" marker-end="url(#part4NegArrowBad)" d="M 592 298 C 640 260, 640 214, 592 182"></path>
+                  <text id="part4NegWeightCB" class="part4-neg-weight is-negative" x="646" y="224" text-anchor="middle">-4</text>
+
+                  <g id="part4NegNodeA" class="part4-neg-node is-source" transform="translate(120 220)">
+                    <circle r="34"></circle>
+                    <text class="part4-neg-name" y="8">A</text>
+                    <text class="part4-neg-dist" id="part4NegNodeDistA" y="58">d=0</text>
+                  </g>
+                  <g id="part4NegNodeB" class="part4-neg-node" transform="translate(560 150)">
+                    <circle r="34"></circle>
+                    <text class="part4-neg-name" y="8">B</text>
+                    <text class="part4-neg-dist" id="part4NegNodeDistB" y="58">d=∞</text>
+                  </g>
+                  <g id="part4NegNodeC" class="part4-neg-node" transform="translate(560 330)">
+                    <circle r="34"></circle>
+                    <text class="part4-neg-name" y="8">C</text>
+                    <text class="part4-neg-dist" id="part4NegNodeDistC" y="58">d=∞</text>
+                  </g>
+                </svg>
+                <div class="part4-negative-callout" id="part4NegativeCallout">
+                  Luật Dijkstra: khi một đỉnh đã được chọn là nhỏ nhất, thuật toán sẽ không mở lại nó nữa.
+                </div>
+              </div>
+
+              <aside class="part4-negative-side">
+                <div class="part4-neg-dist-grid" id="part4NegativeDistGrid"></div>
+                <div class="part4-negative-compare">
+                  <span>Đường đúng</span>
+                  <strong>A -> C -> B = 1</strong>
+                  <p id="part4NegativeCompare">Cạnh âm chưa làm hỏng gì ở bước đầu. Nó chỉ trở thành vấn đề khi xuất hiện sau lúc B đã bị chốt.</p>
+                </div>
+              </aside>
+            </section>
+
+            <section class="part4-view part4-final-view" id="part4FinalView" aria-label="Kết phần 4">
+              <div class="part4-final-copy">
+                <p class="panel-kicker">Kết luận</p>
+                <h2>Ta vừa tự xây được Dijkstra</h2>
+                <p>
+                  Không bắt đầu bằng tên thuật toán. Ta bắt đầu từ câu hỏi tìm đường, tự rút ra luật chọn đỉnh nhỏ nhất,
+                  rồi mới thấy giới hạn, cách tối ưu và điều kiện không có cạnh âm.
+                </p>
+              </div>
+              <div class="part4-final-grid">
+                <div>
+                  <span>Bản vừa xây</span>
+                  <strong>O(V^2)</strong>
+                  <p>Chọn min bằng cách quét mảng.</p>
+                </div>
+                <div>
+                  <span>Bản tối ưu</span>
+                  <strong>O((V + E) log V)</strong>
+                  <p>Dùng hàng đợi ưu tiên để lấy min nhanh hơn.</p>
+                </div>
+                <div>
+                  <span>Điều kiện</span>
+                  <strong>Không có cạnh âm</strong>
+                  <p>Vì thuật toán dựa vào lời hứa đã chốt là chắc.</p>
+                </div>
+              </div>
+            </section>
+          </div>
+
         </section>
 
         <aside class="guide-panel" aria-label="Nội dung dành cho khán giả">
