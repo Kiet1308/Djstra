@@ -3393,13 +3393,13 @@
       transform: `translate(${point.x + dx} ${point.y + dy})`,
     });
 
-    board.appendChild(svg("rect", { x: -148, y: -106, width: 296, height: 220, rx: 16, class: "part3-guard-shell" }));
+    board.appendChild(svg("rect", { x: -160, y: -106, width: 370, height: 220, rx: 16, class: "part3-guard-shell" }));
 
-    const title = svg("text", { x: -118, y: -76, class: "part3-guard-title" });
+    const title = svg("text", { x: -130, y: -76, class: "part3-guard-title" });
     title.textContent = `Cost[${node}]`;
     board.appendChild(title);
 
-    const note = svg("text", { x: -118, y: -54, class: "part3-guard-note" });
+    const note = svg("text", { x: -130, y: -54, class: "part3-guard-note" });
     note.textContent = "giữ số tốt nhất đang biết";
     board.appendChild(note);
 
@@ -3417,7 +3417,7 @@
     currentSlot.appendChild(currentText);
     board.appendChild(currentSlot);
 
-    const badSlot = svg("g", { class: "part3-guard-slot guard-slot-bad", transform: "translate(52 14)" });
+    const badSlot = svg("g", { class: "part3-guard-slot guard-slot-bad", transform: "translate(146 14)" });
     badSlot.appendChild(svg("rect", { x: -44, y: -32, width: 88, height: 64, rx: 14, class: "part3-guard-slot-bg is-bad" }));
     const badText = svg("text", { x: 0, y: 2, class: "part3-guard-value" });
     badText.textContent = "7";
@@ -3909,6 +3909,14 @@
       return stepTl;
     }
 
+    function setGuardCurrentSlot(value, overwritten = false) {
+      const slot = document.querySelector(".guard-slot-current");
+      if (!slot) return;
+      slot.classList.toggle("is-overwritten", overwritten);
+      const valueLabel = slot.querySelector(".part3-guard-value");
+      if (valueLabel) valueLabel.textContent = value;
+    }
+
     function queueNextGuardStep() {
       prepareVisualAdvance(manualIndex < guardSteps.length ? runNextGuardStep : null);
     }
@@ -3964,7 +3972,7 @@
         stepTl.to(".route-best", { opacity: 0.18, duration: dur(0.28), ease: "power2.inOut" }, 0);
         stepTl.to(".guard-slot-current", { opacity: 0, scale: 0.72, duration: dur(0.3), ease: "power2.in" }, 0.04);
         stepTl.fromTo(".guard-lost", { opacity: 0 }, { opacity: 1, duration: dur(0.26), ease: "power2.out" }, 0.3);
-        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(52 14)" }, duration: dur(0.66), ease: "power2.inOut" }, 0.42);
+        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(146 14)" }, duration: dur(0.66), ease: "power2.inOut" }, 0.42);
         stepTl.to(".guard-candidate-seven", { opacity: 0, scale: 1.08, duration: dur(0.18), ease: "power2.out" }, 1.02);
         stepTl.fromTo(".guard-slot-bad", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.35)" }, 1.08);
         stepTl.call(() => {
@@ -3978,6 +3986,7 @@
         const stepTl = startGuardStep();
         setGuardCopy("Vậy trước khi ghi, ta phải hỏi: ô chưa mở, hoặc số mới có rẻ hơn số đang giữ không? Ở đây 7 không nhỏ hơn 6, nên 7 bị chặn và Cost[F] vẫn là 6.", ["so sánh", "7 < 6 ?", "giữ 6"]);
         stepTl.call(() => {
+          setGuardCurrentSlot("6", false);
           setNodeStates(testingFromDState, { focus: ["D", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
           showMemoryPanel({ cost: { F: 6 }, visited: ["D"], focus: ["F"], amber: ["D"] });
           showBestRoute(bestToF);
