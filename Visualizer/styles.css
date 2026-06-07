@@ -883,6 +883,15 @@ button {
   stroke: rgba(66, 242, 161, 0.92);
 }
 
+.guard-slot-current.is-overwritten .part3-guard-slot-bg.is-current {
+  fill: rgba(255, 118, 89, 0.22);
+  stroke: rgba(255, 118, 89, 0.96);
+}
+
+.guard-slot-current.is-overwritten .part3-guard-value {
+  fill: rgba(255, 230, 224, 0.98);
+}
+
 .part3-guard-slot-bg.is-bad,
 .part3-guard-chip-bg.is-bad {
   fill: rgba(255, 118, 89, 0.2);
@@ -1023,6 +1032,237 @@ button {
   font-weight: 950;
   text-anchor: middle;
   dominant-baseline: middle;
+}
+
+.part3-prev-panel-shell {
+  fill: rgba(6, 11, 9, 0.92);
+  stroke: rgba(244, 241, 232, 0.2);
+  stroke-width: 1.35;
+  filter: drop-shadow(0 22px 42px rgba(0, 0, 0, 0.34));
+}
+
+.part3-prev-path-label,
+.part3-prev-board-title,
+.part3-prev-board-label {
+  fill: rgba(244, 241, 232, 0.9);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-weight: 930;
+  text-anchor: start;
+  dominant-baseline: middle;
+}
+
+.part3-prev-path-label {
+  font-size: 17px;
+}
+
+.part3-prev-board-title {
+  font-size: 17px;
+}
+
+.part3-prev-board-label {
+  fill: rgba(244, 241, 232, 0.7);
+  font-size: 13px;
+}
+
+.part3-prev-path-chip-bg {
+  fill: rgba(244, 241, 232, 0.06);
+  stroke: rgba(244, 241, 232, 0.22);
+  stroke-width: 1.2;
+}
+
+.part3-prev-path-chip.is-shared .part3-prev-path-chip-bg {
+  fill: rgba(244, 201, 109, 0.13);
+  stroke: rgba(244, 201, 109, 0.55);
+}
+
+.part3-prev-path-chip-text,
+.part3-prev-board-slot-text,
+.part3-prev-board-lock-text {
+  fill: rgba(244, 241, 232, 0.96);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 14px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-prev-path-dash {
+  stroke: rgba(244, 241, 232, 0.32);
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.part3-prev-path-chip-text {
+  font-size: 15px;
+}
+
+.part3-prev-duplicate-bg {
+  fill: rgba(244, 201, 109, 0.055);
+  stroke: rgba(244, 201, 109, 0.42);
+  stroke-dasharray: 9 7;
+  stroke-width: 1.3;
+}
+
+.part3-prev-duplicate-text {
+  fill: rgba(255, 238, 194, 0.86);
+  font-size: 13px;
+  font-weight: 850;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-prev-board-slot-bg {
+  stroke-width: 1.45;
+  filter: url(#tightGlow);
+}
+
+.part3-prev-board-slot-bg.is-empty {
+  fill: rgba(244, 241, 232, 0.045);
+  stroke: rgba(244, 241, 232, 0.28);
+  stroke-dasharray: 7 6;
+}
+
+.part3-prev-board-slot-bg.is-cost {
+  fill: rgba(66, 242, 161, 0.18);
+  stroke: rgba(66, 242, 161, 0.85);
+}
+
+.part3-prev-board-slot-bg.is-prev {
+  fill: rgba(244, 201, 109, 0.16);
+  stroke: rgba(244, 201, 109, 0.85);
+}
+
+.part3-prev-board-slot-text.is-muted {
+  fill: rgba(244, 241, 232, 0.48);
+}
+
+.part3-prev-board-lock-bg {
+  fill: rgba(255, 118, 89, 0.13);
+  stroke: rgba(255, 118, 89, 0.6);
+  stroke-width: 1.2;
+}
+
+.part3-prev-board-lock-text {
+  fill: rgba(255, 230, 224, 0.94);
+  font-size: 12px;
+}
+
+.part3-prev-reject-chip-bg {
+  fill: rgba(255, 118, 89, 0.18);
+  stroke: rgba(255, 118, 89, 0.88);
+  stroke-width: 1.35;
+  filter: url(#tightGlow);
+}
+
+.part3-prev-reject-chip-text {
+  fill: rgba(255, 230, 224, 0.98);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 15px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-prev-reject-tag {
+  fill: rgba(255, 204, 194, 0.9);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 10px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-prev-reject-gate-line,
+.part3-prev-reject-gate-x {
+  fill: none;
+  stroke: rgba(255, 118, 89, 0.95);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3.2;
+  filter: url(#tightGlow);
+}
+
+.part3-prev-backtrack-strip-shell {
+  fill: rgba(6, 11, 9, 0.9);
+  stroke: rgba(66, 242, 161, 0.24);
+  stroke-width: 1.25;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.32));
+}
+
+.part3-prev-chain-chip-bg {
+  fill: rgba(66, 242, 161, 0.13);
+  stroke: rgba(66, 242, 161, 0.72);
+  stroke-width: 1.25;
+}
+
+.part3-prev-chain-chip.is-final .part3-prev-chain-chip-bg {
+  fill: rgba(244, 201, 109, 0.16);
+  stroke: rgba(244, 201, 109, 0.78);
+}
+
+.part3-prev-chain-chip-text,
+.part3-prev-chain-link {
+  fill: rgba(244, 241, 232, 0.95);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-prev-chain-chip-text {
+  font-size: 15px;
+}
+
+.part3-prev-chain-link {
+  fill: rgba(244, 241, 232, 0.58);
+  font-size: 16px;
+}
+
+.prev-parent .part3-parent-label-text {
+  font-size: 15px;
+}
+
+.part3-update-bundle {
+  pointer-events: none;
+  filter: url(#tightGlow);
+}
+
+.part3-update-bundle-cost-bg,
+.part3-update-bundle-parent-bg {
+  stroke-width: 1.25;
+}
+
+.part3-update-bundle.is-focus .part3-update-bundle-cost-bg {
+  fill: rgba(66, 242, 161, 0.18);
+  stroke: rgba(66, 242, 161, 0.88);
+}
+
+.part3-update-bundle.is-focus .part3-update-bundle-parent-bg {
+  fill: rgba(244, 201, 109, 0.16);
+  stroke: rgba(244, 201, 109, 0.74);
+}
+
+.part3-update-bundle.is-warn .part3-update-bundle-cost-bg,
+.part3-update-bundle.is-warn .part3-update-bundle-parent-bg {
+  fill: rgba(255, 118, 89, 0.18);
+  stroke: rgba(255, 118, 89, 0.82);
+}
+
+.part3-update-bundle-cost-text,
+.part3-update-bundle-parent-text {
+  fill: rgba(244, 241, 232, 0.98);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-update-bundle-cost-text {
+  font-size: 15px;
+}
+
+.part3-update-bundle-parent-text {
+  font-size: 12px;
 }
 
 .part3-backtrack-cursor-ring {

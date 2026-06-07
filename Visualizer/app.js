@@ -453,12 +453,12 @@
       tab: "Prev",
       kicker: "Lưu đường đi",
       title: "Nhớ điểm trước",
-      body: "Tua lại khoảnh khắc E mở F: Cost cho biết F tốn 6, nhưng nếu chỉ giữ con số đó thì không biết vừa đi qua đâu. Vì vậy mỗi lần Cost được nhận, ta lưu thêm mũi tên Prev.",
-      audienceTitle: "Không cần lưu cả đường",
+      body: "Cost cho biết đường ngắn nhất tốn bao nhiêu, nhưng chưa nói đi qua đâu. Để dựng lại đường, mỗi đỉnh chỉ cần nhớ cửa vào tốt nhất ngay trước nó.",
+      audienceTitle: "Lưu cửa vào",
       audienceBullets: [
-        "Prev[K] = F nghĩa là đường tốt nhất hiện biết tới K đi qua F ngay trước đó.",
-        "Khi cost của một đỉnh được cập nhật, Prev của nó cũng cập nhật theo.",
-        "Cuối cùng chỉ cần lần ngược Prev từ K về A là ra đường đi.",
+        "Lưu nguyên Path thì lặp lại nhiều đoạn.",
+        "Prev[F] = E nghĩa là muốn tới F theo đường tốt nhất thì đi từ E sang.",
+        "Mỗi lần Cost được nhận, Prev phải được nhận cùng lúc.",
       ],
       metricLabels: ["Đường đi", "Prev", "Lần ngược"],
       enter: enterPart3PrevScene,
@@ -3471,6 +3471,188 @@
     return group;
   }
 
+  function drawPart3PrevPathPanel({ className = "", x = 612, y = 514 } = {}) {
+    const group = drawPart3GraphGroup(`part3-prev-path-panel-visual ${className}`);
+    const panel = svg("g", { class: "part3-prev-path-panel", transform: `translate(${x} ${y})` });
+    panel.appendChild(svg("rect", { x: -292, y: -82, width: 584, height: 164, rx: 16, class: "part3-prev-panel-shell" }));
+
+    const rows = [
+      { label: "Path[F]", route: ["A", "C", "B", "E", "F"], y: -36 },
+      { label: "Path[K]", route: ["A", "C", "B", "E", "F", "K"], y: 36 },
+    ];
+
+    rows.forEach((row) => {
+      const label = svg("text", { x: -254, y: row.y + 1, class: "part3-prev-path-label" });
+      label.textContent = row.label;
+      panel.appendChild(label);
+      row.route.forEach((node, index) => {
+        const chipX = -146 + index * 58;
+        const chip = svg("g", {
+          class: `part3-prev-path-chip${index < 5 ? " is-shared" : ""}`,
+          transform: `translate(${chipX} ${row.y})`,
+        });
+        chip.appendChild(svg("rect", { x: -20, y: -20, width: 40, height: 40, rx: 10, class: "part3-prev-path-chip-bg" }));
+        const text = svg("text", { x: 0, y: 1, class: "part3-prev-path-chip-text" });
+        text.textContent = node;
+        chip.appendChild(text);
+        panel.appendChild(chip);
+        if (index < row.route.length - 1) {
+          const dash = svg("path", { d: `M ${chipX + 24} ${row.y} L ${chipX + 34} ${row.y}`, class: "part3-prev-path-dash" });
+          panel.appendChild(dash);
+        }
+      });
+    });
+
+    const duplicate = svg("g", { class: "part3-prev-duplicate-mark", transform: "translate(1 -1)" });
+    duplicate.appendChild(svg("rect", { x: -176, y: -64, width: 292, height: 128, rx: 13, class: "part3-prev-duplicate-bg" }));
+    const duplicateText = svg("text", { x: -30, y: 75, class: "part3-prev-duplicate-text" });
+    duplicateText.textContent = "đoạn đầu bị lưu lặp lại";
+    duplicate.appendChild(duplicateText);
+    panel.appendChild(duplicate);
+
+    group.appendChild(panel);
+    return group;
+  }
+
+  function drawPart3PrevUpdateBoard(node, { className = "", dx = 142, dy = -76 } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-prev-update-board-visual ${className}`);
+    const board = svg("g", {
+      class: "part3-prev-update-board",
+      transform: `translate(${point.x + dx} ${point.y + dy})`,
+    });
+
+    board.appendChild(svg("rect", { x: -154, y: -92, width: 328, height: 192, rx: 16, class: "part3-prev-panel-shell" }));
+    const title = svg("text", { x: -126, y: -62, class: "part3-prev-board-title prev-board-title-accept" });
+    title.textContent = `Khi nhận Cost[${node}]`;
+    board.appendChild(title);
+    const rejectTitle = svg("text", { x: -126, y: -62, class: "part3-prev-board-title prev-board-title-reject" });
+    rejectTitle.textContent = `${node} đang giữ tốt nhất`;
+    board.appendChild(rejectTitle);
+
+    const rows = [
+      { label: `Cost[${node}]`, empty: "trống", value: "6", y: -18, slot: "cost" },
+      { label: `Prev[${node}]`, empty: "-", value: "E", y: 48, slot: "prev" },
+    ];
+
+    rows.forEach((row) => {
+      const label = svg("text", { x: -120, y: row.y + 1, class: "part3-prev-board-label" });
+      label.textContent = row.label;
+      board.appendChild(label);
+
+      const empty = svg("g", { class: `part3-prev-board-slot prev-${row.slot}-empty`, transform: `translate(78 ${row.y})` });
+      empty.appendChild(svg("rect", { x: -46, y: -22, width: 92, height: 44, rx: 12, class: "part3-prev-board-slot-bg is-empty" }));
+      const emptyText = svg("text", { x: 0, y: 1, class: "part3-prev-board-slot-text is-muted" });
+      emptyText.textContent = row.empty;
+      empty.appendChild(emptyText);
+      board.appendChild(empty);
+
+      const current = svg("g", { class: `part3-prev-board-slot prev-${row.slot}-current`, transform: `translate(78 ${row.y})` });
+      current.appendChild(svg("rect", { x: -46, y: -22, width: 92, height: 44, rx: 12, class: `part3-prev-board-slot-bg is-${row.slot}` }));
+      const currentText = svg("text", { x: 0, y: 1, class: "part3-prev-board-slot-text" });
+      currentText.textContent = row.value;
+      current.appendChild(currentText);
+      board.appendChild(current);
+    });
+
+    const lock = svg("g", { class: "part3-prev-board-lock prev-board-lock", transform: "translate(78 84)" });
+    lock.appendChild(svg("rect", { x: -74, y: -14, width: 148, height: 28, rx: 9, class: "part3-prev-board-lock-bg" }));
+    const lockText = svg("text", { x: 0, y: 1, class: "part3-prev-board-lock-text" });
+    lockText.textContent = "không ghi 7/D";
+    lock.appendChild(lockText);
+    board.appendChild(lock);
+
+    const rejectCandidates = [
+      { value: "7", y: -18, className: "prev-cost-reject-chip" },
+      { value: "D", y: 48, className: "prev-prev-reject-chip" },
+    ];
+    rejectCandidates.forEach((candidate) => {
+      const chip = svg("g", { class: `part3-prev-reject-chip ${candidate.className}`, transform: `translate(-10 ${candidate.y})` });
+      chip.appendChild(svg("rect", { x: -28, y: -20, width: 56, height: 40, rx: 10, class: "part3-prev-reject-chip-bg" }));
+      const chipText = svg("text", { x: 0, y: 1, class: "part3-prev-reject-chip-text" });
+      chipText.textContent = candidate.value;
+      chip.appendChild(chipText);
+      board.appendChild(chip);
+    });
+
+    const rejectGate = svg("g", { class: "part3-prev-reject-gate prev-cost-reject-gate", transform: "translate(28 15)" });
+    rejectGate.appendChild(svg("line", { x1: 0, y1: -54, x2: 0, y2: 54, class: "part3-prev-reject-gate-line" }));
+    rejectGate.appendChild(svg("path", { d: "M -11 -11 L 11 11 M 11 -11 L -11 11", class: "part3-prev-reject-gate-x" }));
+    board.appendChild(rejectGate);
+
+    group.appendChild(board);
+    return group;
+  }
+
+  function drawPart3UpdateBundle({ from, to, cost, parent, tone = "focus", className = "", offset = 0, startT = 0.16, endT = 0.84 }) {
+    const startPoint = pointBetween(nodes[from], nodes[to], startT);
+    const endPoint = pointBetween(nodes[from], nodes[to], endT);
+    const normal = lineNormal(nodes[from], nodes[to]);
+    const start = { x: startPoint.x + normal.x * offset, y: startPoint.y + normal.y * offset };
+    const end = { x: endPoint.x + normal.x * offset, y: endPoint.y + normal.y * offset };
+    const group = svg("g", {
+      class: `part3-update-bundle is-${tone} ${className}`,
+      transform: `translate(${start.x} ${start.y})`,
+      "data-end-x": String(end.x),
+      "data-end-y": String(end.y),
+    });
+
+    group.appendChild(svg("rect", { x: -54, y: -19, width: 44, height: 38, rx: 10, class: "part3-update-bundle-cost-bg" }));
+    const costText = svg("text", { x: -32, y: 1, class: "part3-update-bundle-cost-text" });
+    costText.textContent = String(cost);
+    group.appendChild(costText);
+    group.appendChild(svg("rect", { x: -3, y: -15, width: 72, height: 30, rx: 9, class: "part3-update-bundle-parent-bg" }));
+    const parentText = svg("text", { x: 33, y: 1, class: "part3-update-bundle-parent-text" });
+    parentText.textContent = `từ ${parent}`;
+    group.appendChild(parentText);
+    el.activeRouteLayer.appendChild(group);
+    return group;
+  }
+
+  function drawPart3PrevBacktrackStrip({ className = "", x = 640, y = 570 } = {}) {
+    const group = drawPart3GraphGroup(`part3-prev-backtrack-strip-visual ${className}`);
+    const strip = svg("g", { class: "part3-prev-backtrack-strip", transform: `translate(${x} ${y})` });
+    strip.appendChild(svg("rect", { x: -262, y: -38, width: 524, height: 76, rx: 15, class: "part3-prev-backtrack-strip-shell" }));
+
+    const drawChip = (parent, node, chipX, chipClass = "") => {
+      const chip = svg("g", { class: `part3-prev-chain-chip ${chipClass}`, transform: `translate(${chipX} 0)` });
+      chip.appendChild(svg("rect", { x: -19, y: -19, width: 38, height: 38, rx: 10, class: "part3-prev-chain-chip-bg" }));
+      const text = svg("text", { x: 0, y: 1, class: "part3-prev-chain-chip-text" });
+      text.textContent = node;
+      chip.appendChild(text);
+      parent.appendChild(chip);
+      return chip;
+    };
+
+    const drawLink = (parent, label, linkX, linkClass = "") => {
+      const link = svg("text", { x: linkX, y: 1, class: `part3-prev-chain-link ${linkClass}` });
+      link.textContent = label;
+      parent.appendChild(link);
+      return link;
+    };
+
+    const back = svg("g", { class: "part3-prev-chain-back" });
+    const backNodes = ["K", "F", "E", "B", "C", "A"];
+    backNodes.forEach((node, index) => {
+      const chipX = -205 + index * 82;
+      if (index > 0) drawLink(back, "<-", chipX - 41, `prev-chain-link-${node}`);
+      drawChip(back, node, chipX, `prev-chain-node-${node}`);
+    });
+    strip.appendChild(back);
+
+    const final = svg("g", { class: "part3-prev-chain-final" });
+    const finalNodes = ["A", "C", "B", "E", "F", "K"];
+    finalNodes.forEach((node, index) => {
+      const chipX = -205 + index * 82;
+      if (index > 0) drawLink(final, "->", chipX - 41);
+      drawChip(final, node, chipX, "is-final");
+    });
+    strip.appendChild(final);
+
+    group.appendChild(strip);
+    return group;
+  }
+
   function drawPart3EdgeTrace(route, { tone = "focus", className = "", offset = 0 } = {}) {
     const group = drawPart3GraphGroup(`part3-edge-trace-visual ${className}`);
     const path = svg("path", { d: routePath(route, offset), class: `part3-edge-trace-path is-${tone}` });
@@ -4060,6 +4242,7 @@
       G: ["unknown", null, "-"],
       K: ["unknown", null, "-"],
     });
+    const finalWithKState = part3EndReadyState;
     const finalEdges = [
       ["A", "C"],
       ["C", "B"],
@@ -4067,91 +4250,216 @@
       ["E", "F"],
       ["F", "K"],
     ];
+    const visibleBeforeF = [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE, part2Edges.fromD];
+    const lockedToE = [
+      ["A", "C"],
+      ["C", "B"],
+      ["B", "E"],
+    ];
+    let manualIndex = 0;
 
-    setCameraView(part2Cameras.middle);
-    setEdgeStates({ visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, [["E", "F"]]], locked: [[["A", "C"], ["C", "B"], ["B", "E"]]], focus: [[["E", "F"]]] });
-    setNodeStates(afterFOnlyState, { focus: ["F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
-    showMemoryPanel({
-      cost: { A: 0, C: 2, B: 3, E: 4, F: 6 },
-      visited: ["A", "C", "B", "E"],
-      focus: ["F"],
-    });
-    drawPart3EdgeTrace(["A", "C", "B", "E", "F"], { tone: "focus", className: "is-deferred prev-route-flash", offset: -10 });
-    drawPart3ParentArrow("F", "E", { className: "is-deferred prev-new-parent", text: "F<-E" });
-    drawPart3ParentArrow("K", "F", { className: "is-deferred prev-chain-parent" });
-    drawPart3ParentArrow("E", "B", { className: "is-deferred prev-chain-parent" });
-    drawPart3ParentArrow("B", "C", { className: "is-deferred prev-chain-parent" });
-    drawPart3ParentArrow("C", "A", { className: "is-deferred prev-chain-parent" });
-    drawPart3NodeMarker("F", { tone: "warn", symbol: "question", className: "is-deferred prev-question-marker" });
+    function setPrevCopy(body, metrics) {
+      el.sceneBody.textContent = body;
+      setMetrics(metrics[0], metrics[1], metrics[2]);
+    }
+
+    function startPrevStep() {
+      const stepTl = makeTimeline();
+      activeTimeline = stepTl;
+      updatePauseButton();
+      return stepTl;
+    }
+
+    function queueNextPrevStep() {
+      prepareVisualAdvance(manualIndex < prevSteps.length ? runNextPrevStep : null);
+    }
+
+    function runNextPrevStep() {
+      const step = prevSteps[manualIndex];
+      manualIndex += 1;
+      visualAdvanceBlocked = true;
+      updateControlAvailability();
+      const stepTl = step();
+      if (stepTl && typeof stepTl.call === "function") {
+        stepTl.call(queueNextPrevStep, null, ">");
+      } else {
+        queueNextPrevStep();
+      }
+    }
+
+    const prevSteps = [
+      () => {
+        const stepTl = startPrevStep();
+        setPrevCopy("Giả sử cuối cùng ta biết Cost[K] = 10. Con số này trả lời tốn bao nhiêu, nhưng nếu đứng ở K thì ta chưa biết phải quay về đỉnh nào để dựng lại đường.", ["Cost[K]", "10", "chưa biết đường"]);
+        stepTl.fromTo(".prev-question-marker", { opacity: 0, scale: 0.72, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.5)" }, 0.06);
+        stepTl.fromTo(".prev-backtrack-cursor-shell", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.35)" }, 0.22);
+        stepTl.fromTo(".part3-backtrack-cursor", { scale: 0.9 }, { scale: 1.12, yoyo: true, repeat: 3, duration: dur(0.18), ease: "power2.inOut" }, 0.62);
+        pulsePart3Nodes(stepTl, ["K"], 0.66, { toScale: 1.12, duration: 0.3 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        setPrevCopy("Cách dễ nghĩ nhất là lưu luôn cả đường đi tới từng đỉnh. Cách này đúng, nhưng các đường sau copy lại rất nhiều đoạn đầu.", ["lưu Path", "bị lặp", "hơi thừa"]);
+        stepTl.to(".prev-question-marker", { opacity: 0, scale: 0.82, duration: dur(0.18), ease: "power2.in" }, 0);
+        stepTl.fromTo(".prev-path-panel", { opacity: 0, scale: 0.9, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.38), ease: "back.out(1.3)" }, 0.08);
+        stepTl.fromTo(".prev-route-f, .prev-route-k", { opacity: 0 }, { opacity: 0.58, stagger: dur(0.08), duration: dur(0.24), ease: "power2.out" }, 0.22);
+        stepTl.to(".prev-route-f .part3-edge-trace-path, .prev-route-k .part3-edge-trace-path", { strokeDashoffset: 0, stagger: dur(0.08), duration: dur(0.62), ease: "power2.out" }, 0.28);
+        stepTl.fromTo(".part3-prev-duplicate-mark", { opacity: 0 }, { opacity: 1, duration: dur(0.3), ease: "power2.out" }, 0.8);
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        setPrevCopy("Ta không cần lưu nguyên cả chuỗi. Mỗi đỉnh chỉ cần nhớ một cửa vào: muốn tới K thì trước đó là F, muốn tới F thì trước đó là E.", ["nén Path", "Prev[K]=F", "Prev[F]=E"]);
+        stepTl.to(".prev-path-panel", { opacity: 0.18, scale: 0.96, duration: dur(0.36), ease: "power2.inOut" }, 0);
+        stepTl.to(".prev-route-f, .prev-route-k", { opacity: 0.16, duration: dur(0.28), ease: "power2.inOut" }, 0.02);
+        stepTl.fromTo(".prev-parent-K, .prev-parent-F", { opacity: 0 }, { opacity: 1, stagger: dur(0.12), duration: dur(0.24), ease: "power2.out" }, 0.3);
+        stepTl.to(".prev-parent-K .part3-parent-arrow-path, .prev-parent-F .part3-parent-arrow-path", { strokeDashoffset: 0, stagger: dur(0.12), duration: dur(0.48), ease: "power2.out" }, 0.34);
+        stepTl.to(".prev-parent-K .part3-parent-arrow-head, .prev-parent-K .part3-parent-label, .prev-parent-F .part3-parent-arrow-head, .prev-parent-F .part3-parent-label", { opacity: 1, stagger: dur(0.06), duration: dur(0.16), ease: "power2.out" }, 0.84);
+        pulsePart3Nodes(stepTl, ["K", "F", "E"], 0.9, { toScale: 1.08, stagger: 0.08, duration: 0.24 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        hideMemoryPanel();
+        setPrevCopy("Bây giờ quay lại đúng lúc E mở F. Khi gói 6 được nhận vào Cost[F], nó phải mang theo cửa vào: gói này đến từ E.", ["E -> F", "Cost[F]=6", "Prev[F]=E"]);
+        stepTl.to(".prev-path-panel, .prev-route-f, .prev-route-k, .prev-parent-K, .prev-parent-rest, .prev-backtrack-cursor-shell", { opacity: 0, duration: dur(0.28), ease: "power2.in" }, 0);
+        stepTl.to(".prev-parent-F", { opacity: 0, duration: dur(0.18), ease: "power2.in" }, 0);
+        moveCameraOnTimeline(stepTl, part2Cameras.middle.center, part2Cameras.middle.scale, 0.06, 0.64);
+        stepTl.call(() => {
+          setEdgeStates({ visible: visibleBeforeF, focus: [[["E", "F"]]], locked: [lockedToE], context: [part3AllEdges] });
+          setNodeStates(beforeFState, { focus: ["E", "F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
+        }, null, 0.36);
+        stepTl.fromTo(".prev-update-board", { opacity: 0, scale: 0.9, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.3)" }, 0.58);
+        stepTl.fromTo(".prev-good-bundle", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.24), ease: "back.out(1.35)" }, 0.72);
+        animatePart3FlowChips(stepTl, ".prev-good-bundle", 0.76, 0.95);
+        stepTl.call(() => {
+          setNodeStates(afterFOnlyState, { focus: ["F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
+        }, null, 1.6);
+        stepTl.to(".prev-cost-empty, .prev-prev-empty", { opacity: 0, scale: 0.82, duration: dur(0.2), ease: "power2.in" }, 1.6);
+        stepTl.fromTo(".prev-cost-current, .prev-prev-current", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.3), ease: "back.out(1.35)" }, 1.68);
+        stepTl.fromTo(".prev-parent-F", { opacity: 0 }, { opacity: 1, duration: dur(0.22), ease: "power2.out" }, 1.78);
+        stepTl.to(".prev-parent-F .part3-parent-arrow-path", { strokeDashoffset: 0, duration: dur(0.42), ease: "power2.out" }, 1.8);
+        stepTl.to(".prev-parent-F .part3-parent-arrow-head, .prev-parent-F .part3-parent-label", { opacity: 1, duration: dur(0.14), ease: "power2.out" }, 2.16);
+        pulsePart3Nodes(stepTl, ["F"], 1.9, { toScale: 1.12, duration: 0.3 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        setEdgeStates({ visible: visibleBeforeF, focus: [[["D", "F"]]], locked: [lockedToE], context: [part3AllEdges] });
+        setNodeStates(afterFOnlyState, { focus: ["D", "F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
+        setPrevCopy("D đưa một đề xuất mới cho F. Nếu nhận đề xuất này, Cost[F] sẽ thành 7 và Prev[F] sẽ thành D. Nhưng đây mới chỉ là ứng viên, chưa được ghi.", ["ứng viên", "7 + D", "chưa ghi"]);
+        stepTl.to(".prev-good-bundle", { opacity: 0, scale: 0.82, duration: dur(0.18), ease: "power2.in" }, 0);
+        stepTl.to(".prev-parent-F", { opacity: 0.28, duration: dur(0.22), ease: "power2.out" }, 0);
+        stepTl.to(".prev-board-title-accept", { opacity: 0, duration: dur(0.16), ease: "power2.in" }, 0);
+        stepTl.fromTo(".prev-board-title-reject", { opacity: 0, y: 5 }, { opacity: 1, y: 0, duration: dur(0.24), ease: "power2.out" }, 0.08);
+        stepTl.fromTo(".prev-bad-bundle", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.24), ease: "back.out(1.35)" }, 0.12);
+        animatePart3FlowChips(stepTl, ".prev-bad-bundle", 0.18, 0.86);
+        stepTl.to(".prev-bad-bundle", { opacity: 0, scale: 0.78, duration: dur(0.18), ease: "power2.in" }, 1.18);
+        stepTl.fromTo(".prev-cost-reject-chip, .prev-prev-reject-chip", { opacity: 0, x: -34, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, x: 0, scale: 1, stagger: dur(0.08), duration: dur(0.28), ease: "back.out(1.35)" }, 0.96);
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        setPrevCopy("Bây giờ mới so sánh trước khi ghi. Vì 7 lớn hơn 6, đề xuất 7 + D bị chặn: Cost[F] vẫn là 6 và Prev[F] vẫn là E.", ["7 > 6", "chặn", "giữ 6/E"]);
+        stepTl.fromTo(".prev-cost-reject-gate", { opacity: 0, scaleY: 0.5, transformOrigin: "center center" }, { opacity: 1, scaleY: 1, duration: dur(0.22), ease: "power2.out" }, 0.12);
+        stepTl.to(".prev-cost-reject-chip, .prev-prev-reject-chip", { x: -12, yoyo: true, repeat: 1, duration: dur(0.16), ease: "power2.inOut" }, 0.22);
+        stepTl.fromTo(".prev-board-lock", { opacity: 0, scale: 0.8, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 0.34);
+        stepTl.fromTo(".prev-cost-current", { scale: 0.94, transformOrigin: "center center" }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.22), ease: "power2.inOut" }, 0.46);
+        stepTl.fromTo(".prev-prev-current", { scale: 0.94, transformOrigin: "center center" }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 0.64);
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        setPrevCopy("Khi cần dựng đường, ta đứng ở K và đọc ô Prev[K]. Ô này chỉ sang F, nên bước ngược đầu tiên là K về F.", ["đọc Prev[K]", "F", "K -> F"]);
+        stepTl.to(".prev-update-board, .prev-reject-marker, .prev-board-lock, .prev-good-bundle, .prev-bad-bundle, .prev-cost-reject-chip, .prev-prev-reject-chip, .prev-cost-reject-gate", { opacity: 0, duration: dur(0.28), ease: "power2.in" }, 0);
+        moveCameraOnTimeline(stepTl, part2Cameras.full.center, part2Cameras.full.scale, 0.06, 0.68);
+        stepTl.call(() => {
+          setEdgeStates({ context: [part3AllEdges], locked: [finalEdges], focus: [[["F", "K"]]] });
+          setNodeStates(finalWithKState, { focus: ["K", "F"], target: ["K"], showNodeCosts: true });
+        }, null, 0.36);
+        stepTl.fromTo(".prev-parent-K, .prev-parent-F, .prev-parent-rest", { opacity: 0 }, { opacity: 0.9, stagger: dur(0.04), duration: dur(0.22), ease: "power2.out" }, 0.48);
+        stepTl.to(".prev-parent-K .part3-parent-arrow-path, .prev-parent-F .part3-parent-arrow-path, .prev-parent-rest .part3-parent-arrow-path", { strokeDashoffset: 0, stagger: dur(0.04), duration: dur(0.28), ease: "power2.out" }, 0.52);
+        stepTl.to(".prev-parent-K .part3-parent-arrow-head, .prev-parent-K .part3-parent-label, .prev-parent-F .part3-parent-arrow-head, .prev-parent-F .part3-parent-label, .prev-parent-rest .part3-parent-arrow-head", { opacity: 1, stagger: dur(0.04), duration: dur(0.12), ease: "power2.out" }, 0.84);
+        stepTl.fromTo(".prev-backtrack-strip", { opacity: 0, y: 10, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.3), ease: "power2.out" }, 0.72);
+        stepTl.fromTo(".prev-chain-node-K, .prev-chain-link-F, .prev-chain-node-F", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 0.92);
+        stepTl.fromTo(".prev-backtrack-cursor-shell", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.24), ease: "back.out(1.35)" }, 0.66);
+        stepTl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.F.x} ${nodes.F.y})` }, duration: dur(0.82), ease: "power2.inOut" }, 1.12);
+        pulsePart3Nodes(stepTl, ["K", "F"], 1.18, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        setPrevCopy("Đang đứng ở F thì đọc Prev[F] = E. Ta lại đi ngược về E. Mỗi ô Prev chỉ cho đúng một bước lùi.", ["đọc Prev[F]", "E", "F -> E"]);
+        stepTl.fromTo(".prev-chain-link-E, .prev-chain-node-E", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 0.18);
+        stepTl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.E.x} ${nodes.E.y})` }, duration: dur(0.82), ease: "power2.inOut" }, 0.2);
+        pulsePart3Nodes(stepTl, ["F", "E"], 0.24, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startPrevStep();
+        setPrevCopy("Tiếp tục đọc các ô Prev còn lại: E về B, B về C, C về A. Khi đã về tới A, ta đảo chiều chuỗi vừa lần ngược là ra đường đi.", ["lần tới A", "đảo chiều", "ra đường"]);
+        const route = ["B", "C", "A"];
+        stepTl.fromTo(".prev-chain-link-B, .prev-chain-node-B", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 0.16);
+        stepTl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.B.x} ${nodes.B.y})` }, duration: dur(0.62), ease: "power2.inOut" }, 0.14);
+        stepTl.fromTo(".prev-chain-link-C, .prev-chain-node-C", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 0.88);
+        stepTl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.C.x} ${nodes.C.y})` }, duration: dur(0.62), ease: "power2.inOut" }, 0.86);
+        stepTl.fromTo(".prev-chain-link-A, .prev-chain-node-A", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 1.6);
+        stepTl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.A.x} ${nodes.A.y})` }, duration: dur(0.62), ease: "power2.inOut" }, 1.58);
+        route.forEach((node, index) => pulsePart3Nodes(stepTl, [node], 0.2 + index * 0.72, { toScale: 1.1, duration: 0.26 }));
+        stepTl.call(() => {
+          showBestRoute(part2FinalPath);
+          setMetrics("đường ra", "Cost 10", "Prev đủ");
+        }, null, 2.24);
+        stepTl.to(".part3-prev-chain-back", { opacity: 0.18, duration: dur(0.22), ease: "power2.inOut" }, 2.24);
+        stepTl.fromTo(".part3-prev-chain-final", { opacity: 0, y: 8, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.34), ease: "power2.out" }, 2.34);
+        return stepTl;
+      },
+      () => {
+        el.stageShell.classList.remove("is-visual-proof");
+        setPrevCopy("Vậy trong code, Prev không phải một bước phụ. Nó được tạo từ nhu cầu dựng lại đường, và phải nằm ngay trong nhánh vừa nhận Cost mới.", ["thêm Prev", "cùng if", "viết code"]);
+        gsap.set(".prev-backtrack-strip", { opacity: 0 });
+        showPart3Code("prev", "Nhớ đường đi", "chờ viết");
+        setCodeActiveLines([20, 21, 22]);
+        return null;
+      },
+    ];
+
+    setCameraView(part2Cameras.full);
+    setEdgeStates({ context: [part3AllEdges], focus: [part2Edges.toK] });
+    setNodeStates(finalWithKState, { focus: ["K"], target: ["K"], showNodeCosts: true });
+    hideMemoryPanel();
+    hideCodePanel();
+    el.stageShell.classList.add("is-visual-proof");
+    setPrevCopy("Đến cuối thuật toán, nếu chỉ return Cost[K], ta mới biết kết quả là 10. Nhưng muốn chỉ đường thật sự thì còn thiếu một thứ.", ["Cost[K]", "10", "thiếu đường"]);
+
+    drawPart3PrevPathPanel({ className: "is-deferred prev-path-panel", x: 675, y: 92 });
+    drawPart3PrevUpdateBoard("F", { className: "is-deferred prev-update-board" });
+    drawPart3UpdateBundle({ from: "E", to: "F", cost: 6, parent: "E", tone: "focus", className: "is-deferred prev-good-bundle", offset: -28, startT: 0.12, endT: 0.82 });
+    drawPart3UpdateBundle({ from: "D", to: "F", cost: 7, parent: "D", tone: "warn", className: "is-deferred prev-bad-bundle", offset: 22, startT: 0.12, endT: 0.78 });
+    drawPart3EdgeTrace(["A", "C", "B", "E", "F"], { tone: "focus", className: "is-deferred prev-route-f", offset: -16 });
+    drawPart3EdgeTrace(part2FinalPath, { tone: "focus", className: "is-deferred prev-route-k", offset: 16 });
+    drawPart3ParentArrow("K", "F", { className: "is-deferred prev-parent prev-parent-K", text: "Prev[K]=F" });
+    drawPart3ParentArrow("F", "E", { className: "is-deferred prev-parent prev-parent-F", text: "Prev[F]=E" });
+    drawPart3ParentArrow("E", "B", { className: "is-deferred prev-parent prev-parent-rest" });
+    drawPart3ParentArrow("B", "C", { className: "is-deferred prev-parent prev-parent-rest" });
+    drawPart3ParentArrow("C", "A", { className: "is-deferred prev-parent prev-parent-rest" });
+    drawPart3NodeMarker("K", { tone: "warn", symbol: "question", className: "is-deferred prev-question-marker" });
+    drawPart3NodeMarker("F", { tone: "warn", symbol: "x", className: "is-deferred prev-reject-marker" });
     drawPart3BacktrackCursor("K", "is-deferred prev-backtrack-cursor-shell");
-    drawPart3Packet({ from: "E", to: "F", text: "6", tone: "focus", className: "prev-packet", offset: -18, startT: 0.12, endT: 0.82 });
-    showPart3Code("prev", "Nhớ đường đi", "chờ viết");
-    setMetrics("Cost tới F", "chỉ còn số", "chưa biết đường");
+    drawPart3PrevBacktrackStrip({ className: "is-deferred prev-backtrack-strip", x: 360, y: 460 });
 
-    gsap.set(".prev-packet, .prev-route-flash, .prev-new-parent, .prev-chain-parent, .prev-question-marker, .prev-backtrack-cursor-visual", { opacity: 0 });
-    gsap.set(".prev-new-parent .part3-parent-arrow-head, .prev-new-parent .part3-parent-label, .prev-chain-parent .part3-parent-arrow-head", { opacity: 0 });
-    prepareSvgPathDraw(".prev-route-flash .part3-edge-trace-path, .prev-new-parent .part3-parent-arrow-path, .prev-chain-parent .part3-parent-arrow-path");
+    gsap.set(
+      ".prev-path-panel, .prev-update-board, .prev-good-bundle, .prev-bad-bundle, .prev-route-f, .prev-route-k, .prev-parent, .prev-question-marker, .prev-reject-marker, .prev-backtrack-cursor-shell, .prev-backtrack-strip",
+      { opacity: 0, transformOrigin: "center center" },
+    );
+    gsap.set(".prev-cost-current, .prev-prev-current, .prev-board-lock, .prev-cost-reject-chip, .prev-prev-reject-chip, .prev-cost-reject-gate, .prev-board-title-reject", { opacity: 0, transformOrigin: "center center" });
+    gsap.set(".prev-parent .part3-parent-arrow-head, .prev-parent .part3-parent-label", { opacity: 0 });
+    gsap.set(".part3-prev-duplicate-mark", { opacity: 0 });
+    gsap.set(".part3-prev-chain-back .part3-prev-chain-chip, .part3-prev-chain-back .part3-prev-chain-link, .part3-prev-chain-final", { opacity: 0, transformOrigin: "center center" });
+    prepareSvgPathDraw(".prev-route-f .part3-edge-trace-path, .prev-route-k .part3-edge-trace-path, .prev-parent .part3-parent-arrow-path");
+    queueNextPrevStep();
     animatePart3SceneIntro(tl, 0.16);
-    tl.call(() => {
-      setNodeStates(beforeFState, { focus: ["E", "F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
-      showMemoryPanel({
-        cost: { A: 0, C: 2, B: 3, E: 4, D: 5 },
-        visited: ["A", "C", "B", "E"],
-        focus: ["E"],
-      });
-      setMetrics("replay E -> F", "xem Cost sinh ra", "chưa có Prev");
-    }, null, 0.42);
-    animatePart3Packets(tl, ".prev-packet", 0.58, 0.48);
-    tl.call(() => {
-      setNodeStates(afterFOnlyState, { focus: ["F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
-      showMemoryPanel({
-        cost: { A: 0, C: 2, B: 3, E: 4, F: 6 },
-        visited: ["A", "C", "B", "E"],
-        focus: ["F"],
-      });
-      setMetrics("F = 6", "đường vừa sáng", "rồi mất dấu");
-    }, null, 1.04);
-    pulsePart3Nodes(tl, ["F"], 1.06, { toScale: 1.14, duration: 0.3 });
-    tl.fromTo(".prev-route-flash", { opacity: 0 }, { opacity: 1, duration: dur(0.18), ease: "power2.out" }, 1.06);
-    tl.to(".prev-route-flash .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(0.48), ease: "power2.out" }, 1.08);
-    tl.to(".prev-route-flash", { opacity: 0.16, duration: dur(0.34), ease: "power2.inOut" }, 1.42);
-    tl.fromTo(".prev-question-marker", { opacity: 0, scale: 0.72, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.24), ease: "back.out(1.55)" }, 1.3);
-    tl.call(() => setMetrics("Cost[F] = 6", "không có dấu vết", "cần cửa vào"), null, 1.34);
-    tl.to(".prev-question-marker", { opacity: 0, scale: 0.84, duration: dur(0.18), ease: "power2.in" }, 1.62);
-    tl.fromTo(".prev-new-parent", { opacity: 0 }, { opacity: 1, duration: dur(0.2), ease: "power2.out" }, 1.62);
-    tl.to(".prev-new-parent .part3-parent-arrow-path", { strokeDashoffset: 0, duration: dur(0.38), ease: "power2.out" }, 1.64);
-    tl.to(".prev-new-parent .part3-parent-arrow-head, .prev-new-parent .part3-parent-label", { opacity: 1, duration: dur(0.14), ease: "power2.out" }, 1.96);
-    tl.call(() => {
-      showMemoryPanel({
-        cost: { A: 0, C: 2, B: 3, E: 4, F: 6 },
-        visited: ["A", "C", "B", "E"],
-        prev: { F: "E" },
-        focus: ["F"],
-      });
-      setMetrics("Cost vừa đổi", "Prev[F] = E", "lưu cửa vào");
-    }, null, 2.02);
-    moveCameraOnTimeline(tl, part2Cameras.full.center, part2Cameras.full.scale, 2.18, 0.66);
-    tl.call(() => {
-      setEdgeStates({ visible: part3AllEdges, locked: [finalEdges], context: [[["E", "G"], ["G", "K"], ["C", "D"], ["D", "F"], ["D", "G"]]] });
-      setNodeStates(part3EndReadyState, { focus: ["K", "F", "E", "B", "C", "A"], target: ["K"], showNodeCosts: true });
-      showMemoryPanel({
-        cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
-        visited: ["A", "C", "B", "E", "D", "F", "G"],
-        prev: { C: "A", B: "C", E: "B", F: "E", K: "F" },
-        focus: ["K", "F", "E", "B", "C", "A"],
-      });
-      setMetrics("đứng ở K", "lần Prev", "về A");
-    }, null, 2.46);
-    tl.fromTo(".prev-chain-parent", { opacity: 0 }, { opacity: 0.86, stagger: dur(0.035), duration: dur(0.2), ease: "power2.out" }, 2.5);
-    tl.to(".prev-chain-parent .part3-parent-arrow-path", { strokeDashoffset: 0, stagger: dur(0.05), duration: dur(0.32), ease: "power2.out" }, 2.54);
-    tl.to(".prev-chain-parent .part3-parent-arrow-head", { opacity: 1, stagger: dur(0.05), duration: dur(0.12), ease: "power2.out" }, 2.84);
-    tl.fromTo(".prev-backtrack-cursor-visual", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.22), ease: "back.out(1.45)" }, 2.66);
-    animatePart3BacktrackCursor(tl, ["K", "F", "E", "B", "C", "A"], 2.74);
-    tl.call(() => {
-      showBestRoute(part2FinalPath);
-      setMetrics("A -> C -> B -> E -> F -> K", "Cost 10", "Prev dựng đường");
-    }, null, 3.74);
-    pulsePart3Nodes(tl, ["A", "C", "B", "E", "F", "K"], 3.8, { toScale: 1.08, stagger: 0.05, duration: 0.22 });
+    moveCameraOnTimeline(tl, part2Cameras.full.center, part2Cameras.full.scale, 0.18, 0.58);
     return tl;
   }
 
