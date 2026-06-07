@@ -467,7 +467,7 @@
       tab: "Chạy lại",
       kicker: "Ghép lại",
       title: "Đọc lại code",
-      body: "Bây giờ đọc code theo đúng nhịp graph: quét min, kiểm tra hai nhánh dừng, chốt nếu chưa dừng, mở hàng xóm, chỉ cập nhật khi rẻ hơn và lưu Prev.",
+      body: "Bây giờ chạy lại code từ trạng thái trống: dòng nào mở Cost thì đỉnh đó hiện, vòng lặp tự tìm tới K, rồi dùng Prev để lần ngược ra đường.",
       audienceTitle: "Nhịp cuối cùng",
       audienceBullets: ["Tìm min.", "Dừng hoặc chốt.", "Mở kề và lưu Prev."],
       metricLabels: ["Mã giả", "Cost", "Prev"],
@@ -934,8 +934,8 @@
         "}",
       ],
       inserted: [],
-      active: [6, 7, 15, 16, 17, 18, 21, 22, 23, 27],
-      compact: true,
+      active: [6, 7, 8, 9, 10, 11, 15, 16, 17, 18, 21, 22, 23, 27],
+      compact: false,
     },
   };
 
@@ -4472,46 +4472,559 @@
       ["E", "F"],
       ["F", "K"],
     ];
-
-    setCameraView(part2Cameras.full);
-    setEdgeStates({ visible: part3AllEdges, locked: [finalEdges] });
-    setNodeStates(part3EndReadyState, { focus: ["A", "C", "B", "E", "F", "K"], target: ["K"], showNodeCosts: true });
-    showBestRoute(part2FinalPath);
-    showMemoryPanel({
-      cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
-      visited: ["A", "C", "B", "E", "D", "F", "G"],
-      prev: { C: "A", B: "C", E: "B", F: "E", K: "F" },
-      focus: ["K"],
+    const emptyState = makePart2State({});
+    const seedState = makePart2State({ A: ["open", 0, "-"] });
+    const settleAState = makePart2State({ A: ["settled", 0, "-"] });
+    const settleBState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["open", 5, "C"],
+      E: ["open", 6, "A"],
     });
-    showPart3Code("replay", "Mã giả hoàn chỉnh", "đọc lại");
-    setCodeActiveLines([6, 7, 8, 9, 10, 11, 12]);
-    setMetrics("while true", "min -> relax", "return");
+    const settleEState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["open", 5, "C"],
+      E: ["settled", 4, "B"],
+    });
+    const settleFState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["settled", 5, "C"],
+      E: ["settled", 4, "B"],
+      F: ["settled", 6, "E"],
+      G: ["open", 9, "E"],
+    });
+    const edgesAfterA = [...part2Edges.fromA];
+    const edgesAfterC = [...edgesAfterA, ...part2Edges.fromC];
+    const edgesAfterB = [...edgesAfterC, ...part2Edges.fromB];
+    const edgesAfterE = [...edgesAfterB, ...part2Edges.fromE];
+    const edgesAfterD = [...edgesAfterE, ...part2Edges.fromD];
+    const edgesAfterF = [...edgesAfterD, ["F", "K"]];
+    const treeAfterA = [
+      ["A", "C"],
+      ["A", "B"],
+      ["A", "D"],
+      ["A", "E"],
+    ];
+    const treeAfterC = [
+      ["A", "C"],
+      ["C", "B"],
+      ["C", "D"],
+      ["A", "E"],
+    ];
+    const treeAfterB = [
+      ["A", "C"],
+      ["C", "B"],
+      ["C", "D"],
+      ["B", "E"],
+    ];
+    const treeAfterE = [...treeAfterB, ["E", "F"], ["E", "G"]];
+    const treeAfterF = [...treeAfterE, ["F", "K"]];
 
-    animatePart3SceneIntro(tl, 0.14);
-    tl.fromTo(".route-best", { opacity: 0.24 }, { opacity: 1, duration: dur(0.42), ease: "power2.out" }, 0.26);
+    const memory = {
+      empty: {},
+      seed: { cost: { A: 0 }, focus: ["A"] },
+      aSettled: { cost: { A: 0 }, visited: ["A"], focus: ["A"] },
+      afterA: {
+        cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+        visited: ["A"],
+        prev: { C: "A", B: "A", D: "A", E: "A" },
+        focus: ["C", "B", "D", "E"],
+      },
+      afterC: {
+        cost: { A: 0, C: 2, B: 3, D: 5, E: 6 },
+        visited: ["A", "C"],
+        prev: { C: "A", B: "C", D: "C", E: "A" },
+        focus: ["B", "D"],
+      },
+      afterB: {
+        cost: { A: 0, C: 2, B: 3, D: 5, E: 4 },
+        visited: ["A", "C", "B"],
+        prev: { C: "A", B: "C", D: "C", E: "B" },
+        focus: ["E"],
+      },
+      afterE: {
+        cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9 },
+        visited: ["A", "C", "B", "E"],
+        prev: { C: "A", B: "C", D: "C", E: "B", F: "E", G: "E" },
+        focus: ["F", "G"],
+      },
+      afterD: {
+        cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9 },
+        visited: ["A", "C", "B", "E", "D"],
+        prev: { C: "A", B: "C", D: "C", E: "B", F: "E", G: "E" },
+        focus: ["D"],
+        danger: ["F", "G"],
+      },
+      afterF: {
+        cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
+        visited: ["A", "C", "B", "E", "D", "F"],
+        prev: { C: "A", B: "C", D: "C", E: "B", F: "E", G: "E", K: "F" },
+        focus: ["K"],
+      },
+    };
+
+    function selectorForNodes(nodeIds) {
+      return nodeIds.map((node) => `.node-${node}`).join(", ");
+    }
+
+    function selectorForEdges(edgeList) {
+      const keys = toEdgeKeys(edgeList);
+      return keys.map((key) => `.edge-group[data-edge="${key}"], .edge-label-group[data-edge="${key}"]`).join(", ");
+    }
+
+    function setReplayCode(lines, route, cost, prev, context = 2) {
+      setCodeActiveLines(lines);
+      focusCodeLines(lines, context);
+      setMetrics(route, cost, prev);
+    }
+
+    function applyReplayFrame({
+      lines,
+      state,
+      visible = [],
+      focusEdges = [],
+      locked = [],
+      context = [],
+      focus = [],
+      target = [],
+      correct = [],
+      memoryState = {},
+      metrics = ["", "", ""],
+      codeContext = 2,
+    }) {
+      setReplayCode(lines, metrics[0], metrics[1], metrics[2], codeContext);
+      setEdgeStates({ visible, focus: focusEdges, locked, context });
+      setNodeStates(state, { focus, target, correct, showNodeCosts: true });
+      showMemoryPanel(memoryState);
+    }
+
+    function revealNodes(nodeIds, at) {
+      const selector = selectorForNodes(nodeIds);
+      if (!selector) return;
+      tl.fromTo(
+        selector,
+        { opacity: 0, scale: 0.78, transformOrigin: "center center" },
+        { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.44), ease: "back.out(1.45)", immediateRender: false },
+        at,
+      );
+    }
+
+    function revealEdges(edgeList, at) {
+      const selector = selectorForEdges(edgeList);
+      if (!selector) return;
+      tl.fromTo(
+        selector,
+        { opacity: 0 },
+        { opacity: 1, stagger: dur(0.04), duration: dur(0.38), ease: "power2.out", immediateRender: false },
+        at,
+      );
+    }
+
+    function moveReplayProbe(node, at, duration = 0.42) {
+      const point = nodes[node];
+      tl.to(".part3-probe-cursor", { attr: { transform: `translate(${point.x} ${point.y})` }, duration: dur(duration), ease: "power2.inOut" }, at);
+      pulsePart3Nodes(tl, [node], at + 0.06, { toScale: 1.1, duration: 0.24 });
+    }
+
+    function animateReplayBundles(selector, at, duration = 0.96) {
+      animatePart3FlowChips(tl, selector, at, duration);
+      tl.to(selector, { opacity: 0, scale: 0.82, duration: dur(0.22), ease: "power2.in" }, at + duration + 0.42);
+    }
+
+    function revealReplayParent(selector, at) {
+      tl.fromTo(selector, { opacity: 0 }, { opacity: 0.92, duration: dur(0.22), ease: "power2.out", immediateRender: false }, at);
+      tl.to(`${selector} .part3-parent-arrow-path`, { strokeDashoffset: 0, duration: dur(0.58), ease: "power2.out" }, at + 0.04);
+      tl.to(`${selector} .part3-parent-arrow-head, ${selector} .part3-parent-label`, { opacity: 1, duration: dur(0.14), ease: "power2.out" }, at + 0.5);
+    }
+
+    drawPart3Probe("A", "is-deferred replay-probe-shell");
+    drawPart3UpdateBundle({ from: "A", to: "C", cost: 2, parent: "A", className: "is-deferred replay-bundle replay-bundle-A", offset: -18 });
+    drawPart3UpdateBundle({ from: "A", to: "B", cost: 4, parent: "A", className: "is-deferred replay-bundle replay-bundle-A", offset: 10 });
+    drawPart3UpdateBundle({ from: "A", to: "D", cost: 7, parent: "A", className: "is-deferred replay-bundle replay-bundle-A", offset: 24 });
+    drawPart3UpdateBundle({ from: "A", to: "E", cost: 6, parent: "A", className: "is-deferred replay-bundle replay-bundle-A", offset: -24 });
+    drawPart3UpdateBundle({ from: "C", to: "B", cost: 3, parent: "C", className: "is-deferred replay-bundle replay-bundle-C", offset: -22 });
+    drawPart3UpdateBundle({ from: "C", to: "D", cost: 5, parent: "C", className: "is-deferred replay-bundle replay-bundle-C", offset: 24 });
+    drawPart3UpdateBundle({ from: "B", to: "E", cost: 4, parent: "B", className: "is-deferred replay-bundle replay-bundle-B", offset: -22 });
+    drawPart3UpdateBundle({ from: "E", to: "F", cost: 6, parent: "E", className: "is-deferred replay-bundle replay-bundle-E", offset: -18 });
+    drawPart3UpdateBundle({ from: "E", to: "G", cost: 9, parent: "E", className: "is-deferred replay-bundle replay-bundle-E", offset: 22 });
+    drawPart3UpdateBundle({ from: "D", to: "F", cost: 7, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: 22 });
+    drawPart3UpdateBundle({ from: "D", to: "G", cost: 12, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: -26 });
+    drawPart3UpdateBundle({ from: "F", to: "K", cost: 10, parent: "F", className: "is-deferred replay-bundle replay-bundle-F", offset: -20 });
+    drawPart3ParentArrow("K", "F", { className: "is-deferred replay-parent replay-parent-K" });
+    drawPart3ParentArrow("F", "E", { className: "is-deferred replay-parent replay-parent-F" });
+    drawPart3ParentArrow("E", "B", { className: "is-deferred replay-parent replay-parent-E" });
+    drawPart3ParentArrow("B", "C", { className: "is-deferred replay-parent replay-parent-B" });
+    drawPart3ParentArrow("C", "A", { className: "is-deferred replay-parent replay-parent-C" });
+    drawPart3BacktrackCursor("K", "is-deferred replay-backtrack-cursor-shell");
+    drawPart3PrevBacktrackStrip({ className: "is-deferred replay-backtrack-strip", x: 292, y: 452 });
+    drawPart3EdgeTrace(part2FinalPath, { tone: "focus", className: "is-deferred replay-final-trace", offset: -10 });
+
+    setCameraView(part2Cameras.aTight);
+    setEdgeStates({ visible: [] });
+    setNodeStates(emptyState, { showNodeCosts: true });
+    showMemoryPanel(memory.empty);
+    showPart3Code("replay", "Mã giả hoàn chỉnh", "chạy từ đầu");
+    setReplayCode([2, 3, 4], "khởi tạo", "trống", "trống", 1);
+
+    gsap.set(
+      ".replay-probe-shell, .replay-bundle, .replay-reject-bundle, .replay-parent, .replay-backtrack-cursor-shell, .replay-backtrack-strip, .replay-final-trace",
+      { opacity: 0, transformOrigin: "center center" },
+    );
+    gsap.set(".replay-parent .part3-parent-arrow-head, .replay-parent .part3-parent-label", { opacity: 0 });
+    gsap.set(".replay-backtrack-strip .part3-prev-chain-back .part3-prev-chain-chip, .replay-backtrack-strip .part3-prev-chain-back .part3-prev-chain-link, .replay-backtrack-strip .part3-prev-chain-final", {
+      opacity: 0,
+      transformOrigin: "center center",
+    });
+    prepareSvgPathDraw(".replay-parent .part3-parent-arrow-path, .replay-final-trace .part3-edge-trace-path");
+
+    animatePart3SceneIntro(tl, 0.18);
+    tl.to(".stage-copy", { opacity: 0.16, duration: dur(0.5), ease: "power2.out" }, 2.72);
     tl.call(() => {
-      setCodeActiveLines([6, 7, 8, 9, 10, 11, 12]);
-      focusCodeLines([6, 7, 8, 9, 10, 11, 12], 2);
-      setMetrics("1", "quét min", "dòng 6-12");
-    }, null, 0.52);
-    pulsePart3Nodes(tl, ["C", "B", "E"], 0.58, { toScale: 1.08, stagger: 0.08, duration: 0.22 });
+      applyReplayFrame({
+        lines: [5],
+        state: seedState,
+        focus: ["A"],
+        memoryState: memory.seed,
+        metrics: ["Cost[start]", "A = 0", "chưa có Prev"],
+        codeContext: 1,
+      });
+    }, null, 0.78);
+    revealNodes(["A"], 0.86);
+    pulsePart3Nodes(tl, ["A"], 1.05, { toScale: 1.14, duration: 0.3 });
+
+    tl.fromTo(".replay-probe-shell", { opacity: 0, scale: 0.84 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 1.54);
     tl.call(() => {
-      setCodeActiveLines([15, 16]);
-      focusCodeLines([15, 16], 2);
-      setMetrics("2", "hai nhánh dừng", "dòng 15-16");
-    }, null, 1.02);
-    pulsePart3Nodes(tl, ["K"], 1.08, { toScale: 1.12, duration: 0.26 });
-    tl.call(() => {
-      setCodeActiveLines([17, 18, 19, 20, 21, 22, 23]);
-      focusCodeLines([17, 18, 19, 20, 21, 22, 23], 2);
-      setMetrics("3", "mở kề", "Cost + Prev");
+      applyReplayFrame({
+        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        state: seedState,
+        focus: ["A"],
+        memoryState: memory.seed,
+        metrics: ["lượt 1", "min = A", "quét Cost"],
+      });
     }, null, 1.48);
-    pulsePart3Nodes(tl, ["E", "F"], 1.56, { toScale: 1.1, stagger: 0.08, duration: 0.24 });
+    moveReplayProbe("A", 1.62, 0.3);
+
     tl.call(() => {
-      setCodeActiveLines([27]);
-      focusCodeLines([27], 3);
-      setMetrics("4", "return", "cost + prev");
-    }, null, 1.98);
+      applyReplayFrame({
+        lines: [15, 16, 17],
+        state: settleAState,
+        focus: ["A"],
+        memoryState: memory.aSettled,
+        metrics: ["A không phải K", "Visited[A]", "sắp mở kề"],
+      });
+    }, null, 2.28);
+    pulsePart3Nodes(tl, ["A"], 2.38, { toScale: 1.12, duration: 0.26 });
+    moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 2.78, 0.92);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [18, 19, 20, 21, 22, 23],
+        state: part2States.start,
+        visible: edgesAfterA,
+        focusEdges: part2Edges.fromA,
+        locked: treeAfterA,
+        focus: ["C", "B", "D", "E"],
+        memoryState: memory.afterA,
+        metrics: ["mở kề A", "4 Cost mới", "Prev = A"],
+      });
+    }, null, 3.08);
+    revealEdges(part2Edges.fromA, 3.16);
+    revealNodes(["C", "B", "D", "E"], 3.26);
+    animateReplayBundles(".replay-bundle-A", 3.2, 1.18);
+
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        state: part2States.start,
+        visible: edgesAfterA,
+        locked: treeAfterA,
+        focus: ["C"],
+        memoryState: { ...memory.afterA, focus: ["C"] },
+        metrics: ["lượt 2", "min = C", "Cost nhỏ nhất"],
+      });
+    }, null, 5.0);
+    moveReplayProbe("C", 5.1, 0.42);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [15, 16, 17],
+        state: part3AfterCSettledState,
+        visible: edgesAfterA,
+        locked: treeAfterA,
+        focus: ["C"],
+        memoryState: { ...memory.afterA, visited: ["A", "C"], focus: ["C"] },
+        metrics: ["C không phải K", "Visited[C]", "mở B/D"],
+      });
+    }, null, 5.78);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [18, 19, 20, 21, 22, 23],
+        state: part2States.afterC,
+        visible: edgesAfterC,
+        focusEdges: part2Edges.fromC,
+        locked: treeAfterC,
+        focus: ["B", "D"],
+        memoryState: memory.afterC,
+        metrics: ["mở kề C", "B,D rẻ hơn", "Prev = C"],
+      });
+    }, null, 6.48);
+    revealEdges(part2Edges.fromC, 6.56);
+    animateReplayBundles(".replay-bundle-C", 6.62, 1.02);
+    pulsePart3Nodes(tl, ["B", "D"], 7.18, { toScale: 1.1, stagger: 0.08, duration: 0.24 });
+
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        state: part2States.afterC,
+        visible: edgesAfterC,
+        locked: treeAfterC,
+        focus: ["B"],
+        memoryState: { ...memory.afterC, focus: ["B"] },
+        metrics: ["lượt 3", "min = B", "Cost 3"],
+      });
+    }, null, 8.08);
+    moveReplayProbe("B", 8.18, 0.42);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [15, 16, 17],
+        state: settleBState,
+        visible: edgesAfterC,
+        locked: treeAfterC,
+        focus: ["B"],
+        memoryState: { ...memory.afterC, visited: ["A", "C", "B"], focus: ["B"] },
+        metrics: ["B không phải K", "Visited[B]", "mở E"],
+      });
+    }, null, 8.86);
+    moveCameraOnTimeline(tl, part2Cameras.middle.center, part2Cameras.middle.scale, 9.1, 0.82);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [18, 19, 20, 21, 22, 23],
+        state: part2States.afterB,
+        visible: edgesAfterB,
+        focusEdges: part2Edges.fromB,
+        locked: treeAfterB,
+        focus: ["E"],
+        memoryState: memory.afterB,
+        metrics: ["mở kề B", "E: 4 < 6", "Prev[E]=B"],
+      });
+    }, null, 9.5);
+    revealEdges(part2Edges.fromB, 9.58);
+    animateReplayBundles(".replay-bundle-B", 9.62, 0.9);
+
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        state: part2States.afterB,
+        visible: edgesAfterB,
+        locked: treeAfterB,
+        focus: ["E"],
+        memoryState: { ...memory.afterB, focus: ["E"] },
+        metrics: ["lượt 4", "min = E", "Cost 4"],
+      });
+    }, null, 10.9);
+    moveReplayProbe("E", 11.0, 0.42);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [15, 16, 17],
+        state: settleEState,
+        visible: edgesAfterB,
+        locked: treeAfterB,
+        focus: ["E"],
+        memoryState: { ...memory.afterB, visited: ["A", "C", "B", "E"], focus: ["E"] },
+        metrics: ["E không phải K", "Visited[E]", "mở F/G"],
+      });
+    }, null, 11.66);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [18, 19, 20, 21, 22, 23],
+        state: part2States.afterE,
+        visible: edgesAfterE,
+        focusEdges: part2Edges.fromE,
+        locked: treeAfterE,
+        focus: ["F", "G"],
+        memoryState: memory.afterE,
+        metrics: ["mở kề E", "F,G nhận Cost", "Prev = E"],
+      });
+    }, null, 12.34);
+    revealEdges(part2Edges.fromE, 12.42);
+    revealNodes(["F", "G"], 12.52);
+    animateReplayBundles(".replay-bundle-E", 12.48, 1.04);
+
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        state: part2States.afterE,
+        visible: edgesAfterE,
+        locked: treeAfterE,
+        focus: ["D"],
+        memoryState: { ...memory.afterE, focus: ["D"] },
+        metrics: ["lượt 5", "min = D", "Cost 5"],
+      });
+    }, null, 14.02);
+    moveReplayProbe("D", 14.12, 0.42);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [15, 16, 17],
+        state: part2States.afterD,
+        visible: edgesAfterE,
+        locked: treeAfterE,
+        focus: ["D"],
+        memoryState: { ...memory.afterE, visited: ["A", "C", "B", "E", "D"], focus: ["D"] },
+        metrics: ["D không phải K", "Visited[D]", "thử F/G"],
+      });
+    }, null, 14.76);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [18, 19, 20, 21],
+        state: part2States.afterD,
+        visible: edgesAfterD,
+        focusEdges: part2Edges.fromD,
+        locked: treeAfterE,
+        context: treeAfterE,
+        focus: ["D", "F", "G"],
+        memoryState: memory.afterD,
+        metrics: ["mở kề D", "7 và 12 bị chặn", "Prev giữ nguyên"],
+      });
+    }, null, 15.38);
+    revealEdges(part2Edges.fromD, 15.46);
+    animateReplayBundles(".replay-reject-bundle", 15.52, 0.96);
+    pulsePart3Nodes(tl, ["F", "G"], 16.18, { toScale: 1.08, stagger: 0.08, duration: 0.24 });
+
+    moveCameraOnTimeline(tl, part2Cameras.toK.center, part2Cameras.toK.scale, 16.7, 0.88);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        state: part2States.afterD,
+        visible: edgesAfterD,
+        locked: treeAfterE,
+        focus: ["F"],
+        memoryState: { ...memory.afterD, danger: [], focus: ["F"] },
+        metrics: ["lượt 6", "min = F", "Cost 6"],
+      });
+    }, null, 17.0);
+    moveReplayProbe("F", 17.1, 0.42);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [15, 16, 17],
+        state: settleFState,
+        visible: edgesAfterD,
+        locked: treeAfterE,
+        focus: ["F"],
+        memoryState: { ...memory.afterD, danger: [], visited: ["A", "C", "B", "E", "D", "F"], focus: ["F"] },
+        metrics: ["F không phải K", "Visited[F]", "mở K"],
+      });
+    }, null, 17.78);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [18, 19, 20, 21, 22, 23],
+        state: part2States.afterF,
+        visible: edgesAfterF,
+        focusEdges: [["F", "K"]],
+        locked: treeAfterF,
+        focus: ["K"],
+        target: ["K"],
+        memoryState: memory.afterF,
+        metrics: ["mở kề F", "K = 10", "Prev[K]=F"],
+      });
+    }, null, 18.42);
+    revealEdges([["F", "K"]], 18.5);
+    revealNodes(["K"], 18.62);
+    animateReplayBundles(".replay-bundle-F", 18.56, 0.92);
+
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        state: part2States.afterF,
+        visible: edgesAfterF,
+        locked: treeAfterF,
+        focus: ["K"],
+        target: ["K"],
+        memoryState: memory.afterF,
+        metrics: ["lượt 7", "min = K", "đã tới đích"],
+      });
+    }, null, 20.0);
+    moveReplayProbe("K", 20.1, 0.46);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [16],
+        state: part2States.afterF,
+        visible: edgesAfterF,
+        locked: treeAfterF,
+        focus: ["K"],
+        target: ["K"],
+        memoryState: memory.afterF,
+        metrics: ["min == end", "break", "không mở thêm"],
+        codeContext: 3,
+      });
+    }, null, 20.88);
+    pulsePart3Nodes(tl, ["K"], 21.0, { toScale: 1.16, duration: 0.32 });
+
+    moveCameraOnTimeline(tl, part2Cameras.full.center, part2Cameras.full.scale, 21.32, 0.92);
+    tl.to(".replay-probe-shell, .replay-bundle, .replay-reject-bundle", { opacity: 0, duration: dur(0.24), ease: "power2.in" }, 21.22);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [27],
+        state: part2States.afterF,
+        visible: edgesAfterF,
+        locked: finalEdges,
+        context: treeAfterF,
+        focus: ["K"],
+        target: ["K"],
+        memoryState: memory.afterF,
+        metrics: ["return", "Cost[K]=10", "Prev để lần ngược"],
+        codeContext: 4,
+      });
+    }, null, 21.66);
+    tl.fromTo(".replay-backtrack-strip", { opacity: 0, y: 10, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.34), ease: "power2.out" }, 21.88);
+    tl.fromTo(".replay-backtrack-cursor-shell", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 21.98);
+
+    revealReplayParent(".replay-parent-K", 22.22);
+    tl.fromTo(".prev-chain-node-K, .prev-chain-link-F, .prev-chain-node-F", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 22.28);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.F.x} ${nodes.F.y})` }, duration: dur(0.86), ease: "power2.inOut" }, 22.42);
+    pulsePart3Nodes(tl, ["K", "F"], 22.48, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+
+    revealReplayParent(".replay-parent-F", 23.34);
+    tl.fromTo(".prev-chain-link-E, .prev-chain-node-E", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 23.42);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.E.x} ${nodes.E.y})` }, duration: dur(0.86), ease: "power2.inOut" }, 23.52);
+    pulsePart3Nodes(tl, ["F", "E"], 23.58, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+
+    revealReplayParent(".replay-parent-E", 24.46);
+    tl.fromTo(".prev-chain-link-B, .prev-chain-node-B", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 24.54);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.B.x} ${nodes.B.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 24.64);
+    pulsePart3Nodes(tl, ["E", "B"], 24.7, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+
+    revealReplayParent(".replay-parent-B", 25.48);
+    tl.fromTo(".prev-chain-link-C, .prev-chain-node-C", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 25.56);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.C.x} ${nodes.C.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 25.66);
+    pulsePart3Nodes(tl, ["B", "C"], 25.72, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+
+    revealReplayParent(".replay-parent-C", 26.5);
+    tl.fromTo(".prev-chain-link-A, .prev-chain-node-A", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 26.58);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.A.x} ${nodes.A.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 26.68);
+    pulsePart3Nodes(tl, ["C", "A"], 26.74, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [27],
+        state: part2States.afterF,
+        visible: edgesAfterF,
+        locked: finalEdges,
+        context: treeAfterF,
+        focus: ["A", "C", "B", "E", "F", "K"],
+        target: ["K"],
+        correct: ["A", "C", "B", "E", "F"],
+        memoryState: { ...memory.afterF, focus: ["K"] },
+        metrics: ["đảo chiều", "A -> ... -> K", "đường cuối"],
+        codeContext: 4,
+      });
+    }, null, 27.7);
+    tl.to(".part3-prev-chain-back", { opacity: 0.18, duration: dur(0.24), ease: "power2.inOut" }, 27.72);
+    tl.fromTo(".part3-prev-chain-final", { opacity: 0, y: 8, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.36), ease: "power2.out" }, 27.82);
+    tl.fromTo(".replay-final-trace", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 27.9);
+    tl.to(".replay-final-trace .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(1.18), ease: "power2.out" }, 27.98);
     return tl;
   }
 
