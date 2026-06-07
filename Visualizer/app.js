@@ -348,6 +348,133 @@
     },
   ];
 
+  const part3Scenes = [
+    {
+      tab: "Khung",
+      kicker: "Sang code",
+      title: "Nghĩ rồi viết",
+      body: "Ta đã có nhịp chạy trên graph. Bây giờ chỉ biến từng nhu cầu vừa thấy thành dòng mã giả, không nhảy thẳng vào công thức.",
+      audienceTitle: "Code chỉ là ghi lại suy luận",
+      audienceBullets: ["Graph chạy trước, code xuất hiện sau.", "Mỗi dòng code trả lời một nhu cầu vừa thấy."],
+      metricLabels: ["Đang viết", "Biến cần nhớ", "Ý nghĩa"],
+      enter: enterPart3FrameScene,
+    },
+    {
+      tab: "Cost",
+      kicker: "Bắt đầu",
+      title: "Cần nhớ gì?",
+      body: "Mỗi đỉnh cần một con số tạm thời: đường rẻ nhất hiện biết để tới nó. Vì xuất phát ở A nên A bắt đầu bằng 0, các đỉnh khác chưa biết.",
+      audienceTitle: "Hai mảng đầu tiên",
+      audienceBullets: ["Cost lưu con số tốt nhất hiện biết.", "Ban đầu chỉ có Cost[A] = 0."],
+      metricLabels: ["Khởi tạo", "Cost", "Chưa biết"],
+      enter: enterPart3CostScene,
+    },
+    {
+      tab: "Lặp",
+      kicker: "Làm lại",
+      title: "Lặp nhịp",
+      body: "Từ Cost[A] = 0, ta chọn A rồi mở các cạnh đi ra C, B, D, E. Sau bước này lại phải chọn tiếp một đỉnh rẻ nhất, nên nhịp này cần được lặp.",
+      audienceTitle: "Vòng lặp",
+      audienceBullets: ["Một vòng: chọn một đỉnh, mở hàng xóm, cập nhật Cost.", "Chưa biết lặp bao nhiêu lần, nên viết khung while trước."],
+      metricLabels: ["Nhịp", "while", "chưa dừng"],
+      enter: enterPart3LoopScene,
+    },
+    {
+      tab: "Min",
+      kicker: "Quét frontier",
+      title: "Chọn nhỏ nhất",
+      body: "Ta quét các Cost đang có để lấy số nhỏ nhất. Nếu chỉ nhìn số, A = 0 sẽ thắng lại, nghĩa là code còn thiếu cách loại đỉnh đã xử lý.",
+      audienceTitle: "Tìm min",
+      audienceBullets: ["Cost khác rỗng nghĩa là đỉnh đã được mở.", "min giữ số rẻ nhất, nhưng chưa biết bỏ qua đỉnh đã xử lý."],
+      metricLabels: ["Đang quét", "Nhỏ nhất", "Sẽ chốt"],
+      enter: enterPart3MinScene,
+    },
+    {
+      tab: "Visited",
+      kicker: "Không xét lại",
+      title: "Nhớ đã chốt",
+      body: "A vẫn có Cost 0, nhưng A không còn là ứng viên. Ta cần Visited như một cổng chặn: đã chốt thì không đi vào vòng chọn min nữa.",
+      audienceTitle: "Visited",
+      audienceBullets: ["Visited tách đã chốt khỏi đang mở.", "Khi quét min phải bỏ qua đỉnh đã chốt."],
+      metricLabels: ["Đã chốt", "Visited", "bỏ qua"],
+      enter: enterPart3VisitedScene,
+    },
+    {
+      tab: "Hết",
+      kicker: "Van an toàn",
+      title: "Không còn ứng viên",
+      body: "Nếu cả lượt quét không có đỉnh nào lọt qua cổng, min vẫn rỗng. Khi đó vòng lặp phải dừng, nếu không code sẽ chạy mãi.",
+      audienceTitle: "min rỗng",
+      audienceBullets: ["Trường hợp này bảo vệ code khỏi lặp vô hạn.", "Nó cũng xử lý bài toán đích không tới được."],
+      metricLabels: ["Quét xong", "min = null", "break"],
+      enter: enterPart3EmptyScene,
+    },
+    {
+      tab: "Đích",
+      kicker: "Đủ chắc",
+      title: "Gặp K",
+      body: "Nếu đỉnh rẻ nhất còn lại là K, ta đã có câu trả lời. Mọi ứng viên khác đều không thể làm K rẻ hơn số nhỏ nhất hiện tại.",
+      audienceTitle: "Đích nhỏ nhất",
+      audienceBullets: ["K không cần bị đánh dấu Visited.", "Ta đã có Cost[K]."],
+      metricLabels: ["min", "K", "break"],
+      enter: enterPart3EndScene,
+    },
+    {
+      tab: "Chốt",
+      kicker: "Không phải đích",
+      title: "Chốt min",
+      body: "Nếu min không phải đích, ta chốt nó. C đang rẻ nhất trong frontier, nên Cost[C] đã chắc và C được đưa vào Visited.",
+      audienceTitle: "Chốt",
+      audienceBullets: ["Visited[min] lưu việc này.", "Sau đó mới mở hàng xóm."],
+      metricLabels: ["min", "C", "Visited"],
+      enter: enterPart3SettleScene,
+    },
+    {
+      tab: "Mở kề",
+      kicker: "Sau khi chốt",
+      title: "Thử hàng xóm",
+      body: "Sau khi chốt C, mỗi cạnh đi ra từ C tạo một gói chi phí mới. Gói đó đi tới hàng xóm và thử thay Cost hiện tại.",
+      audienceTitle: "Cập nhật thô",
+      audienceBullets: ["newCost = Cost[min] + cost cạnh.", "Bản đầu tiên cứ gán thử Cost[ke]."],
+      metricLabels: ["min = C", "newCost", "Cập nhật"],
+      enter: enterPart3RelaxNaiveScene,
+    },
+    {
+      tab: "Rẻ hơn",
+      kicker: "Sửa lỗi ghi đè",
+      title: "Chỉ khi rẻ",
+      body: "Cost của một đỉnh là số tốt nhất đang giữ. Nếu ô còn trống thì nhận số đầu tiên; nếu đã có số rồi thì ứng viên mới chỉ được ghi vào khi nó nhỏ hơn số đang giữ.",
+      audienceTitle: "Điều kiện cập nhật",
+      audienceBullets: ["Ô trống nghĩa là đỉnh chưa được mở, nên cost đầu tiên được nhận.", "Ô đã có số nghĩa là đã có một đường tới đó, nên không được ghi đè bằng số tệ hơn."],
+      metricLabels: ["Đang thử", "Ứng viên", "Cost[F]"],
+      enter: enterPart3RelaxGuardScene,
+    },
+    {
+      tab: "Prev",
+      kicker: "Lưu đường đi",
+      title: "Nhớ điểm trước",
+      body: "Tua lại khoảnh khắc E mở F: Cost cho biết F tốn 6, nhưng nếu chỉ giữ con số đó thì không biết vừa đi qua đâu. Vì vậy mỗi lần Cost được nhận, ta lưu thêm mũi tên Prev.",
+      audienceTitle: "Không cần lưu cả đường",
+      audienceBullets: [
+        "Prev[K] = F nghĩa là đường tốt nhất hiện biết tới K đi qua F ngay trước đó.",
+        "Khi cost của một đỉnh được cập nhật, Prev của nó cũng cập nhật theo.",
+        "Cuối cùng chỉ cần lần ngược Prev từ K về A là ra đường đi.",
+      ],
+      metricLabels: ["Đường đi", "Prev", "Lần ngược"],
+      enter: enterPart3PrevScene,
+    },
+    {
+      tab: "Chạy lại",
+      kicker: "Ghép lại",
+      title: "Đọc lại code",
+      body: "Bây giờ đọc code theo đúng nhịp graph: quét min, kiểm tra hai nhánh dừng, chốt nếu chưa dừng, mở hàng xóm, chỉ cập nhật khi rẻ hơn và lưu Prev.",
+      audienceTitle: "Nhịp cuối cùng",
+      audienceBullets: ["Tìm min.", "Dừng hoặc chốt.", "Mở kề và lưu Prev."],
+      metricLabels: ["Mã giả", "Cost", "Prev"],
+      enter: enterPart3ReplayScene,
+    },
+  ];
+
   const parts = [
     {
       id: "part1",
@@ -363,6 +490,14 @@
       title: "Tư duy ngược tìm đường",
       graph: graphProfiles.part2,
       scenes: part2Scenes,
+      lastScene: 0,
+    },
+    {
+      id: "part3",
+      label: "Phần 3",
+      title: "Từ ý tưởng thành mã giả",
+      graph: graphProfiles.part2,
+      scenes: part3Scenes,
       lastScene: 0,
     },
   ];
@@ -502,8 +637,327 @@
     }),
   };
 
+  const part3LoopCamera = { center: { x: 278, y: 392 }, scale: 1.28 };
+  const part3GuardCamera = { center: { x: 360, y: 382 }, scale: 1.06 };
+  const part3CostSlotCamera = { center: { x: 550, y: 330 }, scale: 1.12 };
+  const part3AllEdges = [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE, part2Edges.fromD, part2Edges.toK];
+  const part3AfterCSettledState = makePart2State({
+    A: ["settled", 0, "-"],
+    C: ["settled", 2, "A"],
+    B: ["open", 4, "A"],
+    D: ["open", 7, "A"],
+    E: ["open", 6, "A"],
+    F: ["unknown", null, "-"],
+    G: ["unknown", null, "-"],
+    K: ["unknown", null, "-"],
+  });
+  const part3NoFrontierState = makePart2State({
+    A: ["settled", 0, "-"],
+    C: ["settled", 2, "A"],
+    B: ["settled", 3, "C"],
+    D: ["settled", 5, "C"],
+    E: ["settled", 4, "B"],
+    F: ["settled", 6, "E"],
+    G: ["settled", 9, "E"],
+    K: ["unknown", null, "-"],
+  });
+
+  const part3EndReadyState = makePart2State({
+    A: ["settled", 0, "-"],
+    C: ["settled", 2, "A"],
+    B: ["settled", 3, "C"],
+    D: ["settled", 5, "C"],
+    E: ["settled", 4, "B"],
+    F: ["settled", 6, "E"],
+    G: ["settled", 9, "E"],
+    K: ["open", 10, "F"],
+  });
+
+  const part3CodeStates = {
+    frame: {
+      lines: ["function NganNhat(map, start, end) {", "}"],
+      inserted: [1, 2],
+      active: [1, 2],
+    },
+    cost: {
+      lines: ["function NganNhat(map, start, end) {", "  Cost = []", "  Cost[start] = 0", "}"],
+      inserted: [2, 3],
+      active: [2, 3],
+    },
+    loop: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "  }",
+        "}",
+      ],
+      inserted: [4, 5],
+      active: [4, 5],
+    },
+    min: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "  }",
+        "}",
+      ],
+      inserted: [5, 6, 7, 8, 9, 10, 11, 12],
+      active: [5, 6, 7, 8, 9],
+    },
+    visited: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "  }",
+        "}",
+      ],
+      inserted: [3],
+      changed: [8],
+      active: [3, 8],
+    },
+    empty: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "    if (min == null) break",
+        "  }",
+        "}",
+      ],
+      inserted: [14],
+      active: [14],
+    },
+    end: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "    if (min == null) break",
+        "    if (min == end) break",
+        "  }",
+        "}",
+      ],
+      inserted: [15],
+      active: [15],
+    },
+    settle: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "    if (min == null) break",
+        "    if (min == end) break",
+        "    Visited[min] = true",
+        "  }",
+        "}",
+      ],
+      inserted: [16],
+      active: [16],
+    },
+    relaxNaive: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "    if (min == null) break",
+        "    if (min == end) break",
+        "    Visited[min] = true",
+        "    for (canh of map[min]) {",
+        "      ke = canh.to",
+        "      newCost = Cost[min] + canh.cost",
+        "      Cost[ke] = newCost",
+        "    }",
+        "  }",
+        "}",
+      ],
+      inserted: [17, 18, 19, 20, 21],
+      active: [17, 19, 20],
+    },
+    relaxGuard: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "    if (min == null) break",
+        "    if (min == end) break",
+        "    Visited[min] = true",
+        "    for (canh of map[min]) {",
+        "      ke = canh.to",
+        "      newCost = Cost[min] + canh.cost",
+        "      if (Cost[ke] == null || newCost < Cost[ke]) {",
+        "        Cost[ke] = newCost",
+        "      }",
+        "    }",
+        "  }",
+        "}",
+      ],
+      inserted: [20, 22],
+      changed: [21],
+      active: [20, 21, 22],
+    },
+    prev: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Prev = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "    if (min == null) break",
+        "    if (min == end) break",
+        "    Visited[min] = true",
+        "    for (canh of map[min]) {",
+        "      ke = canh.to",
+        "      newCost = Cost[min] + canh.cost",
+        "      if (Cost[ke] == null || newCost < Cost[ke]) {",
+        "        Cost[ke] = newCost",
+        "        Prev[ke] = min",
+        "      }",
+        "    }",
+        "  }",
+        "  return { cost: Cost[end], prev: Prev }",
+        "}",
+      ],
+      inserted: [4, 23, 27],
+      active: [4, 23, 27],
+    },
+    replay: {
+      lines: [
+        "function NganNhat(map, start, end) {",
+        "  Cost = []",
+        "  Visited = []",
+        "  Prev = []",
+        "  Cost[start] = 0",
+        "  while (true) {",
+        "    min = null",
+        "    for (dinh in Cost) {",
+        "      if (Cost[dinh] != null && !Visited[dinh]) {",
+        "        if (min == null || Cost[dinh] < Cost[min]) {",
+        "          min = dinh",
+        "        }",
+        "      }",
+        "    }",
+        "    if (min == null) break",
+        "    if (min == end) break",
+        "    Visited[min] = true",
+        "    for (canh of map[min]) {",
+        "      ke = canh.to",
+        "      newCost = Cost[min] + canh.cost",
+        "      if (Cost[ke] == null || newCost < Cost[ke]) {",
+        "        Cost[ke] = newCost",
+        "        Prev[ke] = min",
+        "      }",
+        "    }",
+        "  }",
+        "  return { cost: Cost[end], prev: Prev }",
+        "}",
+      ],
+      inserted: [],
+      active: [6, 7, 15, 16, 17, 18, 21, 22, 23, 27],
+      compact: true,
+    },
+  };
+
+  const part3CodeBuildOrder = [
+    "frame",
+    "cost",
+    "loop",
+    "min",
+    "visited",
+    "empty",
+    "end",
+    "settle",
+    "relaxNaive",
+    "relaxGuard",
+    "prev",
+    "replay",
+  ];
+
   const el = {
     svg: document.getElementById("graphSvg"),
+    presenterGrid: document.querySelector(".presenter-grid"),
+    stageShell: document.querySelector(".stage-shell"),
     cameraLayer: document.getElementById("cameraLayer"),
     mapTexture: document.getElementById("mapTexture"),
     baseEdges: document.getElementById("baseEdges"),
@@ -553,6 +1007,15 @@
     comparisonPanel: document.getElementById("comparisonPanel"),
     bruteCount: document.getElementById("bruteCount"),
     pruneCount: document.getElementById("pruneCount"),
+    codePanel: document.getElementById("codePanel"),
+    codePanelTitle: document.getElementById("codePanelTitle"),
+    codePanelStatus: document.getElementById("codePanelStatus"),
+    codeBlock: document.getElementById("codeBlock"),
+    codeNote: document.getElementById("codeNote"),
+    memoryPanel: document.getElementById("memoryPanel"),
+    costMemory: document.getElementById("costMemory"),
+    visitedMemory: document.getElementById("visitedMemory"),
+    prevMemory: document.getElementById("prevMemory"),
     progressFill: document.getElementById("progressFill"),
     prevButton: document.getElementById("prevButton"),
     replayButton: document.getElementById("replayButton"),
@@ -567,6 +1030,11 @@
   let activeRouteTween = null;
   let ghostRouteTween = null;
   let activeNodeClickHandler = null;
+  let pendingCodeReveal = false;
+  let pendingCodePayload = null;
+  let pendingVisualAdvance = null;
+  let visualAdvanceBlocked = false;
+  let activeCodeRevealTween = null;
   let paused = false;
   let allRoutes = [];
   let exhaustiveRoutes = [];
@@ -581,7 +1049,7 @@
     renderMapTexture();
     renderPartSwitcher();
     bindControls();
-    switchPart(0, true);
+    switchPart(getInitialPartIndex(), true);
   }
 
   function buildGraphIndex() {
@@ -707,8 +1175,39 @@
     return parts[currentPartIndex];
   }
 
+  function usesPart2Graph() {
+    return getActivePart().graph === graphProfiles.part2;
+  }
+
   function getActiveScenes() {
     return getActivePart().scenes;
+  }
+
+  function getInitialPartIndex() {
+    const params = new URLSearchParams(window.location.search);
+    const partParam = (params.get("part") || "").trim().toLowerCase();
+    if (!partParam) return 0;
+
+    const normalized = partParam.replace(/\s+/g, "");
+    const index = parts.findIndex((part, partIndex) => {
+      return part.id === normalized || part.label.toLowerCase().replace(/\s+/g, "") === normalized || String(partIndex + 1) === normalized;
+    });
+
+    return index >= 0 ? index : 0;
+  }
+
+  function getInitialSceneIndex(part) {
+    const params = new URLSearchParams(window.location.search);
+    const sceneParam = (params.get("scene") || "").trim().toLowerCase();
+    if (!sceneParam) return 0;
+
+    if (/^\d+$/.test(sceneParam)) {
+      return clamp(Number(sceneParam) - 1, 0, part.scenes.length - 1);
+    }
+
+    const normalized = sceneParam.replace(/\s+/g, "");
+    const index = part.scenes.findIndex((scene) => scene.tab.toLowerCase().replace(/\s+/g, "") === normalized);
+    return index >= 0 ? index : 0;
   }
 
   function renderPartSwitcher() {
@@ -739,7 +1238,7 @@
     const nextIndex = Math.max(0, Math.min(parts.length - 1, index));
     if (!initial && nextIndex === currentPartIndex) return;
     currentPartIndex = nextIndex;
-    currentScene = getActivePart().lastScene || 0;
+    currentScene = initial ? getInitialSceneIndex(getActivePart()) : getActivePart().lastScene || 0;
     applyPartGraph(getActivePart());
     renderSceneTabs();
     updatePartHeader();
@@ -762,7 +1261,7 @@
 
   function bindControls() {
     el.prevButton.addEventListener("click", () => loadScene(Math.max(0, currentScene - 1)));
-    el.nextButton.addEventListener("click", () => loadScene(Math.min(getActiveScenes().length - 1, currentScene + 1)));
+    el.nextButton.addEventListener("click", handleNext);
     el.replayButton.addEventListener("click", () => loadScene(currentScene));
     el.pauseButton.addEventListener("click", togglePause);
 
@@ -772,7 +1271,7 @@
 
       if (event.key === "ArrowRight" || event.key === " ") {
         event.preventDefault();
-        loadScene(Math.min(getActiveScenes().length - 1, currentScene + 1));
+        handleNext();
       }
 
       if (event.key === "ArrowLeft") {
@@ -788,6 +1287,20 @@
         togglePause();
       }
     });
+  }
+
+  function handleNext() {
+    if (pendingVisualAdvance) {
+      advancePendingVisual();
+      return;
+    }
+
+    if (pendingCodeReveal) {
+      revealPendingCode();
+      return;
+    }
+
+    loadScene(Math.min(getActiveScenes().length - 1, currentScene + 1));
   }
 
   function loadScene(index) {
@@ -806,13 +1319,20 @@
   }
 
   function resetVisualState() {
+    updateWorkspaceMode();
     if (activeTimeline) activeTimeline.kill();
     if (activeRouteTween) activeRouteTween.kill();
     if (ghostRouteTween) ghostRouteTween.kill();
+    if (activeCodeRevealTween) activeCodeRevealTween.kill();
     gsap.killTweensOf("*");
     activeRouteTween = null;
     ghostRouteTween = null;
+    activeCodeRevealTween = null;
+    pendingCodeReveal = false;
+    pendingCodePayload = null;
     activeNodeClickHandler = null;
+    pendingVisualAdvance = null;
+    visualAdvanceBlocked = false;
     clearLayer(el.routeCloud);
     clearLayer(el.activeRouteLayer);
     clearLayer(el.cutLayer);
@@ -820,6 +1340,9 @@
     bestRouteElement = null;
     el.comparisonPanel.setAttribute("aria-hidden", "true");
     hidePruneLens();
+    hideCodePanel();
+    hideMemoryPanel();
+    el.stageShell.classList.remove("is-visual-proof");
     el.metricStrip.classList.remove("is-hidden");
     hideWorkbench();
     setMetrics("-", "-", "-");
@@ -832,6 +1355,12 @@
     gsap.set(".edge-group", { opacity: 1 });
     gsap.set(".edge-label-group", { opacity: 1 });
     gsap.set(".edge-line", { opacity: 1 });
+  }
+
+  function updateWorkspaceMode() {
+    const isCodeWorkspace = getActivePart().id === "part3";
+    el.presenterGrid.classList.toggle("is-code-workspace", isCodeWorkspace);
+    el.stageShell.classList.toggle("is-code-workspace", isCodeWorkspace);
   }
 
   function setSceneCopy(scene) {
@@ -866,7 +1395,9 @@
   function updateControlAvailability() {
     const scenes = getActiveScenes();
     el.prevButton.disabled = currentScene === 0;
-    el.nextButton.disabled = currentScene === scenes.length - 1;
+    el.nextButton.disabled = visualAdvanceBlocked || (currentScene === scenes.length - 1 && !pendingCodeReveal && !pendingVisualAdvance);
+    const isCodeEdit = pendingCodePayload && ((pendingCodePayload.changed || []).length > 0 || /sửa/.test(pendingCodePayload.status || ""));
+    el.nextButton.textContent = pendingCodeReveal ? (isCodeEdit ? "Sửa code" : "Viết code") : "Tiếp";
     el.pauseButton.disabled = !activeTimeline;
   }
 
@@ -936,6 +1467,274 @@
 
   function hidePruneLens() {
     el.pruneLens.setAttribute("aria-hidden", "true");
+  }
+
+  function showCodePanel({ title, status, lines, active = [], soft = [], inserted = [], changed = [], dim = [], note, compact = false }) {
+    const activeSet = new Set(active);
+    const softSet = new Set(soft);
+    const insertedSet = new Set(inserted);
+    const changedSet = new Set(changed);
+    const dimSet = new Set(dim);
+    el.stageShell.classList.add("is-code-mode");
+    el.codePanel.setAttribute("aria-hidden", "false");
+    el.codePanel.classList.toggle("is-compact", compact);
+    el.codePanelTitle.textContent = title;
+    el.codePanelStatus.textContent = status;
+    el.codeNote.textContent = note || "";
+    el.codeBlock.innerHTML = "";
+
+    lines.forEach((line, index) => {
+      const lineNumber = index + 1;
+      const row = document.createElement("span");
+      row.className = "code-line";
+      row.dataset.line = String(lineNumber);
+      row.classList.toggle("is-active", activeSet.has(lineNumber));
+      row.classList.toggle("is-soft", softSet.has(lineNumber));
+      row.classList.toggle("is-new", insertedSet.has(lineNumber));
+      row.classList.toggle("is-change", changedSet.has(lineNumber));
+      row.classList.toggle("is-dim", dimSet.has(lineNumber));
+
+      const gutter = document.createElement("span");
+      gutter.textContent = String(lineNumber).padStart(2, "0");
+
+      const code = document.createElement("code");
+      code.textContent = line || " ";
+
+      row.appendChild(gutter);
+      row.appendChild(code);
+      el.codeBlock.appendChild(row);
+    });
+  }
+
+  function focusCodeLines(lineNumbers, context = 3) {
+    const targetLines = lineNumbers.filter(Boolean).sort((a, b) => a - b);
+    if (!targetLines.length) return;
+
+    const firstEditLine = targetLines[0];
+    const lastEditLine = targetLines[targetLines.length - 1];
+    const targetLine = lastEditLine - firstEditLine > 8 ? lastEditLine : firstEditLine;
+    const firstLine = Math.max(1, targetLine - context);
+    const target =
+      el.codeBlock.querySelector(`[data-line="${firstLine}"]`) ||
+      el.codeBlock.querySelector(`[data-line="${targetLine}"]`);
+    if (!target) return;
+
+    const blockRect = el.codeBlock.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    el.codeBlock.scrollTop += targetRect.top - blockRect.top - 12;
+  }
+
+  function setCodeActiveLines(lineNumbers) {
+    const activeSet = new Set(lineNumbers.filter(Boolean));
+    document.querySelectorAll(".code-line").forEach((line) => {
+      line.classList.toggle("is-active", activeSet.has(Number(line.dataset.line)));
+    });
+  }
+
+  function hideCodePanel() {
+    el.stageShell.classList.remove("is-code-mode");
+    el.codePanel.setAttribute("aria-hidden", "true");
+    el.codePanel.classList.remove("is-compact");
+    el.codeBlock.innerHTML = "";
+    el.codeNote.textContent = "";
+  }
+
+  function showMemoryPanel({ cost = {}, visited = [], prev = {}, focus = [], amber = [], danger = [] } = {}) {
+    const focusSet = new Set(focus);
+    const amberSet = new Set(amber);
+    const dangerSet = new Set(danger);
+    el.memoryPanel.setAttribute("aria-hidden", "false");
+    renderMemoryChips(el.costMemory, Object.entries(cost).map(([node, value]) => `${node}:${value}`), focusSet, amberSet, dangerSet);
+    renderMemoryChips(el.visitedMemory, visited, focusSet, amberSet, dangerSet);
+    renderMemoryChips(el.prevMemory, Object.entries(prev).map(([node, value]) => `${node}<-${value}`), focusSet, amberSet, dangerSet);
+  }
+
+  function renderMemoryChips(container, items, focusSet, amberSet, dangerSet) {
+    container.innerHTML = "";
+    if (!items.length) {
+      const chip = document.createElement("span");
+      chip.className = "memory-chip is-muted";
+      chip.textContent = "-";
+      container.appendChild(chip);
+      return;
+    }
+
+    items.forEach((item) => {
+      const key = String(item).split(/[:<-]/)[0];
+      const chip = document.createElement("span");
+      chip.className = "memory-chip";
+      chip.classList.toggle("is-focus", focusSet.has(key) || focusSet.has(item));
+      chip.classList.toggle("is-amber", amberSet.has(key) || amberSet.has(item));
+      chip.classList.toggle("is-danger", dangerSet.has(key) || dangerSet.has(item));
+      chip.textContent = item;
+      container.appendChild(chip);
+    });
+  }
+
+  function hideMemoryPanel() {
+    el.memoryPanel.setAttribute("aria-hidden", "true");
+    el.costMemory.innerHTML = "";
+    el.visitedMemory.innerHTML = "";
+    el.prevMemory.innerHTML = "";
+  }
+
+  function animateMemoryPanel(tl, at = 0.1) {
+    tl.fromTo(el.memoryPanel, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.4), ease: "power3.out" }, at);
+    if (document.querySelector(".memory-chip.is-focus, .memory-chip.is-amber")) {
+      tl.fromTo(".memory-chip.is-focus, .memory-chip.is-amber", { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, stagger: dur(0.035), duration: dur(0.28), ease: "back.out(1.5)" }, at + 0.15);
+    }
+  }
+
+  function getPreviousPart3CodeState(step) {
+    const currentIndex = part3CodeBuildOrder.indexOf(step);
+    if (currentIndex <= 0) return null;
+    return part3CodeStates[part3CodeBuildOrder[currentIndex - 1]] || null;
+  }
+
+  function prepareCodeReveal(payload) {
+    pendingCodePayload = payload || null;
+    pendingCodeReveal = Boolean(pendingCodePayload);
+    updateControlAvailability();
+  }
+
+  function prepareVisualAdvance(handler) {
+    pendingVisualAdvance = typeof handler === "function" ? handler : null;
+    visualAdvanceBlocked = false;
+    updateControlAvailability();
+  }
+
+  function advancePendingVisual() {
+    const handler = pendingVisualAdvance;
+    if (!handler) return;
+    if (activeTimeline) {
+      const timeline = activeTimeline;
+      timeline.progress(1);
+      timeline.kill();
+      activeTimeline = null;
+    }
+    pendingVisualAdvance = null;
+    handler();
+    updatePauseButton();
+    updateControlAvailability();
+  }
+
+  function collapseCodeEditLines(editLines) {
+    if (!editLines.length) {
+      updateControlAvailability();
+      return;
+    }
+
+    editLines.forEach((line) => {
+      const style = window.getComputedStyle(line);
+      line.dataset.revealHeight = `${line.getBoundingClientRect().height}px`;
+      line.dataset.revealPaddingTop = style.paddingTop;
+      line.dataset.revealPaddingBottom = style.paddingBottom;
+    });
+
+    gsap.set(editLines, {
+      height: 0,
+      opacity: 0,
+      overflow: "hidden",
+      paddingTop: 0,
+      paddingBottom: 0,
+      y: -8,
+      scaleY: 0.96,
+      transformOrigin: "top center",
+    });
+  }
+
+  function revealPendingCode() {
+    if (!pendingCodeReveal) return;
+    const payload = pendingCodePayload;
+    if (activeTimeline) {
+      const timeline = activeTimeline;
+      timeline.progress(1);
+      timeline.kill();
+      activeTimeline = null;
+    }
+
+    pendingCodeReveal = false;
+    pendingCodePayload = null;
+    showCodePanel({
+      title: payload.title,
+      status: payload.status,
+      lines: payload.lines,
+      active: payload.active,
+      inserted: payload.inserted,
+      changed: payload.changed,
+      dim: payload.dim,
+      note: "",
+      compact: payload.compact,
+    });
+    focusCodeLines([...payload.inserted, ...payload.changed]);
+
+    const editLines = [...document.querySelectorAll(".code-line.is-new, .code-line.is-change")];
+    collapseCodeEditLines(editLines);
+    el.codePanelStatus.textContent = el.codePanelStatus.textContent.includes("sửa") ? "đã sửa" : "đã viết";
+    activeCodeRevealTween = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      onComplete: () => {
+        focusCodeLines([...payload.inserted, ...payload.changed]);
+        gsap.set(editLines, { clearProps: "height,overflow,paddingTop,paddingBottom,y,scaleY,transformOrigin,opacity" });
+        editLines.forEach((line) => {
+          delete line.dataset.revealHeight;
+          delete line.dataset.revealPaddingTop;
+          delete line.dataset.revealPaddingBottom;
+        });
+        activeCodeRevealTween = null;
+        activeTimeline = null;
+        updatePauseButton();
+        updateControlAvailability();
+      },
+    });
+    activeTimeline = activeCodeRevealTween;
+    activeCodeRevealTween.to(editLines, {
+      height: (index, line) => line.dataset.revealHeight || "auto",
+      paddingTop: (index, line) => line.dataset.revealPaddingTop || "",
+      paddingBottom: (index, line) => line.dataset.revealPaddingBottom || "",
+      opacity: 1,
+      y: 0,
+      scaleY: 1,
+      stagger: dur(0.06),
+      duration: dur(0.38),
+      ease: "back.out(1.25)",
+    });
+    updatePauseButton();
+    updateControlAvailability();
+  }
+
+  function showPart3Code(step, title, status, options = {}) {
+    const codeState = part3CodeStates[step];
+    const inserted = options.inserted || codeState.inserted || [];
+    const changed = options.changed || codeState.changed || [];
+    const hasEdit = inserted.length > 0 || changed.length > 0;
+    const previousCodeState = hasEdit ? getPreviousPart3CodeState(step) : null;
+    showCodePanel({
+      title,
+      status,
+      lines: previousCodeState ? previousCodeState.lines : hasEdit ? [] : codeState.lines,
+      active: hasEdit ? [] : options.active || codeState.active || [],
+      inserted: [],
+      changed: [],
+      dim: hasEdit ? [] : options.dim || codeState.dim || [],
+      note: "",
+      compact: options.compact || codeState.compact || false,
+    });
+    if (hasEdit && previousCodeState) focusCodeLines([...inserted, ...changed]);
+    prepareCodeReveal(
+      hasEdit
+        ? {
+            title,
+            status,
+            lines: codeState.lines,
+            active: options.active || codeState.active || [],
+            inserted,
+            changed,
+            dim: options.dim || codeState.dim || [],
+            compact: options.compact || codeState.compact || false,
+          }
+        : null,
+    );
   }
 
   function updatePruneLens(info, bestCost) {
@@ -1060,7 +1859,7 @@
     document.querySelectorAll(".edge-group").forEach((edge) => {
       const key = edge.dataset.edge;
       edge.classList.remove("is-hidden-edge", "is-revealed", "is-focus", "is-locked", "is-context");
-      if (getActivePart().id !== "part2") return;
+      if (!usesPart2Graph()) return;
 
       const isVisible = visibleSet.has(key) || focusSet.has(key) || lockedSet.has(key) || contextSet.has(key);
       edge.classList.toggle("is-hidden-edge", !isVisible);
@@ -1072,7 +1871,7 @@
     document.querySelectorAll(".edge-label-group").forEach((label) => {
       const key = label.dataset.edge;
       label.classList.remove("is-hidden-edge", "is-revealed", "is-focus", "is-locked", "is-context");
-      if (getActivePart().id !== "part2") return;
+      if (!usesPart2Graph()) return;
 
       const isVisible = visibleSet.has(key) || focusSet.has(key) || lockedSet.has(key) || contextSet.has(key);
       label.classList.toggle("is-hidden-edge", !isVisible);
@@ -1102,7 +1901,7 @@
         if (row.status === "unknown" && !focus.has(id) && !wrong.has(id) && !correct.has(id) && !clickable.has(id) && !context.has(id) && !target.has(id)) {
           nodeEl.classList.add("is-muted");
         }
-      } else if (getActivePart().id === "part2" && !context.has(id) && !target.has(id)) {
+      } else if (usesPart2Graph() && !context.has(id) && !target.has(id)) {
         nodeEl.classList.add("is-muted");
       }
       if (focus.has(id)) nodeEl.classList.add("is-focus");
@@ -1152,7 +1951,7 @@
       const row = state[node];
       if (!showUnknown && row.status === "unknown" && !focus.has(node)) return;
       const div = document.createElement("div");
-      div.className = `state-row is-${row.status}${showPrev ? "" : " no-prev"}${showCosts ? "" : " no-cost"}${focus.has(node) ? " is-focus" : ""}`;
+      div.className = `state-row is-${row.status}${showPrev ? " has-prev" : " no-prev"}${showCosts ? "" : " no-cost"}${focus.has(node) ? " is-focus" : ""}`;
       div.dataset.node = node;
 
       const label = document.createElement("strong");
@@ -1161,7 +1960,7 @@
       cost.className = "state-cost";
       cost.textContent = row.cost == null ? "?" : showCosts || row.status === "settled" ? String(row.cost) : "ẩn";
       const status = document.createElement("span");
-      status.textContent = statusText[row.status];
+      status.textContent = showPrev ? (row.prev && row.prev !== "-" ? "từ" : "gốc") : statusText[row.status];
       const prev = document.createElement("em");
       prev.textContent = row.prev || "-";
 
@@ -1263,7 +2062,7 @@
       "data-route": dataRoute,
     });
     group.appendChild(path);
-    el.cutLayer.appendChild(group);
+    el.activeRouteLayer.appendChild(group);
     const length = path.getTotalLength();
     let labelGroup = null;
     if (options.costLabel) {
@@ -1282,7 +2081,7 @@
     }
     ghostRouteTween = gsap.timeline({
       onComplete: () => {
-        if (group.parentNode === el.cutLayer) group.remove();
+        if (!options.persist && group.parentNode === el.cutLayer) group.remove();
         ghostRouteTween = null;
         if (typeof options.onComplete === "function") options.onComplete();
       },
@@ -1300,7 +2099,9 @@
         "<0.12",
       );
     }
-    ghostRouteTween.to(group, { opacity: 0, duration: dur(0.34), ease: "power2.in" }, "+=2.35");
+    if (!options.persist) {
+      ghostRouteTween.to(group, { opacity: 0, duration: dur(0.34), ease: "power2.in" }, "+=2.35");
+    }
     return path;
   }
 
@@ -2229,6 +3030,1174 @@
     return tl;
   }
 
+  function enterPart3FrameScene() {
+    const tl = makeTimeline();
+    const allEdges = [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE, part2Edges.fromD, part2Edges.toK];
+    const finalEdges = [
+      ["A", "C"],
+      ["C", "B"],
+      ["B", "E"],
+      ["E", "F"],
+      ["F", "K"],
+    ];
+
+    setCameraView(part2Cameras.full);
+    setEdgeStates({ visible: allEdges, locked: [finalEdges] });
+    setNodeStates(part3EndReadyState, { focus: ["A", "C", "B", "E", "F", "K"], target: ["K"], showNodeCosts: true });
+    showBestRoute(part2FinalPath);
+    showMemoryPanel();
+    showPart3Code("frame", "Khung hàm", "chờ viết");
+    setMetrics("ý tưởng", "Cost / Visited / Prev", "sang mã giả");
+
+    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
+    tl.fromTo(".route-best", { opacity: 0, strokeDashoffset: 60 }, { opacity: 1, strokeDashoffset: 0, duration: dur(0.52), ease: "power2.out" }, "<0.08");
+    animateMemoryPanel(tl, 0.14);
+    return tl;
+  }
+
+  function enterPart3CostScene() {
+    const tl = makeTimeline();
+    const initState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["unknown", null, "-"],
+      B: ["unknown", null, "-"],
+      D: ["unknown", null, "-"],
+      E: ["unknown", null, "-"],
+      F: ["unknown", null, "-"],
+      G: ["unknown", null, "-"],
+      K: ["unknown", null, "-"],
+    });
+
+    setCameraView(part2Cameras.aTight);
+    setEdgeStates({ context: [part2Edges.fromA] });
+    setNodeStates(initState, { focus: ["A"], target: ["K"], context: ["C", "B", "D", "E"], showNodeCosts: true, nodeCostNodes: ["A"] });
+    showMemoryPanel({ cost: { A: 0 }, focus: ["A"] });
+    showPart3Code("cost", "Ghi Cost đầu tiên", "chờ viết");
+    setMetrics("start = A", "Cost[A] = 0", "còn lại ?");
+
+    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
+    tl.fromTo(".node-A", { scale: 0.92 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.28), ease: "power2.inOut" }, "<0.1");
+    animateMemoryPanel(tl, 0.2);
+    return tl;
+  }
+
+  function enterPart3LoopScene() {
+    const tl = makeTimeline();
+    const initState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["unknown", null, "-"],
+      B: ["unknown", null, "-"],
+      D: ["unknown", null, "-"],
+      E: ["unknown", null, "-"],
+      F: ["unknown", null, "-"],
+      G: ["unknown", null, "-"],
+      K: ["unknown", null, "-"],
+    });
+
+    setCameraView(part2Cameras.aTight);
+    setEdgeStates({ context: [part2Edges.fromA] });
+    setNodeStates(initState, { focus: ["A"], target: ["K"], context: ["C", "B", "D", "E"], showNodeCosts: true, nodeCostNodes: ["A"] });
+    showMemoryPanel({ cost: { A: 0 }, focus: ["A"] });
+    showPart3Code("loop", "Tạo vòng lặp", "chờ viết");
+    drawCandidateRoutes([
+      ["A", "C"],
+      ["A", "B"],
+      ["A", "D"],
+      ["A", "E"],
+    ]);
+    gsap.set(".route-candidate", { opacity: 0 });
+    setMetrics("A có cost 0", "mở hàng xóm", "lặp tiếp");
+
+    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
+    tl.fromTo(".node-A", { scale: 0.94 }, { scale: 1.1, yoyo: true, repeat: 1, duration: dur(0.3), ease: "power2.inOut" }, "<0.1");
+    animateMemoryPanel(tl, 0.18);
+    moveCameraOnTimeline(tl, part3LoopCamera.center, part3LoopCamera.scale, 0.28, 0.72);
+    tl.call(() => {
+      setEdgeStates({ visible: [part2Edges.fromA], focus: [part2Edges.fromA] });
+      setMetrics("A đã chọn", "C/B/D/E", "frontier mới");
+    }, null, 0.52);
+    tl.fromTo(
+      ".route-candidate",
+      { opacity: 0, strokeDashoffset: 52 },
+      { opacity: 0.64, strokeDashoffset: 0, stagger: dur(0.08), duration: dur(0.42), ease: "power2.out" },
+      0.56,
+    );
+    tl.call(() => {
+      setNodeStates(part2States.start, {
+        focus: ["C", "B", "D", "E"],
+        correct: ["A"],
+        target: ["K"],
+        showNodeCosts: true,
+        nodeCostNodes: ["A", "C", "B", "D", "E"],
+      });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+        visited: ["A"],
+        focus: ["C", "B", "D", "E"],
+        amber: ["C", "B", "D", "E"],
+      });
+      setMetrics("frontier", "4 ứng viên", "cần vòng sau");
+    }, null, 0.96);
+    tl.fromTo(
+      ".node-C, .node-B, .node-D, .node-E",
+      { scale: 0.86, opacity: 0.36 },
+      { scale: 1, opacity: 1, stagger: dur(0.055), duration: dur(0.34), ease: "back.out(1.45)" },
+      0.98,
+    );
+    tl.fromTo(
+      ".memory-chip.is-focus, .memory-chip.is-amber",
+      { scale: 0.82, opacity: 0 },
+      { scale: 1, opacity: 1, stagger: dur(0.04), duration: dur(0.28), ease: "back.out(1.5)" },
+      1.05,
+    );
+    return tl;
+  }
+
+  function animatePart3SceneIntro(tl, memoryAt = 0.18) {
+    tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
+    animateMemoryPanel(tl, memoryAt);
+    const introGraphVisualSelector = ".part3-graph-visual:not(.is-deferred)";
+    if (document.querySelector(introGraphVisualSelector)) {
+      prepareSvgPathDraw(`${introGraphVisualSelector} .part3-backtrack-path`);
+      tl.fromTo(introGraphVisualSelector, { opacity: 0 }, { opacity: 1, duration: dur(0.34), ease: "power3.out" }, memoryAt + 0.12);
+      if (document.querySelector(`${introGraphVisualSelector} .part3-backtrack-path`)) {
+        tl.to(`${introGraphVisualSelector} .part3-backtrack-path`, { strokeDashoffset: 0, duration: dur(0.46), ease: "power2.out" }, memoryAt + 0.22);
+      }
+      const introGraphPartsSelector = `${introGraphVisualSelector} .part3-node-marker, ${introGraphVisualSelector} .part3-probe-cursor, ${introGraphVisualSelector} .part3-backtrack-label`;
+      if (document.querySelector(introGraphPartsSelector)) {
+        tl.fromTo(introGraphPartsSelector, { opacity: 0, scale: 0.82, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.045), duration: dur(0.28), ease: "back.out(1.5)" }, memoryAt + 0.28);
+      }
+    }
+  }
+
+  function pulsePart3Nodes(tl, nodeIds, at, options = {}) {
+    const selector = nodeIds.map((node) => `.node-${node}`).join(", ");
+    if (!selector) return;
+    tl.fromTo(
+      selector,
+      { scale: options.fromScale || 0.92 },
+      {
+        scale: options.toScale || 1.12,
+        yoyo: true,
+        repeat: 1,
+        stagger: dur(options.stagger || 0.05),
+        duration: dur(options.duration || 0.24),
+        ease: "power2.inOut",
+      },
+      at,
+    );
+  }
+
+  function animateCandidateBadgesOnTimeline(tl, at = 0.18, stagger = 0.045) {
+    tl.fromTo(
+      ".candidate-badges > *",
+      { opacity: 0, y: -8 },
+      { opacity: 1, y: 0, stagger: dur(stagger), duration: dur(0.28), ease: "power3.out" },
+      at,
+    );
+  }
+
+  function prepareSvgPathDraw(selector) {
+    document.querySelectorAll(selector).forEach((path) => {
+      if (typeof path.getTotalLength !== "function") return;
+      const length = Math.max(1, path.getTotalLength());
+      gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+    });
+  }
+
+  function drawPart3GraphGroup(className) {
+    const group = svg("g", { class: `part3-graph-visual ${className}` });
+    el.activeRouteLayer.appendChild(group);
+    return group;
+  }
+
+  function drawPart3Probe(startNode, className = "") {
+    const point = nodes[startNode];
+    const group = drawPart3GraphGroup(`part3-probe-visual ${className}`);
+    const probe = svg("g", { class: "part3-probe-cursor", transform: `translate(${point.x} ${point.y})` });
+    probe.appendChild(svg("circle", { r: 35, class: "part3-probe-ring" }));
+    probe.appendChild(svg("circle", { r: 22, class: "part3-probe-core" }));
+    group.appendChild(probe);
+    return probe;
+  }
+
+  function animatePart3Probe(tl, order, at = 0.48) {
+    if (!order.length) return;
+    order.forEach((node, index) => {
+      const point = nodes[node];
+      const position = at + index * 0.13;
+      tl.to(".part3-probe-cursor", { attr: { transform: `translate(${point.x} ${point.y})` }, duration: dur(0.12), ease: "power2.inOut" }, position);
+      pulsePart3Nodes(tl, [node], position + 0.02, { toScale: index === order.length - 1 ? 1.14 : 1.08, duration: 0.16 });
+    });
+  }
+
+  function drawPart3NodeMarker(node, { tone = "focus", symbol = "check", className = "" } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-node-marker-visual ${className}`);
+    const marker = svg("g", {
+      class: `part3-node-marker marker-node-${node} is-${tone} has-${symbol}`,
+      transform: `translate(${point.x} ${point.y})`,
+    });
+    marker.appendChild(svg("circle", { r: 38, class: "part3-node-marker-ring" }));
+    if (symbol === "x") {
+      marker.appendChild(svg("line", { x1: -16, y1: -16, x2: 16, y2: 16, class: "part3-node-marker-x" }));
+      marker.appendChild(svg("line", { x1: 16, y1: -16, x2: -16, y2: 16, class: "part3-node-marker-x" }));
+    }
+    if (symbol === "check") {
+      marker.appendChild(svg("path", { d: "M -16 1 L -5 13 L 18 -15", class: "part3-node-marker-check" }));
+    }
+    if (symbol === "stop") {
+      marker.appendChild(svg("rect", { x: -16, y: -16, width: 32, height: 32, rx: 8, class: "part3-node-marker-stop" }));
+    }
+    if (symbol === "question") {
+      const text = svg("text", { x: 0, y: 2, class: "part3-node-marker-question" });
+      text.textContent = "?";
+      marker.appendChild(text);
+    }
+    group.appendChild(marker);
+    return marker;
+  }
+
+  function drawPart3Packet({ from, to, text, tone = "focus", className = "", offset = 0, startT = 0.16, endT = 0.86 }) {
+    const startPoint = pointBetween(nodes[from], nodes[to], startT);
+    const endPoint = pointBetween(nodes[from], nodes[to], endT);
+    const normal = lineNormal(nodes[from], nodes[to]);
+    const start = { x: startPoint.x + normal.x * offset, y: startPoint.y + normal.y * offset };
+    const end = { x: endPoint.x + normal.x * offset, y: endPoint.y + normal.y * offset };
+    const group = svg("g", {
+      class: `part3-packet is-${tone} ${className}`,
+      transform: `translate(${start.x} ${start.y})`,
+      "data-dx": String(end.x - start.x),
+      "data-dy": String(end.y - start.y),
+    });
+    const width = Math.max(58, String(text).length * 11 + 22);
+    group.appendChild(svg("rect", { x: -width / 2, y: -17, width, height: 34, rx: 9, class: "part3-packet-bg" }));
+    const label = svg("text", { x: 0, y: 1, class: "part3-packet-text" });
+    label.textContent = text;
+    group.appendChild(label);
+    el.activeRouteLayer.appendChild(group);
+    return group;
+  }
+
+  function drawPart3FloatingChip(node, text, { tone = "focus", className = "", dx = 0, dy = 0 } = {}) {
+    const point = nodes[node];
+    const group = svg("g", {
+      class: `part3-packet is-${tone} ${className}`,
+      transform: `translate(${point.x + dx} ${point.y + dy})`,
+    });
+    const width = Math.max(42, String(text).length * 11 + 22);
+    group.appendChild(svg("rect", { x: -width / 2, y: -17, width, height: 34, rx: 9, class: "part3-packet-bg" }));
+    const label = svg("text", { x: 0, y: 1, class: "part3-packet-text" });
+    label.textContent = text;
+    group.appendChild(label);
+    el.activeRouteLayer.appendChild(group);
+    return group;
+  }
+
+  function drawPart3FlowChip({ from, to, text, tone = "focus", className = "", offset = 0, startT = 0.16, endT = 0.86 }) {
+    const startPoint = pointBetween(nodes[from], nodes[to], startT);
+    const endPoint = pointBetween(nodes[from], nodes[to], endT);
+    const normal = lineNormal(nodes[from], nodes[to]);
+    const start = { x: startPoint.x + normal.x * offset, y: startPoint.y + normal.y * offset };
+    const end = { x: endPoint.x + normal.x * offset, y: endPoint.y + normal.y * offset };
+    const group = svg("g", {
+      class: `part3-packet is-${tone} ${className}`,
+      transform: `translate(${start.x} ${start.y})`,
+      "data-end-x": String(end.x),
+      "data-end-y": String(end.y),
+    });
+    const width = Math.max(58, String(text).length * 11 + 22);
+    group.appendChild(svg("rect", { x: -width / 2, y: -17, width, height: 34, rx: 9, class: "part3-packet-bg" }));
+    const label = svg("text", { x: 0, y: 1, class: "part3-packet-text" });
+    label.textContent = text;
+    group.appendChild(label);
+    el.activeRouteLayer.appendChild(group);
+    return group;
+  }
+
+  function drawPart3CostSlot(node, { className = "", dx = -8, dy = -118 } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-cost-slot-visual ${className}`);
+    const slot = svg("g", {
+      class: "part3-cost-slot",
+      transform: `translate(${point.x + dx} ${point.y + dy})`,
+    });
+    slot.appendChild(svg("rect", { x: -76, y: -50, width: 152, height: 116, rx: 14, class: "part3-cost-slot-shell" }));
+    const label = svg("text", { x: 0, y: -24, class: "part3-cost-slot-label" });
+    label.textContent = `Cost[${node}]`;
+    slot.appendChild(label);
+
+    const current = svg("g", { class: "part3-cost-slot-chip slot-current" });
+    current.appendChild(svg("rect", { x: -30, y: -7, width: 60, height: 48, rx: 12, class: "part3-cost-slot-chip-bg is-current" }));
+    const currentText = svg("text", { x: 0, y: 19, class: "part3-cost-slot-value" });
+    currentText.textContent = "6";
+    current.appendChild(currentText);
+    slot.appendChild(current);
+
+    const bad = svg("g", { class: "part3-cost-slot-chip slot-bad" });
+    bad.appendChild(svg("rect", { x: -30, y: -7, width: 60, height: 48, rx: 12, class: "part3-cost-slot-chip-bg is-bad" }));
+    const badText = svg("text", { x: 0, y: 19, class: "part3-cost-slot-value" });
+    badText.textContent = "7";
+    bad.appendChild(badText);
+    slot.appendChild(bad);
+
+    const candidate = svg("g", { class: "part3-cost-slot-chip slot-candidate", transform: "translate(-156 58)" });
+    candidate.appendChild(svg("rect", { x: -30, y: -24, width: 60, height: 48, rx: 12, class: "part3-cost-slot-chip-bg is-candidate" }));
+    const candidateText = svg("text", { x: 0, y: 2, class: "part3-cost-slot-value" });
+    candidateText.textContent = "7";
+    candidate.appendChild(candidateText);
+    slot.appendChild(candidate);
+
+    const arrow = svg("path", { d: "M -120 58 C -82 46 -66 25 -40 18", class: "part3-cost-slot-arrow" });
+    slot.appendChild(arrow);
+
+    const ruler = svg("g", { class: "part3-cost-slot-ruler", transform: "translate(-112 91)" });
+    ruler.appendChild(svg("line", { x1: 0, y1: 0, x2: 174, y2: 0, class: "part3-cost-ruler-line" }));
+    ruler.appendChild(svg("line", { x1: 78, y1: -9, x2: 78, y2: 9, class: "part3-cost-ruler-tick is-current" }));
+    ruler.appendChild(svg("line", { x1: 120, y1: -9, x2: 120, y2: 9, class: "part3-cost-ruler-tick is-candidate" }));
+    const currentPin = svg("g", { class: "part3-cost-ruler-pin is-current", transform: "translate(78 -1)" });
+    currentPin.appendChild(svg("circle", { r: 14, class: "part3-cost-ruler-pin-bg" }));
+    const currentPinText = svg("text", { x: 0, y: 1, class: "part3-cost-ruler-pin-text" });
+    currentPinText.textContent = "6";
+    currentPin.appendChild(currentPinText);
+    ruler.appendChild(currentPin);
+    const candidatePin = svg("g", { class: "part3-cost-ruler-pin is-candidate", transform: "translate(120 -1)" });
+    candidatePin.appendChild(svg("circle", { r: 14, class: "part3-cost-ruler-pin-bg" }));
+    const candidatePinText = svg("text", { x: 0, y: 1, class: "part3-cost-ruler-pin-text" });
+    candidatePinText.textContent = "7";
+    candidatePin.appendChild(candidatePinText);
+    ruler.appendChild(candidatePin);
+    slot.appendChild(ruler);
+
+    const gate = svg("g", { class: "part3-cost-slot-gate", transform: "translate(-44 17)" });
+    gate.appendChild(svg("line", { x1: 0, y1: -34, x2: 0, y2: 34, class: "part3-cost-slot-gate-line" }));
+    gate.appendChild(svg("path", { d: "M -15 -15 L 15 15 M 15 -15 L -15 15", class: "part3-cost-slot-gate-x" }));
+    slot.appendChild(gate);
+
+    const rejected = svg("g", { class: "part3-cost-slot-chip slot-rejected", transform: "translate(-94 58)" });
+    rejected.appendChild(svg("rect", { x: -30, y: -24, width: 60, height: 48, rx: 12, class: "part3-cost-slot-chip-bg is-rejected" }));
+    const rejectedText = svg("text", { x: 0, y: 2, class: "part3-cost-slot-value" });
+    rejectedText.textContent = "7";
+    rejected.appendChild(rejectedText);
+    slot.appendChild(rejected);
+
+    group.appendChild(slot);
+    return group;
+  }
+
+  function drawPart3GuardDecisionBoard(node, { className = "", dx = 126, dy = -80 } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-guard-decision-visual ${className}`);
+    const board = svg("g", {
+      class: "part3-guard-decision",
+      transform: `translate(${point.x + dx} ${point.y + dy})`,
+    });
+
+    board.appendChild(svg("rect", { x: -148, y: -106, width: 296, height: 220, rx: 16, class: "part3-guard-shell" }));
+
+    const title = svg("text", { x: -118, y: -76, class: "part3-guard-title" });
+    title.textContent = `Cost[${node}]`;
+    board.appendChild(title);
+
+    const note = svg("text", { x: -118, y: -54, class: "part3-guard-note" });
+    note.textContent = "giữ số tốt nhất đang biết";
+    board.appendChild(note);
+
+    const emptySlot = svg("g", { class: "part3-guard-slot guard-slot-empty", transform: "translate(52 14)" });
+    emptySlot.appendChild(svg("rect", { x: -44, y: -32, width: 88, height: 64, rx: 14, class: "part3-guard-slot-bg is-empty" }));
+    const emptyText = svg("text", { x: 0, y: 1, class: "part3-guard-slot-text is-muted" });
+    emptyText.textContent = "trống";
+    emptySlot.appendChild(emptyText);
+    board.appendChild(emptySlot);
+
+    const currentSlot = svg("g", { class: "part3-guard-slot guard-slot-current", transform: "translate(52 14)" });
+    currentSlot.appendChild(svg("rect", { x: -44, y: -32, width: 88, height: 64, rx: 14, class: "part3-guard-slot-bg is-current" }));
+    const currentText = svg("text", { x: 0, y: 2, class: "part3-guard-value" });
+    currentText.textContent = "6";
+    currentSlot.appendChild(currentText);
+    board.appendChild(currentSlot);
+
+    const badSlot = svg("g", { class: "part3-guard-slot guard-slot-bad", transform: "translate(52 14)" });
+    badSlot.appendChild(svg("rect", { x: -44, y: -32, width: 88, height: 64, rx: 14, class: "part3-guard-slot-bg is-bad" }));
+    const badText = svg("text", { x: 0, y: 2, class: "part3-guard-value" });
+    badText.textContent = "7";
+    badSlot.appendChild(badText);
+    board.appendChild(badSlot);
+
+    const candidate6 = svg("g", { class: "part3-guard-chip guard-candidate-six", transform: "translate(-86 -20)" });
+    candidate6.appendChild(svg("rect", { x: -32, y: -24, width: 64, height: 48, rx: 12, class: "part3-guard-chip-bg is-current" }));
+    const candidate6Text = svg("text", { x: 0, y: 1, class: "part3-guard-value" });
+    candidate6Text.textContent = "6";
+    candidate6.appendChild(candidate6Text);
+    board.appendChild(candidate6);
+
+    const candidate7 = svg("g", { class: "part3-guard-chip guard-candidate-seven", transform: "translate(-86 58)" });
+    candidate7.appendChild(svg("rect", { x: -32, y: -24, width: 64, height: 48, rx: 12, class: "part3-guard-chip-bg is-bad" }));
+    const candidate7Text = svg("text", { x: 0, y: 1, class: "part3-guard-value" });
+    candidate7Text.textContent = "7";
+    candidate7.appendChild(candidate7Text);
+    board.appendChild(candidate7);
+
+    board.appendChild(svg("path", { d: "M -50 -18 C -22 -18 -4 -6 14 8", class: "part3-guard-arrow guard-arrow-six" }));
+    board.appendChild(svg("path", { d: "M -50 58 C -18 58 -6 36 10 24", class: "part3-guard-arrow guard-arrow-seven" }));
+
+    const compare = svg("g", { class: "part3-guard-compare guard-compare", transform: "translate(-22 58)" });
+    compare.appendChild(svg("rect", { x: -43, y: -19, width: 86, height: 38, rx: 11, class: "part3-guard-compare-bg" }));
+    const compareText = svg("text", { x: 0, y: 1, class: "part3-guard-compare-text" });
+    compareText.textContent = "7 < 6 ?";
+    compare.appendChild(compareText);
+    board.appendChild(compare);
+
+    const gate = svg("g", { class: "part3-guard-gate guard-gate", transform: "translate(9 42)" });
+    gate.appendChild(svg("line", { x1: 0, y1: -32, x2: 0, y2: 32, class: "part3-guard-gate-line" }));
+    gate.appendChild(svg("path", { d: "M -14 -14 L 14 14 M 14 -14 L -14 14", class: "part3-guard-gate-x" }));
+    board.appendChild(gate);
+
+    const reject = svg("g", { class: "part3-guard-reject guard-reject", transform: "translate(-22 92)" });
+    reject.appendChild(svg("rect", { x: -44, y: -15, width: 88, height: 30, rx: 10, class: "part3-guard-reject-bg" }));
+    const rejectText = svg("text", { x: 0, y: 1, class: "part3-guard-reject-text" });
+    rejectText.textContent = "không ghi";
+    reject.appendChild(rejectText);
+    board.appendChild(reject);
+
+    const lost = svg("g", { class: "part3-guard-lost guard-lost", transform: "translate(52 68)" });
+    lost.appendChild(svg("path", { d: "M -28 0 L 28 0", class: "part3-guard-lost-line" }));
+    const lostText = svg("text", { x: 0, y: 23, class: "part3-guard-lost-text" });
+    lostText.textContent = "6 bị mất";
+    lost.appendChild(lostText);
+    board.appendChild(lost);
+
+    group.appendChild(board);
+    return group;
+  }
+
+  function drawPart3EdgeTrace(route, { tone = "focus", className = "", offset = 0 } = {}) {
+    const group = drawPart3GraphGroup(`part3-edge-trace-visual ${className}`);
+    const path = svg("path", { d: routePath(route, offset), class: `part3-edge-trace-path is-${tone}` });
+    group.appendChild(path);
+    return group;
+  }
+
+  function drawPart3Gate(node, { className = "" } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-gate-visual ${className}`);
+    const gate = svg("g", { class: "part3-gate", transform: `translate(${point.x} ${point.y})` });
+    gate.appendChild(svg("circle", { r: 42, class: "part3-gate-ring" }));
+    gate.appendChild(svg("path", { d: "M -18 -4 C -6 12 10 12 22 -8", class: "part3-gate-lip" }));
+    group.appendChild(gate);
+    return group;
+  }
+
+  function drawPart3ParentArrow(child, parent, { className = "", text = "" } = {}) {
+    const childPoint = nodes[child];
+    const parentPoint = nodes[parent];
+    const normal = lineNormal(childPoint, parentPoint);
+    const path = routePath([child, parent], -18);
+    const group = drawPart3GraphGroup(`part3-parent-arrow-visual ${className}`);
+    const arrowPath = svg("path", { d: path, class: "part3-parent-arrow-path" });
+    group.appendChild(arrowPath);
+
+    const dx = parentPoint.x - childPoint.x;
+    const dy = parentPoint.y - childPoint.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const ux = dx / length;
+    const uy = dy / length;
+    const tip = { x: parentPoint.x - ux * 28, y: parentPoint.y - uy * 28 };
+    const back = { x: tip.x - ux * 16, y: tip.y - uy * 16 };
+    const wing = 7;
+    group.appendChild(
+      svg("path", {
+        d: `M ${back.x + normal.x * wing} ${back.y + normal.y * wing} L ${tip.x} ${tip.y} L ${back.x - normal.x * wing} ${back.y - normal.y * wing}`,
+        class: "part3-parent-arrow-head",
+      }),
+    );
+
+    if (text) {
+      const labelPoint = pointBetween(childPoint, parentPoint, 0.44);
+      const width = Math.max(54, text.length * 10 + 18);
+      const label = svg("g", {
+        class: "part3-parent-label",
+        transform: `translate(${labelPoint.x + normal.x * -34} ${labelPoint.y + normal.y * -34})`,
+      });
+      label.appendChild(svg("rect", { x: -width / 2, y: -13, width, height: 26, rx: 8, class: "part3-parent-label-bg" }));
+      const labelText = svg("text", { x: 0, y: 1, class: "part3-parent-label-text" });
+      labelText.textContent = text;
+      label.appendChild(labelText);
+      group.appendChild(label);
+    }
+
+    return group;
+  }
+
+  function drawPart3BacktrackCursor(startNode, className = "") {
+    const point = nodes[startNode];
+    const group = drawPart3GraphGroup(`part3-backtrack-cursor-visual ${className}`);
+    const cursor = svg("g", { class: "part3-backtrack-cursor", transform: `translate(${point.x} ${point.y})` });
+    cursor.appendChild(svg("circle", { r: 25, class: "part3-backtrack-cursor-ring" }));
+    cursor.appendChild(svg("circle", { r: 8, class: "part3-backtrack-cursor-dot" }));
+    group.appendChild(cursor);
+    return cursor;
+  }
+
+  function animatePart3BacktrackCursor(tl, route, at = 1.8) {
+    route.forEach((node, index) => {
+      const point = nodes[node];
+      const position = at + index * 0.16;
+      tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${point.x} ${point.y})` }, duration: dur(0.14), ease: "power2.inOut" }, position);
+      pulsePart3Nodes(tl, [node], position + 0.02, { toScale: index === 0 ? 1.12 : 1.08, duration: 0.18 });
+    });
+  }
+
+  function animatePart3Packets(tl, selector, at = 0.56, duration = 0.55) {
+    document.querySelectorAll(selector).forEach((packet, index) => {
+      const dx = Number(packet.dataset.dx || 0);
+      const dy = Number(packet.dataset.dy || 0);
+      const startAt = at + index * 0.12;
+      tl.fromTo(packet, { opacity: 0, scale: 0.76, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.22), ease: "back.out(1.5)" }, startAt);
+      tl.to(packet, { x: dx, y: dy, duration: dur(duration), ease: "power2.inOut" }, startAt + 0.08);
+      tl.to(packet, { scale: 1.12, yoyo: true, repeat: 1, duration: dur(0.16), ease: "power2.inOut" }, startAt + duration + 0.1);
+    });
+  }
+
+  function animatePart3FlowChips(tl, selector, at = 0.56, duration = 0.95) {
+    document.querySelectorAll(selector).forEach((chip, index) => {
+      const endX = Number(chip.dataset.endX || 0);
+      const endY = Number(chip.dataset.endY || 0);
+      const startAt = at + index * 0.12;
+      tl.fromTo(chip, { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.24), ease: "back.out(1.4)", immediateRender: false }, startAt);
+      tl.to(chip, { attr: { transform: `translate(${endX} ${endY})` }, duration: dur(duration), ease: "power2.inOut" }, startAt + 0.18);
+      tl.to(chip, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.18), ease: "power2.inOut" }, startAt + duration + 0.24);
+    });
+  }
+
+  function drawPart3Backtrack(route, options = {}) {
+    const group = drawPart3GraphGroup(`part3-backtrack-visual ${options.className || ""}`);
+    const path = svg("path", { d: routePath(route, options.offset || -12), class: "part3-backtrack-path" });
+    group.appendChild(path);
+    const labelNode = options.labelNode || route[route.length - 1];
+    const point = nodes[labelNode];
+    const label = svg("g", { class: "part3-backtrack-label", transform: `translate(${point.x} ${point.y - 58})` });
+    label.appendChild(svg("rect", { x: -48, y: -17, width: 96, height: 34, rx: 9, class: "part3-backtrack-label-bg" }));
+    const text = svg("text", { x: 0, y: 1, class: "part3-backtrack-label-text" });
+    text.textContent = options.text || "Prev";
+    label.appendChild(text);
+    group.appendChild(label);
+    return group;
+  }
+
+  function enterPart3MinScene() {
+    const tl = makeTimeline();
+
+    setCameraView(part3LoopCamera);
+    setEdgeStates({ visible: [part2Edges.fromA], focus: [part2Edges.fromA] });
+    setNodeStates(part2States.start, {
+      focus: ["A", "C", "B", "D", "E"],
+      wrong: ["A"],
+      target: ["K"],
+      showNodeCosts: true,
+      nodeCostNodes: ["A", "C", "B", "D", "E"],
+    });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+      focus: ["A"],
+      amber: ["C", "B", "D", "E"],
+    });
+    drawPart3Probe("A", "min-probe");
+    drawPart3NodeMarker("A", { tone: "warn", symbol: "x", className: "min-wrong-marker" });
+    gsap.set(".min-wrong-marker", { opacity: 0 });
+    showPart3Code("min", "Tìm đỉnh nhỏ nhất", "chờ viết");
+    setMetrics("quét Cost", "A=0 thắng", "cần Visited");
+
+    animatePart3SceneIntro(tl, 0.16);
+    moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 0.2, 0.62);
+    animatePart3Probe(tl, ["A", "C", "B", "D", "E", "A"], 0.48);
+    tl.call(() => {
+      setNodeStates(part2States.start, {
+        focus: ["A"],
+        wrong: ["A"],
+        target: ["K"],
+        showNodeCosts: true,
+        nodeCostNodes: ["A", "C", "B", "D", "E"],
+      });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+        focus: ["A"],
+        amber: ["C", "B", "D", "E"],
+      });
+      setMetrics("bug lộ ra", "A được chọn lại", "sửa ở scene sau");
+    }, null, 0.94);
+    tl.fromTo(".min-wrong-marker", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.26), ease: "back.out(1.5)" }, 0.96);
+    pulsePart3Nodes(tl, ["A"], 1.0, { toScale: 1.14, duration: 0.3 });
+    return tl;
+  }
+
+  function enterPart3VisitedScene() {
+    const tl = makeTimeline();
+
+    setCameraView(part2Cameras.frontier);
+    setEdgeStates({ visible: [part2Edges.fromA], focus: [[["A", "C"]]] });
+    setNodeStates(part2States.start, {
+      focus: ["A", "C"],
+      wrong: ["A"],
+      target: ["K"],
+      showNodeCosts: true,
+      nodeCostNodes: ["A", "C", "B", "D", "E"],
+    });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+      visited: ["A"],
+      focus: ["A", "C"],
+      amber: ["B", "D", "E"],
+    });
+    drawPart3Probe("A", "visited-probe");
+    drawPart3NodeMarker("A", { tone: "warn", symbol: "x", className: "visited-block-marker" });
+    drawPart3NodeMarker("C", { tone: "focus", symbol: "check", className: "visited-pass-marker" });
+    gsap.set(".visited-pass-marker", { opacity: 0 });
+    showPart3Code("visited", "Loại đỉnh đã chốt", "chờ sửa");
+    setMetrics("A=0", "đã xử lý", "!Visited");
+
+    animatePart3SceneIntro(tl, 0.16);
+    animatePart3Probe(tl, ["A", "C"], 0.42);
+    tl.call(() => {
+      setEdgeStates({ visible: [part2Edges.fromA], focus: [[["A", "C"]]] });
+      setMetrics("bỏ A", "vì Visited[A]", "quét tiếp");
+    }, null, 0.68);
+    tl.call(() => {
+      setNodeStates(part2States.start, {
+        focus: ["C"],
+        correct: ["A", "C"],
+        target: ["K"],
+        showNodeCosts: true,
+        nodeCostNodes: ["A", "C", "B", "D", "E"],
+      });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+        visited: ["A"],
+        focus: ["C"],
+        amber: ["B", "D", "E"],
+      });
+      setMetrics("eligible", "C=2", "min = C");
+    }, null, 1.06);
+    tl.fromTo(".visited-pass-marker", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.26), ease: "back.out(1.5)" }, 1.08);
+    pulsePart3Nodes(tl, ["C"], 1.1, { toScale: 1.14, duration: 0.3 });
+    return tl;
+  }
+
+  function enterPart3EmptyScene() {
+    const tl = makeTimeline();
+
+    setCameraView(part2Cameras.frontier);
+    setEdgeStates({ visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE, part2Edges.fromD] });
+    setNodeStates(part3NoFrontierState, {
+      focus: ["A", "C", "B", "E", "D", "F", "G"],
+      correct: ["A", "C", "B", "E", "D", "F", "G"],
+      showNodeCosts: true,
+      nodeCostNodes: ["A", "C", "B", "E", "D", "F", "G"],
+    });
+    ["A", "C", "B", "E", "D", "F", "G"].forEach((node) => {
+      drawPart3NodeMarker(node, { tone: "warn", symbol: "x", className: "empty-closed-marker" });
+    });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9 },
+      visited: ["A", "C", "B", "E", "D", "F", "G"],
+      focus: ["A", "C", "B", "E", "D", "F", "G"],
+    });
+    showPart3Code("empty", "Van an toàn", "chờ viết");
+    setMetrics("quét xong", "min = null", "break");
+
+    animatePart3SceneIntro(tl, 0.16);
+    moveCameraOnTimeline(tl, part3GuardCamera.center, part3GuardCamera.scale, 0.2, 0.58);
+    tl.call(() => setMetrics("frontier rỗng", "min không đổi", "cần break"), null, 0.9);
+    return tl;
+  }
+
+  function enterPart3EndScene() {
+    const tl = makeTimeline();
+    const finalEdges = [
+      ["A", "C"],
+      ["C", "B"],
+      ["B", "E"],
+      ["E", "F"],
+      ["F", "K"],
+    ];
+
+    setCameraView(part3GuardCamera);
+    setEdgeStates({ visible: part3AllEdges, context: [part3AllEdges] });
+    setNodeStates(part3EndReadyState, { focus: ["K"], target: ["K"], showNodeCosts: true });
+    drawPart3Probe("K", "end-probe");
+    drawPart3NodeMarker("K", { tone: "focus", symbol: "check", className: "end-target-marker" });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
+      visited: ["A", "C", "B", "E", "D", "F", "G"],
+      focus: ["K"],
+    });
+    showPart3Code("end", "Đích là min", "chờ viết");
+    setMetrics("nhánh thật", "min = K", "dừng");
+
+    animatePart3SceneIntro(tl, 0.14);
+    moveCameraOnTimeline(tl, part2Cameras.full.center, part2Cameras.full.scale, 0.16, 0.72);
+    tl.call(() => {
+      setEdgeStates({ visible: part3AllEdges, locked: [finalEdges], focus: [[["F", "K"]]] });
+      setNodeStates(part3EndReadyState, { focus: ["K"], target: ["K"], showNodeCosts: true });
+      showBestRoute(part2FinalPath);
+      setMetrics("K là min", "Cost[K] = 10", "khỏi mở tiếp");
+    }, null, 0.62);
+    pulsePart3Nodes(tl, ["K"], 0.78, { toScale: 1.15, duration: 0.32 });
+    return tl;
+  }
+
+  function enterPart3SettleScene() {
+    const tl = makeTimeline();
+
+    setCameraView(part2Cameras.full);
+    setEdgeStates({ visible: [part2Edges.fromA], focus: [[["A", "C"]]] });
+    setNodeStates(part2States.start, {
+      focus: ["C"],
+      correct: ["A"],
+      target: ["K"],
+      showNodeCosts: true,
+      nodeCostNodes: ["A", "C", "B", "D", "E"],
+    });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+      visited: ["A"],
+      focus: ["C"],
+    });
+    drawPart3Probe("C", "settle-probe");
+    drawPart3NodeMarker("C", { tone: "focus", symbol: "check", className: "settle-marker" });
+    showPart3Code("settle", "Đánh dấu đã chốt", "chờ viết");
+    setMetrics("min = C", "C != K", "Visited[C]");
+
+    animatePart3SceneIntro(tl, 0.16);
+    moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 0.16, 0.64);
+    pulsePart3Nodes(tl, ["C"], 0.42, { toScale: 1.14, duration: 0.3 });
+    tl.call(() => {
+      setNodeStates(part3AfterCSettledState, {
+        focus: ["C"],
+        correct: ["A", "C"],
+        target: ["K"],
+        showNodeCosts: true,
+        nodeCostNodes: ["A", "C", "B", "D", "E"],
+      });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+        visited: ["A", "C"],
+        focus: ["C"],
+      });
+      setMetrics("C đã chắc", "ra khỏi frontier", "mở cạnh C");
+    }, null, 0.78);
+    pulsePart3Nodes(tl, ["C"], 0.84, { toScale: 1.1, duration: 0.26 });
+    return tl;
+  }
+
+  function enterPart3RelaxNaiveScene() {
+    const tl = makeTimeline();
+
+    setCameraView(part2Cameras.frontier);
+    setEdgeStates({ visible: [part2Edges.fromA], locked: [[["A", "C"]]], context: [[["A", "B"], ["A", "D"], ["A", "E"]]] });
+    setNodeStates(part3AfterCSettledState, {
+      focus: ["C", "B", "D"],
+      correct: ["A", "C"],
+      target: ["K"],
+      showNodeCosts: true,
+      nodeCostNodes: ["A", "C", "B", "D", "E"],
+    });
+    drawCandidateRoutes([
+      ["C", "B"],
+      ["C", "D"],
+    ]);
+    drawPart3Packet({ from: "C", to: "B", text: "2+1=3", tone: "focus", className: "relax-packet packet-B", offset: -54 });
+    drawPart3Packet({ from: "C", to: "D", text: "2+3=5", tone: "focus", className: "relax-packet packet-D", offset: -70 });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+      visited: ["A", "C"],
+      focus: ["C"],
+      amber: ["B", "D"],
+    });
+    showPart3Code("relaxNaive", "Gán cost mới", "chờ viết");
+    setMetrics("min = C", "C -> B/D", "mở kề");
+
+    gsap.set(".route-candidate, .part3-packet", { opacity: 0 });
+    animatePart3SceneIntro(tl, 0.18);
+    tl.call(() => {
+      setEdgeStates({ visible: [part2Edges.fromA, part2Edges.fromC], focus: [part2Edges.fromC], locked: [[["A", "C"]]] });
+      setMetrics("for canh", "C -> B/D", "tính newCost");
+    }, null, 0.42);
+    tl.fromTo(".route-candidate", { opacity: 0, strokeDashoffset: 58 }, { opacity: 0.68, strokeDashoffset: 0, stagger: dur(0.08), duration: dur(0.44), ease: "power2.out" }, 0.46);
+    animatePart3Packets(tl, ".relax-packet", 0.62, 0.52);
+    pulsePart3Nodes(tl, ["B", "D"], 1.12, { toScale: 1.1, stagger: 0.08 });
+    tl.call(() => {
+      setNodeStates(part2States.afterC, {
+        focus: ["B", "D"],
+        correct: ["A", "C"],
+        target: ["K"],
+        showNodeCosts: true,
+        nodeCostNodes: ["A", "C", "B", "D", "E"],
+      });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 3, D: 5, E: 6 },
+        visited: ["A", "C"],
+        focus: ["B", "D"],
+        amber: ["B", "D"],
+      });
+      setMetrics("Cost cập nhật", "B=3, D=5", "bản gán thô");
+    }, null, 1.12);
+    return tl;
+  }
+
+  function enterPart3RelaxGuardScene() {
+    const tl = makeTimeline();
+    const visible = [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE, part2Edges.fromD];
+    const lockedBeforeF = [
+      ["A", "C"],
+      ["C", "B"],
+      ["B", "E"],
+    ];
+    const lockedWithF = [...lockedBeforeF, ["E", "F"]];
+    const beforeFState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["open", 5, "C"],
+      E: ["settled", 4, "B"],
+      F: ["unknown", null, "-"],
+      G: ["open", 9, "E"],
+      K: ["unknown", null, "-"],
+    });
+    const currentFState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["open", 5, "C"],
+      E: ["settled", 4, "B"],
+      F: ["open", 6, "E"],
+      G: ["open", 9, "E"],
+      K: ["unknown", null, "-"],
+    });
+    const testingFromDState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["settled", 5, "C"],
+      E: ["settled", 4, "B"],
+      F: ["open", 6, "E"],
+      G: ["open", 9, "E"],
+      K: ["unknown", null, "-"],
+    });
+    const overwrittenState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["settled", 5, "C"],
+      E: ["settled", 4, "B"],
+      F: ["open", 7, "D"],
+      G: ["open", 9, "E"],
+      K: ["unknown", null, "-"],
+    });
+    const bestToF = ["A", "C", "B", "E", "F"];
+    let manualIndex = 0;
+
+    function setGuardCopy(body, metrics) {
+      el.sceneBody.textContent = body;
+      setMetrics(metrics[0], metrics[1], metrics[2]);
+    }
+
+    function startGuardStep() {
+      const stepTl = makeTimeline();
+      activeTimeline = stepTl;
+      updatePauseButton();
+      return stepTl;
+    }
+
+    function queueNextGuardStep() {
+      prepareVisualAdvance(manualIndex < guardSteps.length ? runNextGuardStep : null);
+    }
+
+    function runNextGuardStep() {
+      const step = guardSteps[manualIndex];
+      manualIndex += 1;
+      visualAdvanceBlocked = true;
+      updateControlAvailability();
+      const stepTl = step();
+      if (stepTl && typeof stepTl.call === "function") {
+        stepTl.call(queueNextGuardStep, null, ">");
+      } else {
+        queueNextGuardStep();
+      }
+    }
+
+    const guardSteps = [
+      () => {
+        const stepTl = startGuardStep();
+        setEdgeStates({ visible, focus: [[["E", "F"]]], locked: [lockedBeforeF], context: [part3AllEdges] });
+        setNodeStates(beforeFState, { focus: ["E", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
+        showMemoryPanel({ cost: { F: "-" }, visited: ["E"], focus: ["F"] });
+        setGuardCopy("Đầu tiên, nếu Cost[F] còn trống, số đầu tiên tìm được có quyền mở ô đó. E tạo ứng viên 4 + 2 = 6, nên F nhận 6.", ["ô trống", "6", "nhận"]);
+        stepTl.fromTo(".guard-candidate-six", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.4)" }, 0);
+        stepTl.fromTo(".guard-arrow-six", { opacity: 0, strokeDashoffset: 70 }, { opacity: 1, strokeDashoffset: 0, duration: dur(0.48), ease: "power2.out" }, 0.12);
+        stepTl.to(".guard-candidate-six", { attr: { transform: "translate(52 14)" }, duration: dur(0.68), ease: "power2.inOut" }, 0.34);
+        stepTl.to(".guard-slot-empty", { opacity: 0, scale: 0.82, duration: dur(0.2), ease: "power2.in" }, 0.78);
+        stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.35)" }, 0.84);
+        stepTl.call(() => {
+          setNodeStates(currentFState, { focus: ["F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
+          showMemoryPanel({ cost: { F: 6 }, visited: ["E"], focus: ["F"] });
+          showBestRoute(bestToF);
+        }, null, 0.88);
+        pulsePart3Nodes(stepTl, ["F"], 1.02, { toScale: 1.12, duration: 0.28 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startGuardStep();
+        setEdgeStates({ visible, focus: [[["D", "F"]]], locked: [lockedWithF], context: [part3AllEdges] });
+        setNodeStates(testingFromDState, { focus: ["D", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
+        showMemoryPanel({ cost: { F: 6 }, visited: ["D"], focus: ["F"], amber: ["D"] });
+        setGuardCopy("Sau đó D cũng đi tới F và tạo ứng viên 5 + 2 = 7. Vấn đề là F không còn trống nữa: trong ô đã có 6.", ["D -> F", "7", "đã có 6"]);
+        stepTl.fromTo(".guard-arrow-seven", { opacity: 0, strokeDashoffset: 74 }, { opacity: 1, strokeDashoffset: 0, duration: dur(0.5), ease: "power2.out" }, 0);
+        stepTl.fromTo(".guard-candidate-seven", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.4)" }, 0.16);
+        stepTl.fromTo(".guard-slot-current", { scale: 0.96 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.22), ease: "power2.inOut" }, 0.48);
+        pulsePart3Nodes(stepTl, ["F"], 0.62, { toScale: 1.1, duration: 0.28 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startGuardStep();
+        setGuardCopy("Nếu dòng code vẫn gán thẳng Cost[F] = newCost, ứng viên 7 sẽ ghi đè lên 6. Ta vừa làm mất đường tốt hơn đã tìm được trước đó.", ["gán bừa", "7 ghi vào", "mất 6"]);
+        stepTl.to(".route-best", { opacity: 0.18, duration: dur(0.28), ease: "power2.inOut" }, 0);
+        stepTl.to(".guard-slot-current", { opacity: 0, scale: 0.72, duration: dur(0.3), ease: "power2.in" }, 0.04);
+        stepTl.fromTo(".guard-lost", { opacity: 0 }, { opacity: 1, duration: dur(0.26), ease: "power2.out" }, 0.3);
+        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(52 14)" }, duration: dur(0.66), ease: "power2.inOut" }, 0.42);
+        stepTl.to(".guard-candidate-seven", { opacity: 0, scale: 1.08, duration: dur(0.18), ease: "power2.out" }, 1.02);
+        stepTl.fromTo(".guard-slot-bad", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.35)" }, 1.08);
+        stepTl.call(() => {
+          setNodeStates(overwrittenState, { focus: ["F"], wrong: ["F"], showNodeCosts: true });
+          showMemoryPanel({ cost: { F: 7 }, visited: ["D"], danger: ["F"], amber: ["D"] });
+        }, null, 1.12);
+        pulsePart3Nodes(stepTl, ["F"], 1.24, { toScale: 1.16, duration: 0.32 });
+        return stepTl;
+      },
+      () => {
+        const stepTl = startGuardStep();
+        setGuardCopy("Vậy trước khi ghi, ta phải hỏi: ô chưa mở, hoặc số mới có rẻ hơn số đang giữ không? Ở đây 7 không nhỏ hơn 6, nên 7 bị chặn và Cost[F] vẫn là 6.", ["so sánh", "7 < 6 ?", "giữ 6"]);
+        stepTl.call(() => {
+          setNodeStates(testingFromDState, { focus: ["D", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
+          showMemoryPanel({ cost: { F: 6 }, visited: ["D"], focus: ["F"], amber: ["D"] });
+          showBestRoute(bestToF);
+        }, null, 0);
+        stepTl.to(".guard-slot-bad, .guard-lost", { opacity: 0, duration: dur(0.22), ease: "power2.in" }, 0);
+        stepTl.set(".guard-candidate-seven", { attr: { transform: "translate(-86 58)" }, opacity: 1, scale: 1 }, 0.04);
+        stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.35)" }, 0.08);
+        stepTl.fromTo(".guard-compare", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 0.34);
+        stepTl.fromTo(".guard-gate", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 0.52);
+        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(-18 58)" }, duration: dur(0.52), ease: "power2.inOut" }, 0.66);
+        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(-56 58)" }, duration: dur(0.26), ease: "back.out(2.1)" }, 1.18);
+        stepTl.fromTo(".guard-reject", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 1.28);
+        stepTl.fromTo(".guard-slot-current", { scale: 0.94 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 1.36);
+        pulsePart3Nodes(stepTl, ["F"], 1.42, { toScale: 1.13, duration: 0.32 });
+        return stepTl;
+      },
+      () => {
+        el.stageShell.classList.remove("is-visual-proof");
+        setCameraView({ center: { x: 476, y: 352 }, scale: 0.96 });
+        setGuardCopy("Sau khi bản chất đã rõ, dòng gán Cost[ke] không được đứng một mình nữa. Nó phải nằm trong điều kiện: chưa có cost, hoặc newCost nhỏ hơn cost hiện tại.", ["đổi code", "if", "chỉ ghi khi rẻ"]);
+        showPart3Code("relaxGuard", "Không ghi đè đường tốt", "chờ sửa");
+        setCodeActiveLines([20, 21, 22]);
+      },
+    ];
+
+    setCameraView(part3CostSlotCamera);
+    setEdgeStates({ visible, focus: [[["E", "F"]]], locked: [lockedBeforeF], context: [part3AllEdges] });
+    setNodeStates(beforeFState, { focus: ["E", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
+    showMemoryPanel({ cost: { F: "-" }, visited: ["E"], focus: ["F"] });
+    drawPart3EdgeTrace(["E", "F"], { tone: "focus", className: "guard-edge-six", offset: -18 });
+    drawPart3EdgeTrace(["D", "F"], { tone: "warn", className: "guard-edge-seven", offset: 18 });
+    drawPart3GuardDecisionBoard("F", { className: "guard-decision-board" });
+    el.stageShell.classList.add("is-visual-proof");
+    hideCodePanel();
+    setGuardCopy("Ta zoom vào đúng khoảnh khắc cập nhật Cost[F]. Lúc đầu ô này chưa có số, nên hãy xem số đầu tiên đi vào ô như thế nào.", ["Cost[F]", "trống", "bấm Tiếp"]);
+    queueNextGuardStep();
+
+    gsap.set(".guard-edge-six, .guard-edge-seven", { opacity: 0 });
+    gsap.set(".guard-candidate-six, .guard-candidate-seven, .guard-slot-current, .guard-slot-bad, .guard-arrow-six, .guard-arrow-seven, .guard-compare, .guard-gate, .guard-reject, .guard-lost", {
+      opacity: 0,
+      transformOrigin: "center center",
+    });
+    prepareSvgPathDraw(".guard-edge-six .part3-edge-trace-path, .guard-edge-seven .part3-edge-trace-path, .guard-arrow-six, .guard-arrow-seven");
+    animatePart3SceneIntro(tl, 0.16);
+    moveCameraOnTimeline(tl, part3CostSlotCamera.center, part3CostSlotCamera.scale, 0.2, 0.68);
+    tl.fromTo(".guard-decision-board", { opacity: 0, scale: 0.9, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.44), ease: "back.out(1.35)" }, 0.52);
+    tl.fromTo(".guard-edge-six", { opacity: 0 }, { opacity: 0.72, duration: dur(0.28), ease: "power2.out" }, 0.72);
+    tl.to(".guard-edge-six .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(0.64), ease: "power2.out" }, 0.78);
+    return tl;
+  }
+
+  function enterPart3PrevScene() {
+    const tl = makeTimeline();
+    const beforeFState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["open", 5, "C"],
+      E: ["settled", 4, "B"],
+      F: ["unknown", null, "-"],
+      G: ["unknown", null, "-"],
+      K: ["unknown", null, "-"],
+    });
+    const afterFOnlyState = makePart2State({
+      A: ["settled", 0, "-"],
+      C: ["settled", 2, "A"],
+      B: ["settled", 3, "C"],
+      D: ["open", 5, "C"],
+      E: ["settled", 4, "B"],
+      F: ["open", 6, "E"],
+      G: ["unknown", null, "-"],
+      K: ["unknown", null, "-"],
+    });
+    const finalEdges = [
+      ["A", "C"],
+      ["C", "B"],
+      ["B", "E"],
+      ["E", "F"],
+      ["F", "K"],
+    ];
+
+    setCameraView(part2Cameras.middle);
+    setEdgeStates({ visible: [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, [["E", "F"]]], locked: [[["A", "C"], ["C", "B"], ["B", "E"]]], focus: [[["E", "F"]]] });
+    setNodeStates(afterFOnlyState, { focus: ["F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 3, E: 4, F: 6 },
+      visited: ["A", "C", "B", "E"],
+      focus: ["F"],
+    });
+    drawPart3EdgeTrace(["A", "C", "B", "E", "F"], { tone: "focus", className: "is-deferred prev-route-flash", offset: -10 });
+    drawPart3ParentArrow("F", "E", { className: "is-deferred prev-new-parent", text: "F<-E" });
+    drawPart3ParentArrow("K", "F", { className: "is-deferred prev-chain-parent" });
+    drawPart3ParentArrow("E", "B", { className: "is-deferred prev-chain-parent" });
+    drawPart3ParentArrow("B", "C", { className: "is-deferred prev-chain-parent" });
+    drawPart3ParentArrow("C", "A", { className: "is-deferred prev-chain-parent" });
+    drawPart3NodeMarker("F", { tone: "warn", symbol: "question", className: "is-deferred prev-question-marker" });
+    drawPart3BacktrackCursor("K", "is-deferred prev-backtrack-cursor-shell");
+    drawPart3Packet({ from: "E", to: "F", text: "6", tone: "focus", className: "prev-packet", offset: -18, startT: 0.12, endT: 0.82 });
+    showPart3Code("prev", "Nhớ đường đi", "chờ viết");
+    setMetrics("Cost tới F", "chỉ còn số", "chưa biết đường");
+
+    gsap.set(".prev-packet, .prev-route-flash, .prev-new-parent, .prev-chain-parent, .prev-question-marker, .prev-backtrack-cursor-visual", { opacity: 0 });
+    gsap.set(".prev-new-parent .part3-parent-arrow-head, .prev-new-parent .part3-parent-label, .prev-chain-parent .part3-parent-arrow-head", { opacity: 0 });
+    prepareSvgPathDraw(".prev-route-flash .part3-edge-trace-path, .prev-new-parent .part3-parent-arrow-path, .prev-chain-parent .part3-parent-arrow-path");
+    animatePart3SceneIntro(tl, 0.16);
+    tl.call(() => {
+      setNodeStates(beforeFState, { focus: ["E", "F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 3, E: 4, D: 5 },
+        visited: ["A", "C", "B", "E"],
+        focus: ["E"],
+      });
+      setMetrics("replay E -> F", "xem Cost sinh ra", "chưa có Prev");
+    }, null, 0.42);
+    animatePart3Packets(tl, ".prev-packet", 0.58, 0.48);
+    tl.call(() => {
+      setNodeStates(afterFOnlyState, { focus: ["F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 3, E: 4, F: 6 },
+        visited: ["A", "C", "B", "E"],
+        focus: ["F"],
+      });
+      setMetrics("F = 6", "đường vừa sáng", "rồi mất dấu");
+    }, null, 1.04);
+    pulsePart3Nodes(tl, ["F"], 1.06, { toScale: 1.14, duration: 0.3 });
+    tl.fromTo(".prev-route-flash", { opacity: 0 }, { opacity: 1, duration: dur(0.18), ease: "power2.out" }, 1.06);
+    tl.to(".prev-route-flash .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(0.48), ease: "power2.out" }, 1.08);
+    tl.to(".prev-route-flash", { opacity: 0.16, duration: dur(0.34), ease: "power2.inOut" }, 1.42);
+    tl.fromTo(".prev-question-marker", { opacity: 0, scale: 0.72, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.24), ease: "back.out(1.55)" }, 1.3);
+    tl.call(() => setMetrics("Cost[F] = 6", "không có dấu vết", "cần cửa vào"), null, 1.34);
+    tl.to(".prev-question-marker", { opacity: 0, scale: 0.84, duration: dur(0.18), ease: "power2.in" }, 1.62);
+    tl.fromTo(".prev-new-parent", { opacity: 0 }, { opacity: 1, duration: dur(0.2), ease: "power2.out" }, 1.62);
+    tl.to(".prev-new-parent .part3-parent-arrow-path", { strokeDashoffset: 0, duration: dur(0.38), ease: "power2.out" }, 1.64);
+    tl.to(".prev-new-parent .part3-parent-arrow-head, .prev-new-parent .part3-parent-label", { opacity: 1, duration: dur(0.14), ease: "power2.out" }, 1.96);
+    tl.call(() => {
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 3, E: 4, F: 6 },
+        visited: ["A", "C", "B", "E"],
+        prev: { F: "E" },
+        focus: ["F"],
+      });
+      setMetrics("Cost vừa đổi", "Prev[F] = E", "lưu cửa vào");
+    }, null, 2.02);
+    moveCameraOnTimeline(tl, part2Cameras.full.center, part2Cameras.full.scale, 2.18, 0.66);
+    tl.call(() => {
+      setEdgeStates({ visible: part3AllEdges, locked: [finalEdges], context: [[["E", "G"], ["G", "K"], ["C", "D"], ["D", "F"], ["D", "G"]]] });
+      setNodeStates(part3EndReadyState, { focus: ["K", "F", "E", "B", "C", "A"], target: ["K"], showNodeCosts: true });
+      showMemoryPanel({
+        cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
+        visited: ["A", "C", "B", "E", "D", "F", "G"],
+        prev: { C: "A", B: "C", E: "B", F: "E", K: "F" },
+        focus: ["K", "F", "E", "B", "C", "A"],
+      });
+      setMetrics("đứng ở K", "lần Prev", "về A");
+    }, null, 2.46);
+    tl.fromTo(".prev-chain-parent", { opacity: 0 }, { opacity: 0.86, stagger: dur(0.035), duration: dur(0.2), ease: "power2.out" }, 2.5);
+    tl.to(".prev-chain-parent .part3-parent-arrow-path", { strokeDashoffset: 0, stagger: dur(0.05), duration: dur(0.32), ease: "power2.out" }, 2.54);
+    tl.to(".prev-chain-parent .part3-parent-arrow-head", { opacity: 1, stagger: dur(0.05), duration: dur(0.12), ease: "power2.out" }, 2.84);
+    tl.fromTo(".prev-backtrack-cursor-visual", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.22), ease: "back.out(1.45)" }, 2.66);
+    animatePart3BacktrackCursor(tl, ["K", "F", "E", "B", "C", "A"], 2.74);
+    tl.call(() => {
+      showBestRoute(part2FinalPath);
+      setMetrics("A -> C -> B -> E -> F -> K", "Cost 10", "Prev dựng đường");
+    }, null, 3.74);
+    pulsePart3Nodes(tl, ["A", "C", "B", "E", "F", "K"], 3.8, { toScale: 1.08, stagger: 0.05, duration: 0.22 });
+    return tl;
+  }
+
+  function enterPart3ReplayScene() {
+    const tl = makeTimeline();
+    const finalEdges = [
+      ["A", "C"],
+      ["C", "B"],
+      ["B", "E"],
+      ["E", "F"],
+      ["F", "K"],
+    ];
+
+    setCameraView(part2Cameras.full);
+    setEdgeStates({ visible: part3AllEdges, locked: [finalEdges] });
+    setNodeStates(part3EndReadyState, { focus: ["A", "C", "B", "E", "F", "K"], target: ["K"], showNodeCosts: true });
+    showBestRoute(part2FinalPath);
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
+      visited: ["A", "C", "B", "E", "D", "F", "G"],
+      prev: { C: "A", B: "C", E: "B", F: "E", K: "F" },
+      focus: ["K"],
+    });
+    showPart3Code("replay", "Mã giả hoàn chỉnh", "đọc lại");
+    setCodeActiveLines([6, 7, 8, 9, 10, 11, 12]);
+    setMetrics("while true", "min -> relax", "return");
+
+    animatePart3SceneIntro(tl, 0.14);
+    tl.fromTo(".route-best", { opacity: 0.24 }, { opacity: 1, duration: dur(0.42), ease: "power2.out" }, 0.26);
+    tl.call(() => {
+      setCodeActiveLines([6, 7, 8, 9, 10, 11, 12]);
+      focusCodeLines([6, 7, 8, 9, 10, 11, 12], 2);
+      setMetrics("1", "quét min", "dòng 6-12");
+    }, null, 0.52);
+    pulsePart3Nodes(tl, ["C", "B", "E"], 0.58, { toScale: 1.08, stagger: 0.08, duration: 0.22 });
+    tl.call(() => {
+      setCodeActiveLines([15, 16]);
+      focusCodeLines([15, 16], 2);
+      setMetrics("2", "hai nhánh dừng", "dòng 15-16");
+    }, null, 1.02);
+    pulsePart3Nodes(tl, ["K"], 1.08, { toScale: 1.12, duration: 0.26 });
+    tl.call(() => {
+      setCodeActiveLines([17, 18, 19, 20, 21, 22, 23]);
+      focusCodeLines([17, 18, 19, 20, 21, 22, 23], 2);
+      setMetrics("3", "mở kề", "Cost + Prev");
+    }, null, 1.48);
+    pulsePart3Nodes(tl, ["E", "F"], 1.56, { toScale: 1.1, stagger: 0.08, duration: 0.24 });
+    tl.call(() => {
+      setCodeActiveLines([27]);
+      focusCodeLines([27], 3);
+      setMetrics("4", "return", "cost + prev");
+    }, null, 1.98);
+    return tl;
+  }
+
   function enterProblemScene() {
     const tl = makeTimeline();
     const sampleRoutes = [
@@ -2909,7 +4878,7 @@
 
   function getEdgeLabelPlacement(from, to) {
     const key = edgeKey(from, to);
-    if (getActivePart().id === "part2" && part2EdgeLabelPlacements[key]) {
+    if (usesPart2Graph() && part2EdgeLabelPlacements[key]) {
       return part2EdgeLabelPlacements[key];
     }
     return { t: 0.5, n: 14 };

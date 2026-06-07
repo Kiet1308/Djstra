@@ -240,8 +240,18 @@ button {
   gap: 14px;
 }
 
+.presenter-grid.is-code-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.presenter-grid.is-code-workspace .guide-panel {
+  display: none;
+}
+
 .stage-shell {
   position: relative;
+  --workspace-code-width: min(700px, 48%);
+  --workspace-code-gap: 24px;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -619,6 +629,463 @@ button {
   filter: url(#tightGlow);
 }
 
+.part3-graph-visual,
+.part3-packet {
+  pointer-events: none;
+}
+
+.part3-probe-ring {
+  fill: rgba(244, 201, 109, 0.08);
+  stroke: rgba(244, 201, 109, 0.95);
+  stroke-width: 4;
+  filter: url(#tightGlow);
+}
+
+.part3-probe-core {
+  fill: rgba(244, 201, 109, 0.16);
+  stroke: rgba(244, 241, 232, 0.9);
+  stroke-width: 2;
+}
+
+.part3-node-marker-ring {
+  fill: rgba(66, 242, 161, 0.08);
+  stroke: rgba(66, 242, 161, 0.92);
+  stroke-width: 4;
+  filter: url(#tightGlow);
+}
+
+.part3-node-marker.is-warn .part3-node-marker-ring {
+  fill: rgba(255, 118, 89, 0.11);
+  stroke: rgba(255, 118, 89, 0.94);
+}
+
+.part3-node-marker-x {
+  stroke: rgba(255, 118, 89, 0.96);
+  stroke-linecap: round;
+  stroke-width: 5;
+  filter: url(#tightGlow);
+}
+
+.part3-node-marker-check {
+  fill: none;
+  stroke: rgba(66, 242, 161, 0.96);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+  filter: url(#tightGlow);
+}
+
+.part3-node-marker-stop {
+  fill: rgba(255, 118, 89, 0.18);
+  stroke: rgba(255, 118, 89, 0.82);
+  stroke-width: 2;
+  filter: url(#tightGlow);
+}
+
+.part3-node-marker-question {
+  fill: rgba(255, 236, 229, 0.98);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 28px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  filter: url(#tightGlow);
+}
+
+.part3-edge-trace-path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 7;
+  filter: url(#tightGlow);
+}
+
+.part3-edge-trace-path.is-focus {
+  stroke: rgba(66, 242, 161, 0.82);
+}
+
+.part3-edge-trace-path.is-warn {
+  stroke: rgba(255, 118, 89, 0.84);
+  stroke-dasharray: 14 10;
+}
+
+.part3-cost-slot-visual {
+  filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.42));
+}
+
+.part3-cost-slot-shell {
+  fill: rgba(6, 11, 9, 0.92);
+  stroke: rgba(244, 241, 232, 0.18);
+  stroke-width: 1.4;
+}
+
+.part3-cost-slot-label {
+  fill: rgba(244, 241, 232, 0.78);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 14px;
+  font-weight: 850;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-cost-slot-chip {
+  filter: url(#tightGlow);
+}
+
+.part3-cost-slot-chip-bg {
+  stroke-width: 1.75;
+}
+
+.part3-cost-slot-chip-bg.is-current {
+  fill: rgba(66, 242, 161, 0.18);
+  stroke: rgba(66, 242, 161, 0.96);
+}
+
+.part3-cost-slot-chip-bg.is-bad,
+.part3-cost-slot-chip-bg.is-candidate,
+.part3-cost-slot-chip-bg.is-rejected {
+  fill: rgba(255, 118, 89, 0.18);
+  stroke: rgba(255, 118, 89, 0.96);
+}
+
+.part3-cost-slot-value {
+  fill: rgba(244, 241, 232, 0.98);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 24px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-cost-slot-chip-bg.is-current + .part3-cost-slot-value {
+  fill: var(--accent);
+}
+
+.part3-cost-slot-arrow {
+  fill: none;
+  stroke: rgba(255, 118, 89, 0.86);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+  filter: url(#tightGlow);
+}
+
+.part3-cost-slot-gate-line {
+  stroke: rgba(244, 201, 109, 0.98);
+  stroke-linecap: round;
+  stroke-width: 5;
+  filter: url(#tightGlow);
+}
+
+.part3-cost-slot-gate-x {
+  fill: none;
+  stroke: rgba(255, 118, 89, 0.98);
+  stroke-linecap: round;
+  stroke-width: 4.6;
+  filter: url(#tightGlow);
+}
+
+.part3-cost-slot-ruler {
+  pointer-events: none;
+}
+
+.part3-cost-ruler-line {
+  stroke: rgba(244, 241, 232, 0.2);
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.part3-cost-ruler-tick {
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.part3-cost-ruler-tick.is-current {
+  stroke: rgba(66, 242, 161, 0.88);
+}
+
+.part3-cost-ruler-tick.is-candidate {
+  stroke: rgba(255, 118, 89, 0.88);
+}
+
+.part3-cost-ruler-pin-bg {
+  fill: rgba(7, 12, 10, 0.98);
+  stroke-width: 1.6;
+}
+
+.part3-cost-ruler-pin.is-current .part3-cost-ruler-pin-bg {
+  stroke: rgba(66, 242, 161, 0.92);
+}
+
+.part3-cost-ruler-pin.is-candidate .part3-cost-ruler-pin-bg {
+  stroke: rgba(255, 118, 89, 0.92);
+}
+
+.part3-cost-ruler-pin-text {
+  fill: rgba(244, 241, 232, 0.94);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-guard-decision-visual {
+  filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.42));
+}
+
+.part3-guard-shell {
+  fill: rgba(6, 11, 9, 0.92);
+  stroke: rgba(244, 241, 232, 0.2);
+  stroke-width: 1.4;
+}
+
+.part3-guard-title {
+  fill: rgba(244, 241, 232, 0.96);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 18px;
+  font-weight: 950;
+  text-anchor: start;
+  dominant-baseline: middle;
+}
+
+.part3-guard-note {
+  fill: rgba(244, 241, 232, 0.64);
+  font-size: 12px;
+  font-weight: 760;
+  text-anchor: start;
+  dominant-baseline: middle;
+}
+
+.part3-guard-slot,
+.part3-guard-chip,
+.part3-guard-compare,
+.part3-guard-gate,
+.part3-guard-reject {
+  pointer-events: none;
+}
+
+.part3-guard-slot-bg,
+.part3-guard-chip-bg {
+  stroke-width: 1.7;
+  filter: url(#tightGlow);
+}
+
+.part3-guard-slot-bg.is-empty {
+  fill: rgba(244, 241, 232, 0.04);
+  stroke: rgba(244, 241, 232, 0.34);
+  stroke-dasharray: 7 7;
+}
+
+.part3-guard-slot-bg.is-current,
+.part3-guard-chip-bg.is-current {
+  fill: rgba(66, 242, 161, 0.18);
+  stroke: rgba(66, 242, 161, 0.92);
+}
+
+.part3-guard-slot-bg.is-bad,
+.part3-guard-chip-bg.is-bad {
+  fill: rgba(255, 118, 89, 0.2);
+  stroke: rgba(255, 118, 89, 0.92);
+}
+
+.part3-guard-value,
+.part3-guard-slot-text {
+  fill: rgba(244, 241, 232, 0.96);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 24px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-guard-slot-text.is-muted {
+  fill: rgba(244, 241, 232, 0.58);
+  font-size: 15px;
+  font-weight: 840;
+}
+
+.part3-guard-arrow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4.2;
+  filter: url(#tightGlow);
+}
+
+.guard-arrow-six {
+  stroke: rgba(66, 242, 161, 0.86);
+}
+
+.guard-arrow-seven {
+  stroke: rgba(255, 118, 89, 0.84);
+}
+
+.part3-guard-compare-bg {
+  fill: rgba(5, 8, 7, 0.96);
+  stroke: rgba(244, 201, 109, 0.74);
+  stroke-width: 1.35;
+  filter: url(#tightGlow);
+}
+
+.part3-guard-compare-text {
+  fill: rgba(255, 238, 194, 0.98);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 15px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-guard-gate-line {
+  stroke: rgba(244, 201, 109, 0.96);
+  stroke-linecap: round;
+  stroke-width: 5;
+  filter: url(#tightGlow);
+}
+
+.part3-guard-gate-x {
+  fill: none;
+  stroke: rgba(255, 118, 89, 0.98);
+  stroke-linecap: round;
+  stroke-width: 4.6;
+  filter: url(#tightGlow);
+}
+
+.part3-guard-reject-bg {
+  fill: rgba(255, 118, 89, 0.16);
+  stroke: rgba(255, 118, 89, 0.72);
+  stroke-width: 1.35;
+}
+
+.part3-guard-reject-text,
+.part3-guard-lost-text {
+  fill: rgba(255, 230, 224, 0.96);
+  font-size: 13px;
+  font-weight: 870;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-guard-lost-line {
+  stroke: rgba(255, 118, 89, 0.95);
+  stroke-linecap: round;
+  stroke-width: 4;
+  filter: url(#tightGlow);
+}
+
+.part3-gate-ring {
+  fill: rgba(5, 8, 7, 0.2);
+  stroke: rgba(244, 201, 109, 0.92);
+  stroke-width: 4;
+  stroke-dasharray: 10 8;
+  filter: url(#tightGlow);
+}
+
+.part3-gate-lip {
+  fill: none;
+  stroke: rgba(244, 241, 232, 0.88);
+  stroke-linecap: round;
+  stroke-width: 4;
+  filter: url(#tightGlow);
+}
+
+.part3-parent-arrow-path {
+  fill: none;
+  stroke: rgba(66, 242, 161, 0.9);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5.5;
+  stroke-dasharray: 10 8;
+  filter: url(#tightGlow);
+}
+
+.part3-parent-arrow-head {
+  fill: none;
+  stroke: rgba(66, 242, 161, 0.94);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4.5;
+  filter: url(#tightGlow);
+}
+
+.part3-parent-label-bg {
+  fill: rgba(6, 16, 12, 0.94);
+  stroke: rgba(66, 242, 161, 0.74);
+  stroke-width: 1.35;
+  filter: url(#tightGlow);
+}
+
+.part3-parent-label-text {
+  fill: rgba(216, 255, 234, 0.98);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-backtrack-cursor-ring {
+  fill: rgba(66, 242, 161, 0.1);
+  stroke: rgba(66, 242, 161, 0.94);
+  stroke-width: 3.5;
+  filter: url(#tightGlow);
+}
+
+.part3-backtrack-cursor-dot {
+  fill: rgba(244, 241, 232, 0.96);
+  stroke: rgba(6, 16, 12, 0.86);
+  stroke-width: 1.5;
+}
+
+.part3-packet-bg,
+.part3-backtrack-label-bg {
+  fill: rgba(5, 8, 7, 0.92);
+  stroke: rgba(244, 241, 232, 0.24);
+  stroke-width: 1.35;
+}
+
+.part3-packet.is-focus .part3-packet-bg,
+.part3-backtrack-label-bg {
+  fill: rgba(66, 242, 161, 0.18);
+  stroke: rgba(66, 242, 161, 0.82);
+  filter: url(#tightGlow);
+}
+
+.part3-packet.is-warn .part3-packet-bg {
+  fill: rgba(255, 118, 89, 0.2);
+  stroke: rgba(255, 118, 89, 0.86);
+  filter: url(#tightGlow);
+}
+
+.part3-packet-text,
+.part3-backtrack-label-text {
+  fill: var(--text);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 14px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-packet {
+  filter: url(#tightGlow);
+}
+
+.part3-packet.is-warn .part3-packet-text {
+  fill: rgba(255, 236, 229, 0.98);
+}
+
+.part3-backtrack-path {
+  fill: none;
+  stroke: rgba(66, 242, 161, 0.88);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 6;
+  stroke-dasharray: 12 8;
+  filter: url(#tightGlow);
+}
+
 .problem-overview-bg {
   fill: rgba(7, 9, 8, 0.9);
   stroke: rgba(66, 242, 161, 0.34);
@@ -896,6 +1363,33 @@ button {
   line-height: 1.45;
 }
 
+.stage-shell.is-code-workspace .stage-copy {
+  isolation: isolate;
+  max-width: 410px;
+}
+
+.stage-shell.is-code-workspace .stage-copy::before {
+  position: absolute;
+  z-index: -1;
+  inset: -18px -42px -26px -18px;
+  background: linear-gradient(90deg, rgba(5, 8, 7, 0.94) 0%, rgba(5, 8, 7, 0.78) 58%, rgba(5, 8, 7, 0) 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.stage-shell.is-code-workspace .stage-copy h2 {
+  max-width: 9ch;
+  margin-bottom: 12px;
+}
+
+.stage-shell.is-code-workspace .stage-copy p:last-child {
+  display: block;
+  max-width: 35ch;
+  color: rgba(244, 241, 232, 0.76);
+  font-size: 16px;
+  line-height: 1.46;
+}
+
 .metric-strip {
   position: absolute;
   z-index: 4;
@@ -1030,6 +1524,19 @@ button {
   gap: 8px;
   max-height: none;
   overflow: visible;
+}
+
+.stage-shell.is-code-workspace .graph-svg {
+  top: 118px;
+  right: auto;
+  height: calc(100% - 118px);
+  width: calc(100% - var(--workspace-code-width) - (var(--workspace-code-gap) * 2));
+  overflow: hidden;
+}
+
+.stage-shell.is-code-workspace.is-visual-proof .graph-svg {
+  right: 0;
+  width: 100%;
 }
 
 .candidate-button,
@@ -1403,6 +1910,289 @@ button {
   color: var(--text);
 }
 
+.code-panel {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 7;
+  display: grid;
+  width: min(586px, calc(100% - 36px));
+  max-height: calc(100% - 36px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 14px;
+  border: 1px solid rgba(244, 241, 232, 0.16);
+  border-radius: var(--radius);
+  background: rgba(5, 8, 7, 0.88);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(12px);
+}
+
+.stage-shell.is-code-workspace .code-panel {
+  top: 22px;
+  right: 22px;
+  bottom: 22px;
+  width: var(--workspace-code-width);
+  max-height: none;
+  padding: 18px;
+}
+
+.code-panel[aria-hidden="true"] {
+  display: none;
+}
+
+.stage-shell.is-code-workspace .code-panel.is-compact,
+.code-panel.is-compact {
+  width: min(500px, calc(100% - 36px));
+}
+
+.stage-shell.is-code-workspace .code-panel.is-compact {
+  width: min(640px, 47%);
+}
+
+.code-panel-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.code-panel-head h3 {
+  margin: 5px 0 0;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.stage-shell.is-code-workspace .code-panel-head h3 {
+  font-size: 24px;
+}
+
+.code-panel-head strong {
+  flex: 0 0 auto;
+  max-width: 150px;
+  overflow: hidden;
+  padding: 6px 9px;
+  border: 1px solid rgba(66, 242, 161, 0.28);
+  border-radius: var(--radius);
+  background: rgba(66, 242, 161, 0.12);
+  color: var(--accent);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 12px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-block {
+  display: grid;
+  align-content: start;
+  min-height: 0;
+  max-height: 100%;
+  margin: 13px 0 0;
+  overflow: auto;
+  padding: 10px 0;
+  border: 1px solid rgba(244, 241, 232, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+  color: rgba(244, 241, 232, 0.72);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 12px;
+  line-height: 1.28;
+}
+
+.stage-shell.is-code-workspace .code-block {
+  margin-top: 16px;
+  padding: 16px 0;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.stage-shell.is-code-workspace .code-panel.is-compact .code-block {
+  padding: 12px 0;
+  font-size: 14px;
+  line-height: 1.16;
+}
+
+.stage-shell.is-code-workspace .code-panel.is-compact .code-line {
+  grid-template-columns: 44px minmax(0, 1fr);
+  padding: 0 16px 0 0;
+}
+
+.stage-shell.is-code-workspace .code-panel.is-compact .code-line span {
+  font-size: 11px;
+}
+
+.code-line {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  min-width: 0;
+  padding: 1px 14px 1px 0;
+  border-left: 3px solid transparent;
+}
+
+.stage-shell.is-code-workspace .code-line {
+  grid-template-columns: 48px minmax(0, 1fr);
+  padding: 2px 18px 2px 0;
+}
+
+.code-line span {
+  color: rgba(244, 241, 232, 0.3);
+  font-size: 11px;
+  line-height: inherit;
+  text-align: right;
+  user-select: none;
+}
+
+.stage-shell.is-code-workspace .code-line span {
+  font-size: 13px;
+}
+
+.code-line code {
+  display: block;
+  min-width: 0;
+  overflow: visible;
+  padding-left: 10px;
+  color: inherit;
+  white-space: pre;
+}
+
+.code-line.is-active {
+  border-left-color: var(--accent);
+  background: linear-gradient(90deg, rgba(66, 242, 161, 0.13), transparent 82%);
+  color: var(--text);
+}
+
+.code-line.is-new,
+.code-line.is-change {
+  color: var(--text);
+}
+
+.code-line.is-new {
+  border-left-color: var(--accent);
+  background: linear-gradient(90deg, rgba(66, 242, 161, 0.18), transparent 86%);
+}
+
+.code-line.is-change {
+  border-left-color: var(--amber);
+  background: linear-gradient(90deg, rgba(244, 201, 109, 0.18), transparent 86%);
+}
+
+.code-line.is-dim {
+  color: rgba(244, 241, 232, 0.38);
+}
+
+.code-line.is-active span {
+  color: var(--accent);
+}
+
+.code-line.is-new span {
+  color: var(--accent);
+}
+
+.code-line.is-change span {
+  color: var(--amber);
+}
+
+.code-line.is-soft {
+  color: rgba(244, 201, 109, 0.9);
+}
+
+.code-panel p {
+  margin: 11px 2px 0;
+  color: rgba(244, 241, 232, 0.74);
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.stage-shell.is-code-workspace .code-panel p {
+  display: none;
+}
+
+.stage-shell.is-code-mode .metric-strip {
+  display: none;
+}
+
+.memory-panel {
+  position: absolute;
+  z-index: 6;
+  left: 28px;
+  bottom: 22px;
+  display: grid;
+  width: min(520px, 40%);
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.13);
+  border-radius: var(--radius);
+  background: rgba(5, 8, 7, 0.78);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.26);
+  pointer-events: none;
+}
+
+.memory-panel[aria-hidden="true"] {
+  display: none;
+}
+
+.memory-rail {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.memory-rail > span {
+  color: rgba(244, 241, 232, 0.52);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 28px;
+}
+
+.memory-rail > div {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memory-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: var(--radius);
+  background: rgba(244, 241, 232, 0.045);
+  color: rgba(244, 241, 232, 0.74);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 12px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.memory-chip.is-focus {
+  border-color: rgba(66, 242, 161, 0.52);
+  background: rgba(66, 242, 161, 0.16);
+  color: var(--accent);
+  box-shadow: 0 0 24px rgba(66, 242, 161, 0.18);
+}
+
+.memory-chip.is-muted {
+  opacity: 0.48;
+}
+
+.memory-chip.is-amber {
+  border-color: rgba(244, 201, 109, 0.46);
+  background: rgba(244, 201, 109, 0.12);
+  color: var(--amber);
+}
+
+.memory-chip.is-danger {
+  border-color: rgba(255, 118, 89, 0.56);
+  background: rgba(255, 118, 89, 0.14);
+  color: rgba(255, 202, 190, 0.98);
+  box-shadow: 0 0 24px rgba(255, 118, 89, 0.16);
+}
+
 .guide-panel {
   display: grid;
   grid-template-rows: auto minmax(132px, auto) minmax(0, 1fr);
@@ -1504,6 +2294,10 @@ button {
 
 .state-row.no-prev {
   grid-template-columns: 26px minmax(34px, 0.48fr) minmax(58px, 1fr);
+}
+
+.state-row.has-prev {
+  grid-template-columns: 26px minmax(34px, 0.42fr) 24px minmax(22px, 0.3fr);
 }
 
 .state-row.no-cost {
