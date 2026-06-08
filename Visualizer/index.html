@@ -5,8 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Visualizer Phần 1 - Tìm đường ngắn nhất</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./intro.css" />
   </head>
   <body>
+    <div class="deck" id="introOverlay" role="dialog" aria-modal="true" aria-label="Phần dẫn nhập">
+      <div class="deck-grain" aria-hidden="true"></div>
+
+      <header class="deck-topline">
+        <span class="deck-mark" aria-hidden="true"></span>
+        <span class="deck-mark-text">Nhóm 2</span>
+        <span class="deck-topline-right">Tìm đường ngắn nhất</span>
+      </header>
+
+      <main class="slides" id="slides">
+        <!-- ============ SLIDE 1: TITLE ============ -->
+        <section class="slide slide-title is-active" id="intro-slide-1" aria-label="Trang tiêu đề">
+          <svg
+            class="net-bg"
+            id="netBg"
+            viewBox="0 0 1200 760"
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+          >
+            <g class="net-edges" id="netEdges"></g>
+            <g class="net-route" id="netRoute"></g>
+            <g class="net-nodes" id="netNodes"></g>
+          </svg>
+
+          <div class="title-stack">
+            <p class="title-eyebrow" id="titleEyebrow">Tìm con đường ngắn nhất</p>
+            <h1 class="title-head" id="titleHead">
+              <span class="line">Phương Pháp</span>
+              <span class="line accent">Tìm Đường</span>
+            </h1>
+            <p class="title-sub" id="titleSub">
+              Tự mình suy luận ra cách tìm con đường ngắn nhất từ A đến B,
+              trước khi ai đó gọi tên nó.
+            </p>
+            <div class="title-cta" id="titleCta">
+              <button class="btn btn-primary" id="startBtn" type="button">
+                Bắt đầu
+                <span class="btn-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+              <span class="title-byline">Nhóm 2 trình bày</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ SLIDE 2: PROBLEM ============ -->
+        <section class="slide slide-problem" id="intro-slide-2" aria-label="Nêu vấn đề" aria-hidden="true">
+          <div class="problem-grid">
+            <div class="problem-copy">
+              <p class="problem-index" id="problemIndex">Vấn đề</p>
+              <h2 class="problem-head" id="problemHead">
+                Google Maps tìm đường<br />như thế nào?
+              </h2>
+              <p class="problem-lead" id="problemLead">
+                Bạn cần đi từ A đến B. Giữa hai điểm luôn có rất nhiều tuyến,
+                và mỗi tuyến tốn một mức khác nhau.
+              </p>
+
+              <ul class="problem-points" id="problemPoints">
+                <li>
+                  <span class="point-key">Nhiều tuyến</span>
+                  <span class="point-val">Vô số cách đi từ A sang B</span>
+                </li>
+                <li>
+                  <span class="point-key">Chi phí khác nhau</span>
+                  <span class="point-val">Thời gian, khoảng cách, tiền xăng</span>
+                </li>
+                <li>
+                  <span class="point-key">Mục tiêu</span>
+                  <span class="point-val">Chọn tuyến có chi phí nhỏ nhất</span>
+                </li>
+              </ul>
+
+              <div class="problem-cta" id="problemCta">
+                <button class="btn btn-primary" id="enterBtn" type="button">
+                  Bắt đầu tìm lời giải
+                  <span class="btn-arrow" aria-hidden="true">&rarr;</span>
+                </button>
+                <button class="btn btn-ghost" id="backBtn" type="button">Quay lại</button>
+              </div>
+            </div>
+
+            <figure class="problem-figure" aria-label="Bản đồ với tuyến đường từ A đến B">
+              <div class="map-frame">
+                <img
+                  class="map-img"
+                  src="./assets/map-base.png"
+                  alt="Bản đồ thành phố với nhiều tuyến đường nối điểm A và điểm B"
+                  width="620"
+                  height="500"
+                  draggable="false"
+                />
+                <svg
+                  class="map-overlay"
+                  id="mapOverlay"
+                  viewBox="0 0 620 500"
+                  role="img"
+                  aria-label="Các tuyến đường khả dĩ từ A đến B trên bản đồ"
+                >
+                  <defs>
+                    <filter id="routeGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="4" result="b" />
+                      <feMerge>
+                        <feMergeNode in="b" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <g id="mapRoutes" class="map-routes"></g>
+                  <g id="mapFlow" class="map-flow"></g>
+                  <g id="mapPins" class="map-pins"></g>
+                </svg>
+                <span class="map-chip" id="mapChip" aria-hidden="true">
+                  <span class="map-chip-dot"></span>Tuyến nhanh nhất
+                </span>
+              </div>
+              <figcaption class="route-caption" id="routeCaption">
+                Cùng đi từ A đến B có rất nhiều tuyến. Tuyến xanh chỉ tốn
+                <strong>9 phút</strong>, nhưng làm sao tìm ra nó mà không phải thử hết?
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+      </main>
+
+      <footer class="deck-controls">
+        <button class="ctrl" id="prevSlide" type="button" aria-label="Trang trước">&larr;</button>
+        <div class="deck-dots" id="deckDots" aria-hidden="true"></div>
+        <button class="ctrl ctrl-next" id="nextSlide" type="button">
+          Tiếp <span aria-hidden="true">&rarr;</span>
+        </button>
+      </footer>
+    </div>
+
     <div class="app-shell">
       <header class="topbar" aria-label="Thanh điều hướng visualizer">
         <div class="brand-block">
@@ -394,5 +528,6 @@
 
     <script src="./vendor/gsap.min.js"></script>
     <script src="./app.js"></script>
+    <script src="./intro.js"></script>
   </body>
 </html>
