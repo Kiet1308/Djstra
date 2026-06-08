@@ -1068,10 +1068,31 @@ button {
   fill: rgba(255, 230, 224, 0.98);
 }
 
+.guard-slot-current.is-under-overlay .part3-guard-slot-bg.is-current {
+  fill: rgba(66, 242, 161, 0.07);
+  stroke: rgba(66, 242, 161, 0.78);
+  stroke-width: 2.2;
+}
+
+.guard-slot-current.is-under-overlay .part3-guard-value {
+  fill: rgba(66, 242, 161, 0.7);
+  opacity: 0.16;
+}
+
 .part3-guard-slot-bg.is-bad,
 .part3-guard-chip-bg.is-bad {
   fill: rgba(255, 118, 89, 0.2);
   stroke: rgba(255, 118, 89, 0.92);
+}
+
+.guard-candidate-seven .part3-guard-chip-bg.is-bad {
+  fill: rgba(255, 118, 89, 0.34);
+  stroke: rgba(255, 118, 89, 1);
+  stroke-width: 2.1;
+}
+
+.guard-candidate-seven .part3-guard-value {
+  fill: rgba(255, 245, 240, 0.98);
 }
 
 .part3-guard-value,

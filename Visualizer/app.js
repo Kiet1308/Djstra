@@ -4526,12 +4526,37 @@
       return stepTl;
     }
 
-    function setGuardCurrentSlot(value, overwritten = false) {
+    function setGuardCurrentSlot(value, overwritten = false, underOverlay = false) {
       const slot = document.querySelector(".guard-slot-current");
       if (!slot) return;
       slot.classList.toggle("is-overwritten", overwritten);
+      slot.classList.toggle("is-under-overlay", underOverlay);
       const valueLabel = slot.querySelector(".part3-guard-value");
       if (valueLabel) valueLabel.textContent = value;
+    }
+
+    function setGuardChipTranslate(selector, x, y) {
+      const chip = document.querySelector(selector);
+      if (!chip) return;
+      const safeX = Math.round(x * 1000) / 1000;
+      const safeY = Math.round(y * 1000) / 1000;
+      chip.setAttribute("transform", `translate(${safeX} ${safeY})`);
+    }
+
+    function animateGuardChipTranslate(timeline, selector, from, to, at, duration, ease) {
+      const position = { x: from.x, y: from.y };
+      timeline.call(() => setGuardChipTranslate(selector, from.x, from.y), null, at);
+      timeline.to(
+        position,
+        {
+          x: to.x,
+          y: to.y,
+          duration: dur(duration),
+          ease,
+          onUpdate: () => setGuardChipTranslate(selector, position.x, position.y),
+        },
+        at,
+      );
     }
 
     function queueNextGuardStep() {
@@ -4560,7 +4585,7 @@
         setGuardCopy("Đầu tiên, nếu Cost[F] còn trống, số đầu tiên tìm được có quyền mở ô đó. E tạo ứng viên 4 + 2 = 6, nên F nhận 6.", ["ô trống", "6", "nhận"]);
         stepTl.fromTo(".guard-candidate-six", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.4)" }, 0);
         stepTl.fromTo(".guard-arrow-six", { opacity: 0, strokeDashoffset: 70 }, { opacity: 1, strokeDashoffset: 0, duration: dur(0.48), ease: "power2.out" }, 0.12);
-        stepTl.to(".guard-candidate-six", { attr: { transform: "translate(52 14)" }, duration: dur(0.68), ease: "power2.inOut" }, 0.34);
+        animateGuardChipTranslate(stepTl, ".guard-candidate-six", { x: -86, y: -20 }, { x: 52, y: 14 }, 0.34, 0.68, "power2.inOut");
         stepTl.to(".guard-slot-empty", { opacity: 0, scale: 0.82, duration: dur(0.2), ease: "power2.in" }, 0.78);
         stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.35)" }, 0.84);
         stepTl.call(() => {
@@ -4578,7 +4603,7 @@
         showMemoryPanel({ cost: { F: 6 }, visited: ["D"], focus: ["F"], amber: ["D"] });
         setGuardCopy("Sau đó D cũng đi tới F và tạo ứng viên 5 + 2 = 7. Vấn đề là F không còn trống nữa: trong ô đã có 6.", ["D -> F", "7", "đã có 6"]);
         stepTl.fromTo(".guard-arrow-seven", { opacity: 0, strokeDashoffset: 74 }, { opacity: 1, strokeDashoffset: 0, duration: dur(0.5), ease: "power2.out" }, 0);
-        stepTl.fromTo(".guard-candidate-seven", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.4)" }, 0.16);
+        stepTl.fromTo(".guard-candidate-seven", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 0.16);
         stepTl.fromTo(".guard-slot-current", { scale: 0.96 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.22), ease: "power2.inOut" }, 0.48);
         pulsePart3Nodes(stepTl, ["F"], 0.62, { toScale: 1.1, duration: 0.28 });
         return stepTl;
@@ -4587,16 +4612,15 @@
         const stepTl = startGuardStep();
         setGuardCopy("Nếu dòng code vẫn gán thẳng Cost[F] = newCost, ứng viên 7 sẽ ghi đè lên 6. Ta vừa làm mất đường tốt hơn đã tìm được trước đó.", ["gán bừa", "7 ghi vào", "mất 6"]);
         stepTl.to(".route-best", { opacity: 0.18, duration: dur(0.28), ease: "power2.inOut" }, 0);
-        stepTl.to(".guard-slot-current", { opacity: 0, scale: 0.72, duration: dur(0.3), ease: "power2.in" }, 0.04);
-        stepTl.fromTo(".guard-lost", { opacity: 0 }, { opacity: 1, duration: dur(0.26), ease: "power2.out" }, 0.3);
-        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(146 14)" }, duration: dur(0.66), ease: "power2.inOut" }, 0.42);
-        stepTl.to(".guard-candidate-seven", { opacity: 0, scale: 1.08, duration: dur(0.18), ease: "power2.out" }, 1.02);
-        stepTl.fromTo(".guard-slot-bad", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.35)" }, 1.08);
+        stepTl.call(() => setGuardCurrentSlot("6", false, true), null, 0.06);
+        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", { x: -86, y: 58 }, { x: 52, y: 14 }, 0.18, 0.82, "power3.inOut");
+        stepTl.fromTo(".guard-slot-current", { scale: 0.98 }, { scale: 1.03, yoyo: true, repeat: 1, duration: dur(0.26), ease: "sine.inOut" }, 0.86);
+        stepTl.fromTo(".guard-lost", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 0.94);
         stepTl.call(() => {
           setNodeStates(overwrittenState, { focus: ["F"], wrong: ["F"], showNodeCosts: true });
           showMemoryPanel({ cost: { F: 7 }, visited: ["D"], danger: ["F"], amber: ["D"] });
-        }, null, 1.12);
-        pulsePart3Nodes(stepTl, ["F"], 1.24, { toScale: 1.16, duration: 0.32 });
+        }, null, 1.04);
+        pulsePart3Nodes(stepTl, ["F"], 1.14, { toScale: 1.16, duration: 0.32 });
         return stepTl;
       },
       () => {
@@ -4609,12 +4633,13 @@
           showBestRoute(bestToF);
         }, null, 0);
         stepTl.to(".guard-slot-bad, .guard-lost", { opacity: 0, duration: dur(0.22), ease: "power2.in" }, 0);
-        stepTl.set(".guard-candidate-seven", { attr: { transform: "translate(-86 58)" }, opacity: 1, scale: 1 }, 0.04);
+        stepTl.call(() => setGuardChipTranslate(".guard-candidate-seven", -86, 58), null, 0.04);
+        stepTl.set(".guard-candidate-seven", { opacity: 1 }, 0.04);
         stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.35)" }, 0.08);
         stepTl.fromTo(".guard-compare", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 0.34);
         stepTl.fromTo(".guard-gate", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 0.52);
-        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(-18 58)" }, duration: dur(0.52), ease: "power2.inOut" }, 0.66);
-        stepTl.to(".guard-candidate-seven", { attr: { transform: "translate(-56 58)" }, duration: dur(0.26), ease: "back.out(2.1)" }, 1.18);
+        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", { x: -86, y: 58 }, { x: -18, y: 58 }, 0.66, 0.52, "power2.inOut");
+        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", { x: -18, y: 58 }, { x: -56, y: 58 }, 1.18, 0.26, "back.out(2.1)");
         stepTl.fromTo(".guard-reject", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 1.28);
         stepTl.fromTo(".guard-slot-current", { scale: 0.94 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 1.36);
         pulsePart3Nodes(stepTl, ["F"], 1.42, { toScale: 1.13, duration: 0.32 });
