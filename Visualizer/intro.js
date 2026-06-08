@@ -149,36 +149,37 @@
   });
   const dots = Array.from(dotsWrap.children);
 
-  function enterAnimation(index) {
+  function enterAnimation(index, baseDelay = 0) {
     if (reduceMotion || !hasGsap) return;
     const gsap = window.gsap;
+    const at = (delay = 0) => baseDelay + delay;
 
     if (index === 0) {
-      gsap.from("#introOverlay .slide-title .title-eyebrow", { y: 18, opacity: 0, duration: 0.5, ease: "power3.out", delay: 0.05 });
-      gsap.from("#introOverlay .slide-title .title-head .line", { y: 40, opacity: 0, duration: 0.7, stagger: 0.1, ease: "power3.out", delay: 0.12 });
-      gsap.from("#introOverlay .slide-title .title-sub", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out", delay: 0.38 });
-      gsap.from("#introOverlay .slide-title .title-cta", { y: 16, opacity: 0, duration: 0.55, ease: "power3.out", delay: 0.5 });
+      gsap.from("#introOverlay .slide-title .title-eyebrow", { y: 18, opacity: 0, duration: 0.5, ease: "power3.out", delay: at(0.05) });
+      gsap.from("#introOverlay .slide-title .title-head .line", { y: 40, opacity: 0, duration: 0.7, stagger: 0.1, ease: "power3.out", delay: at(0.12) });
+      gsap.from("#introOverlay .slide-title .title-sub", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out", delay: at(0.38) });
+      gsap.from("#introOverlay .slide-title .title-cta", { y: 16, opacity: 0, duration: 0.55, ease: "power3.out", delay: at(0.5) });
 
       const routePath = $("#netRoutePath");
       if (routePath) {
         const len = routePath.getTotalLength();
         gsap.set(routePath, { strokeDasharray: len, strokeDashoffset: len });
-        gsap.to(routePath, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut", delay: 0.3 });
+        gsap.to(routePath, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut", delay: at(0.3) });
       }
-      gsap.from("#introOverlay .net-node", { scale: 0, transformOrigin: "center", opacity: 0, duration: 0.5, stagger: 0.02, ease: "back.out(1.6)", delay: 0.2 });
+      gsap.from("#introOverlay .net-node", { scale: 0, transformOrigin: "center", opacity: 0, duration: 0.5, stagger: 0.02, ease: "back.out(1.6)", delay: at(0.2) });
     } else if (index === 1) {
-      gsap.from("#introOverlay .problem-index", { x: -16, opacity: 0, duration: 0.5, ease: "power3.out" });
-      gsap.from("#introOverlay .problem-head", { y: 26, opacity: 0, duration: 0.6, ease: "power3.out", delay: 0.06 });
-      gsap.from("#introOverlay .problem-lead", { y: 18, opacity: 0, duration: 0.55, ease: "power3.out", delay: 0.16 });
-      gsap.from("#introOverlay .problem-points li", { x: 22, opacity: 0, duration: 0.5, stagger: 0.08, ease: "power3.out", delay: 0.24 });
-      gsap.from("#introOverlay .problem-cta", { y: 14, opacity: 0, duration: 0.5, ease: "power3.out", delay: 0.5 });
-      gsap.from("#introOverlay .problem-figure", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out", delay: 0.1 });
+      gsap.from("#introOverlay .problem-index", { x: -16, opacity: 0, duration: 0.5, ease: "power3.out", delay: at() });
+      gsap.from("#introOverlay .problem-head", { y: 26, opacity: 0, duration: 0.6, ease: "power3.out", delay: at(0.06) });
+      gsap.from("#introOverlay .problem-lead", { y: 18, opacity: 0, duration: 0.55, ease: "power3.out", delay: at(0.16) });
+      gsap.from("#introOverlay .problem-points li", { x: 22, opacity: 0, duration: 0.5, stagger: 0.08, ease: "power3.out", delay: at(0.24) });
+      gsap.from("#introOverlay .problem-cta", { y: 14, opacity: 0, duration: 0.5, ease: "power3.out", delay: at(0.5) });
+      gsap.from("#introOverlay .problem-figure", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out", delay: at(0.1) });
 
       // Draw the alternates first, then the glowing best route, then drop the pins.
       const routes = [
-        { sel: "#mr-altUp", dur: 0.8, delay: 0.45 },
-        { sel: "#mr-altDown", dur: 0.8, delay: 0.55 },
-        { sel: "#mr-best", dur: 1.0, delay: 0.7 },
+        { sel: "#mr-altUp", dur: 0.8, delay: at(0.45) },
+        { sel: "#mr-altDown", dur: 0.8, delay: at(0.55) },
+        { sel: "#mr-best", dur: 1.0, delay: at(0.7) },
       ];
       routes.forEach((r) => {
         const path = $(r.sel);
@@ -196,22 +197,28 @@
           },
         });
       });
-      gsap.from("#introOverlay .map-pin", { y: -18, opacity: 0, duration: 0.5, stagger: 0.12, ease: "back.out(2)", delay: 1.1 });
-      gsap.from("#introOverlay .map-chip", { y: 10, opacity: 0, duration: 0.5, ease: "power3.out", delay: 1.5 });
+      gsap.from("#introOverlay .map-pin", { y: -18, opacity: 0, duration: 0.5, stagger: 0.12, ease: "back.out(2)", delay: at(1.1) });
+      gsap.from("#introOverlay .map-chip", { y: 10, opacity: 0, duration: 0.5, ease: "power3.out", delay: at(1.5) });
 
-      runFlow();
+      runFlow(baseDelay);
     }
   }
 
   let flowTween = null;
-  function runFlow() {
+  function stopFlow() {
+    if (flowTween) flowTween.kill();
+    flowTween = null;
+    if (routeRefs && routeRefs.flowEl) routeRefs.flowEl.style.opacity = "0";
+  }
+
+  function runFlow(baseDelay = 0) {
     if (reduceMotion || !hasGsap || !routeRefs || !routeRefs.flowEl) return;
     const gsap = window.gsap;
     const arc = $("#mr-best");
     if (!arc) return;
     const len = arc.getTotalLength();
     const flow = routeRefs.flowEl;
-    if (flowTween) flowTween.kill();
+    stopFlow();
     const proxy = { t: 0 };
     flowTween = gsap.to(proxy, {
       t: 1,
@@ -219,7 +226,7 @@
       ease: "power1.inOut",
       repeat: -1,
       repeatDelay: 0.7,
-      delay: 1.9,
+      delay: baseDelay + 1.9,
       onUpdate: function () {
         const pt = arc.getPointAtLength(len * proxy.t);
         flow.setAttribute("cx", pt.x);
@@ -240,9 +247,14 @@
       const dir = index > prev ? 1 : -1;
       const outgoing = slides[prev];
       const incoming = slides[index];
+      const incomingDelay = 0.18;
+      if (prev === 1) stopFlow();
+      gsap.killTweensOf(outgoing.querySelectorAll("*"));
+      gsap.killTweensOf(incoming.querySelectorAll("*"));
       incoming.classList.add("is-active");
       incoming.setAttribute("aria-hidden", "false");
       gsap.set(incoming, { opacity: 0, x: 40 * dir });
+      enterAnimation(index, incomingDelay);
       gsap.to(outgoing, {
         opacity: 0,
         x: -40 * dir,
@@ -259,10 +271,9 @@
         x: 0,
         duration: 0.45,
         ease: "power3.out",
-        delay: 0.18,
+        delay: incomingDelay,
         onComplete: () => {
           animating = false;
-          enterAnimation(index);
         },
       });
     } else {
