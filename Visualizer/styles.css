@@ -669,15 +669,15 @@ button {
 }
 
 .part3-node-marker.is-warn .part3-node-marker-ring {
-  fill: rgba(255, 118, 89, 0.11);
-  stroke: rgba(255, 118, 89, 0.94);
+  fill: rgba(255, 118, 89, 0.08);
+  stroke: rgba(255, 138, 112, 0.62);
+  stroke-width: 2.6;
 }
 
 .part3-node-marker-x {
-  stroke: rgba(255, 118, 89, 0.96);
+  stroke: rgba(255, 146, 120, 0.82);
   stroke-linecap: round;
-  stroke-width: 5;
-  filter: url(#tightGlow);
+  stroke-width: 3;
 }
 
 .part3-node-marker-check {
@@ -704,6 +704,168 @@ button {
   text-anchor: middle;
   dominant-baseline: middle;
   filter: url(#tightGlow);
+}
+
+/* Running-minimum holder token — the on-screen twin of the `min` variable
+   in Part 3's "chọn nhỏ nhất". Latches onto the cheapest open vertex. */
+.part3-min-holder-visual {
+  filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.45));
+}
+
+.part3-min-holder {
+  pointer-events: none;
+}
+
+.part3-min-holder-halo {
+  fill: rgba(66, 242, 161, 0.1);
+  stroke: rgba(66, 242, 161, 0.9);
+  stroke-width: 3;
+  filter: url(#tightGlow);
+}
+
+.part3-min-holder-stem {
+  stroke: rgba(66, 242, 161, 0.55);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 3 5;
+}
+
+.part3-min-holder-shell {
+  fill: rgba(7, 14, 11, 0.97);
+  stroke: var(--accent);
+  stroke-width: 2;
+  filter: url(#tightGlow);
+}
+
+.part3-min-holder-tag {
+  fill: rgba(66, 242, 161, 0.86);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.5px;
+  text-anchor: start;
+  dominant-baseline: middle;
+}
+
+.part3-min-holder-who {
+  fill: rgba(244, 241, 232, 0.66);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 15px;
+  font-weight: 900;
+  text-anchor: start;
+  dominant-baseline: middle;
+}
+
+.part3-min-holder-value {
+  fill: #eafff5;
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 30px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* When min legitimately lands on an already-settled vertex (the Part 3 bug),
+   the holder flips amber to flag the contradiction. */
+.part3-min-holder.is-warn .part3-min-holder-shell {
+  stroke: var(--amber);
+}
+
+.part3-min-holder.is-warn .part3-min-holder-halo {
+  fill: rgba(244, 201, 109, 0.1);
+  stroke: rgba(244, 201, 109, 0.9);
+}
+
+.part3-min-holder.is-warn .part3-min-holder-stem {
+  stroke: rgba(244, 201, 109, 0.6);
+}
+
+.part3-min-holder.is-warn .part3-min-holder-tag {
+  fill: rgba(244, 201, 109, 0.9);
+}
+
+/* Per-node scan verdicts: green "giữ" keep, muted "n > m" loss. */
+.part3-scan-tag-visual {
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+}
+
+.part3-scan-tag {
+  pointer-events: none;
+}
+
+.part3-scan-tag-bg {
+  fill: rgba(8, 14, 11, 0.94);
+  stroke-width: 1.5;
+}
+
+.part3-scan-tag.is-keep .part3-scan-tag-bg {
+  stroke: rgba(66, 242, 161, 0.85);
+}
+
+.part3-scan-tag.is-lose .part3-scan-tag-bg {
+  stroke: rgba(244, 201, 109, 0.48);
+}
+
+.part3-scan-tag-check {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.part3-scan-tag-text {
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 850;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.part3-scan-tag.is-keep .part3-scan-tag-text {
+  fill: rgba(180, 255, 224, 0.96);
+}
+
+.part3-scan-tag.is-lose .part3-scan-tag-text {
+  fill: rgba(244, 233, 214, 0.72);
+}
+
+/* Soft "đã chốt" settled tag — replaces the old slammed red ✗. */
+.part3-settled-tag-visual {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.42));
+}
+
+.part3-settled-tag {
+  pointer-events: none;
+}
+
+.part3-settled-tag-bg {
+  fill: rgba(9, 16, 13, 0.92);
+  stroke: rgba(66, 242, 161, 0.5);
+  stroke-width: 1.5;
+}
+
+.part3-settled-tag-disc {
+  fill: rgba(9, 16, 13, 0.92);
+  stroke: rgba(66, 242, 161, 0.6);
+  stroke-width: 1.8;
+}
+
+.part3-settled-tag-check {
+  fill: none;
+  stroke: rgba(66, 242, 161, 0.92);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.part3-settled-tag-text {
+  fill: rgba(214, 240, 228, 0.86);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .part3-edge-trace-path {

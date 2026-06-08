@@ -707,6 +707,11 @@
   const part3LoopCamera = { center: { x: 278, y: 392 }, scale: 1.28 };
   const part3GuardCamera = { center: { x: 360, y: 382 }, scale: 1.06 };
   const part3CostSlotCamera = { center: { x: 550, y: 330 }, scale: 1.12 };
+  // Offset of the floating "min" holder card from the node it currently holds.
+  // Kept constant so the card can slide between nodes while its tether + anchor
+  // halo keep pointing at whichever node sits below it.
+  const MIN_HOLDER_DX = 110;
+  const MIN_HOLDER_DY = -26;
   const part3AllEdges = [part2Edges.fromA, part2Edges.fromC, part2Edges.fromB, part2Edges.fromE, part2Edges.fromD, part2Edges.toK];
   const part3AfterCSettledState = makePart2State({
     A: ["settled", 0, "-"],
@@ -3517,8 +3522,8 @@
     });
     marker.appendChild(svg("circle", { r: 38, class: "part3-node-marker-ring" }));
     if (symbol === "x") {
-      marker.appendChild(svg("line", { x1: -16, y1: -16, x2: 16, y2: 16, class: "part3-node-marker-x" }));
-      marker.appendChild(svg("line", { x1: 16, y1: -16, x2: -16, y2: 16, class: "part3-node-marker-x" }));
+      marker.appendChild(svg("line", { x1: -11, y1: -11, x2: 11, y2: 11, class: "part3-node-marker-x" }));
+      marker.appendChild(svg("line", { x1: 11, y1: -11, x2: -11, y2: 11, class: "part3-node-marker-x" }));
     }
     if (symbol === "check") {
       marker.appendChild(svg("path", { d: "M -16 1 L -5 13 L 18 -15", class: "part3-node-marker-check" }));
@@ -3533,6 +3538,105 @@
     }
     group.appendChild(marker);
     return marker;
+  }
+
+  // The running-minimum token: a small "min" card that latches onto the
+  // cheapest open vertex found so far. It is the on-screen twin of the `min`
+  // variable in the pseudocode — it slides to a new node only when that node
+  // beats the value it is already holding.
+  function drawPart3MinHolder(node, { value = null, className = "" } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-min-holder-visual ${className}`);
+    const holder = svg("g", {
+      class: "part3-min-holder",
+      transform: `translate(${point.x + MIN_HOLDER_DX} ${point.y + MIN_HOLDER_DY})`,
+    });
+
+    // Anchor halo that rings the node currently held (node sits at -DX,-DY).
+    const anchor = svg("g", { class: "part3-min-holder-anchor", transform: `translate(${-MIN_HOLDER_DX} ${-MIN_HOLDER_DY})` });
+    anchor.appendChild(svg("circle", { r: 31, class: "part3-min-holder-halo" }));
+    holder.appendChild(anchor);
+
+    // Tether from the card toward the node it points at.
+    holder.appendChild(svg("line", { x1: -52, y1: 6, x2: -MIN_HOLDER_DX + 24, y2: -MIN_HOLDER_DY - 6, class: "part3-min-holder-stem" }));
+
+    holder.appendChild(svg("rect", { x: -56, y: -30, width: 112, height: 60, rx: 15, class: "part3-min-holder-shell" }));
+    const tag = svg("text", { x: -40, y: -11, class: "part3-min-holder-tag" });
+    tag.textContent = "min";
+    holder.appendChild(tag);
+    const who = svg("text", { x: -34, y: 14, class: "part3-min-holder-who" });
+    who.textContent = value == null ? "" : node;
+    holder.appendChild(who);
+    const val = svg("text", { x: 18, y: 6, class: "part3-min-holder-value" });
+    val.textContent = value == null ? "?" : String(value);
+    holder.appendChild(val);
+
+    group.appendChild(holder);
+    return holder;
+  }
+
+  // Slide the min holder onto `node` and update the value/letter it shows.
+  // `grab` makes the card pop (a new champion was found).
+  function moveMinHolder(tl, selector, node, value, at, { grab = true } = {}) {
+    const point = nodes[node];
+    // The transform lives on the inner `.part3-min-holder` group, so move that
+    // (not the outer wrapper `selector`) to avoid compounding translations.
+    tl.to(`${selector} .part3-min-holder`, {
+      attr: { transform: `translate(${point.x + MIN_HOLDER_DX} ${point.y + MIN_HOLDER_DY})` },
+      duration: dur(grab ? 0.34 : 0.001),
+      ease: "power3.inOut",
+    }, at);
+    tl.call(() => {
+      const card = document.querySelector(selector);
+      if (!card) return;
+      const valEl = card.querySelector(".part3-min-holder-value");
+      const whoEl = card.querySelector(".part3-min-holder-who");
+      if (valEl) valEl.textContent = String(value);
+      if (whoEl) whoEl.textContent = node;
+    }, null, at);
+    if (grab) {
+      tl.fromTo(`${selector} .part3-min-holder-shell`, { scale: 0.84, transformOrigin: "center center" }, { scale: 1, duration: dur(0.3), ease: "back.out(2)" }, at);
+    }
+  }
+
+  // Small verdict chip dropped beside a node during the scan: "giữ" (green,
+  // a new/kept champion) or a muted "n > m" loss.
+  function drawPart3ScanTag(node, text, { tone = "lose", className = "", dx = 0, dy = 46 } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-scan-tag-visual ${className}`);
+    const tag = svg("g", { class: `part3-scan-tag is-${tone}`, transform: `translate(${point.x + dx} ${point.y + dy})` });
+    const width = Math.max(44, String(text).length * 9 + 26);
+    tag.appendChild(svg("rect", { x: -width / 2, y: -15, width, height: 30, rx: 9, class: "part3-scan-tag-bg" }));
+    if (tone === "keep") {
+      tag.appendChild(svg("path", { d: "M -18 0 L -12 6 L -2 -7", class: "part3-scan-tag-check" }));
+    }
+    const label = svg("text", { x: tone === "keep" ? 8 : 0, y: 1, class: "part3-scan-tag-text" });
+    label.textContent = text;
+    tag.appendChild(label);
+    group.appendChild(tag);
+    return tag;
+  }
+
+  // Soft "đã chốt" pill that replaces the old slammed red ✗. Marks a vertex as
+  // settled / out of the running without shouting. `compact` drops the label to
+  // a bare check ring when many nodes need marking at once.
+  function drawPart3SettledTag(node, { className = "", label = "đã chốt", compact = false, dx = 0, dy = -46 } = {}) {
+    const point = nodes[node];
+    const group = drawPart3GraphGroup(`part3-settled-tag-visual ${className}`);
+    const tag = svg("g", { class: `part3-settled-tag${compact ? " is-compact" : ""}`, transform: `translate(${point.x + dx} ${point.y + dy})` });
+    if (compact) {
+      tag.appendChild(svg("circle", { r: 15, class: "part3-settled-tag-disc" }));
+      tag.appendChild(svg("path", { d: "M -7 0 L -2 5 L 7 -6", class: "part3-settled-tag-check" }));
+    } else {
+      const width = Math.max(78, String(label).length * 8 + 40);
+      tag.appendChild(svg("rect", { x: -width / 2, y: -16, width, height: 32, rx: 16, class: "part3-settled-tag-bg" }));
+      tag.appendChild(svg("path", { d: `M ${-width / 2 + 16} 0 L ${-width / 2 + 22} 6 L ${-width / 2 + 33} -7`, class: "part3-settled-tag-check" }));
+      const text = svg("text", { x: 12, y: 1, class: "part3-settled-tag-text" });
+      text.textContent = label;
+      tag.appendChild(text);
+    }
+    group.appendChild(tag);
+    return tag;
   }
 
   function drawPart3Packet({ from, to, text, tone = "focus", className = "", offset = 0, startT = 0.16, endT = 0.86 }) {
@@ -4046,58 +4150,14 @@
 
   function enterPart3MinScene() {
     const tl = makeTimeline();
+    const scanOrder = ["A", "C", "B", "D", "E"];
+    const costs = { A: 0, C: 2, B: 4, D: 7, E: 6 };
 
     setCameraView(part3LoopCamera);
     setEdgeStates({ visible: [part2Edges.fromA], focus: [part2Edges.fromA] });
     setNodeStates(part2States.start, {
-      focus: ["A", "C", "B", "D", "E"],
-      wrong: ["A"],
-      target: ["K"],
-      showNodeCosts: true,
-      nodeCostNodes: ["A", "C", "B", "D", "E"],
-    });
-    showMemoryPanel({
-      cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
-      focus: ["A"],
-      amber: ["C", "B", "D", "E"],
-    });
-    drawPart3Probe("A", "min-probe");
-    drawPart3NodeMarker("A", { tone: "warn", symbol: "x", className: "min-wrong-marker" });
-    gsap.set(".min-wrong-marker", { opacity: 0 });
-    showPart3Code("min", "Tìm đỉnh nhỏ nhất", "chờ viết");
-    setMetrics("quét Cost", "A=0 thắng", "cần Visited");
-
-    animatePart3SceneIntro(tl, 0.16);
-    moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 0.2, 0.62);
-    animatePart3Probe(tl, ["A", "C", "B", "D", "E", "A"], 0.48);
-    tl.call(() => {
-      setNodeStates(part2States.start, {
-        focus: ["A"],
-        wrong: ["A"],
-        target: ["K"],
-        showNodeCosts: true,
-        nodeCostNodes: ["A", "C", "B", "D", "E"],
-      });
-      showMemoryPanel({
-        cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
-        focus: ["A"],
-        amber: ["C", "B", "D", "E"],
-      });
-      setMetrics("bug lộ ra", "A được chọn lại", "sửa ở scene sau");
-    }, null, 0.94);
-    tl.fromTo(".min-wrong-marker", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.26), ease: "back.out(1.5)" }, 0.96);
-    pulsePart3Nodes(tl, ["A"], 1.0, { toScale: 1.14, duration: 0.3 });
-    return tl;
-  }
-
-  function enterPart3VisitedScene() {
-    const tl = makeTimeline();
-
-    setCameraView(part2Cameras.frontier);
-    setEdgeStates({ visible: [part2Edges.fromA], focus: [[["A", "C"]]] });
-    setNodeStates(part2States.start, {
-      focus: ["A", "C"],
-      wrong: ["A"],
+      focus: ["C", "B", "D", "E"],
+      correct: ["A"],
       target: ["K"],
       showNodeCosts: true,
       nodeCostNodes: ["A", "C", "B", "D", "E"],
@@ -4105,40 +4165,134 @@
     showMemoryPanel({
       cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
       visited: ["A"],
-      focus: ["A", "C"],
+      focus: ["A"],
+      amber: ["C", "B", "D", "E"],
+    });
+    drawPart3Probe("A", "min-probe");
+    drawPart3MinHolder("A", { value: null, className: "min-holder" });
+    drawPart3SettledTag("A", { className: "min-settled", label: "A đã chốt" });
+    gsap.set(".min-holder, .min-probe", { opacity: 0 });
+    gsap.set(".min-settled", { opacity: 0, transformOrigin: "center center" });
+    showPart3Code("min", "Tìm đỉnh nhỏ nhất", "chờ viết");
+    setMetrics("quét Cost", "giữ số bé nhất", "min = ?");
+
+    animatePart3SceneIntro(tl, 0.16);
+    moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 0.2, 0.62);
+    tl.to(".min-holder, .min-probe", { opacity: 1, duration: dur(0.32), ease: "power2.out" }, 0.5);
+
+    let t = 0.66;
+    scanOrder.forEach((node, index) => {
+      const point = nodes[node];
+      const tagSel = `.min-tag-${node}`;
+      tl.to(".part3-probe-cursor", { attr: { transform: `translate(${point.x} ${point.y})` }, duration: dur(0.16), ease: "power2.inOut" }, t);
+      pulsePart3Nodes(tl, [node], t + 0.02, { toScale: 1.12, duration: 0.18 });
+      if (index === 0) {
+        moveMinHolder(tl, ".min-holder", node, costs[node], t + 0.12, { grab: true });
+        drawPart3ScanTag(node, "nhận 0", { tone: "keep", className: "min-tag-A", dy: 54 });
+        gsap.set(tagSel, { opacity: 0 });
+        tl.fromTo(tagSel, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.22), ease: "back.out(1.6)" }, t + 0.16);
+        tl.call(() => setMetrics("đỉnh đầu tiên", "min = A · 0", "quét tiếp"), null, t + 0.16);
+      } else {
+        drawPart3ScanTag(node, `${costs[node]} > 0`, { tone: "lose", className: `min-tag-${node}`, dy: 54 });
+        gsap.set(tagSel, { opacity: 0 });
+        tl.fromTo(tagSel, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.2), ease: "power2.out" }, t + 0.12);
+        tl.call(() => setMetrics("so sánh", `${costs[node]} > 0`, "min vẫn A"), null, t + 0.12);
+      }
+      // Each verdict is transient so the final frame stays clean.
+      tl.to(tagSel, { opacity: 0, duration: dur(0.18), ease: "power2.in" }, t + 0.38);
+      t += 0.44;
+    });
+
+    // A=0 wins the whole scan — but A was already settled. The holder flips to a
+    // warning tone and the soft "đã chốt" tag exposes the bug that motivates
+    // Visited, replacing the old red ✗ slam.
+    tl.to(".min-probe", { opacity: 0, duration: dur(0.26), ease: "power2.in" }, t);
+    tl.call(() => {
+      const card = document.querySelector(".min-holder .part3-min-holder");
+      if (card) card.classList.add("is-warn");
+    }, null, t + 0.04);
+    tl.call(() => setMetrics("A = 0 thắng lại", "nhưng A đã chốt", "cần Visited"), null, t + 0.06);
+    tl.to(".node-A", { opacity: 0.6, duration: dur(0.3) }, t + 0.06);
+    tl.fromTo(".min-settled", { opacity: 0, scale: 0.82, y: 6 }, { opacity: 1, scale: 1, y: 0, duration: dur(0.34), ease: "back.out(1.5)" }, t + 0.08);
+    pulsePart3Nodes(tl, ["A"], t + 0.14, { toScale: 1.1, duration: 0.28 });
+    return tl;
+  }
+
+  function enterPart3VisitedScene() {
+    const tl = makeTimeline();
+    const scanOrder = ["A", "B", "C", "D", "E"];
+    const costs = { A: 0, C: 2, B: 4, D: 7, E: 6 };
+    const visitedCamera = { center: { x: 296, y: 346 }, scale: 1.22 };
+
+    setCameraView(visitedCamera);
+    setEdgeStates({ visible: [part2Edges.fromA], focus: [[["A", "C"]]] });
+    setNodeStates(part2States.start, {
+      focus: ["C", "B", "D", "E"],
+      correct: ["A"],
+      target: ["K"],
+      showNodeCosts: true,
+      nodeCostNodes: ["A", "C", "B", "D", "E"],
+    });
+    showMemoryPanel({
+      cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
+      visited: ["A"],
+      focus: ["C"],
       amber: ["B", "D", "E"],
     });
     drawPart3Probe("A", "visited-probe");
-    drawPart3NodeMarker("A", { tone: "warn", symbol: "x", className: "visited-block-marker" });
-    drawPart3NodeMarker("C", { tone: "focus", symbol: "check", className: "visited-pass-marker" });
-    gsap.set(".visited-pass-marker", { opacity: 0 });
+    drawPart3MinHolder("B", { value: null, className: "visited-holder" });
+    drawPart3SettledTag("A", { className: "visited-settled", label: "A đã chốt" });
+    gsap.set(".visited-holder, .visited-probe", { opacity: 0 });
+    gsap.set(".visited-settled", { opacity: 0, transformOrigin: "center center" });
     showPart3Code("visited", "Loại đỉnh đã chốt", "chờ sửa");
-    setMetrics("A=0", "đã xử lý", "!Visited");
+    setMetrics("Visited chặn", "bỏ đỉnh đã chốt", "min = ?");
 
     animatePart3SceneIntro(tl, 0.16);
-    animatePart3Probe(tl, ["A", "C"], 0.42);
-    tl.call(() => {
-      setEdgeStates({ visible: [part2Edges.fromA], focus: [[["A", "C"]]] });
-      setMetrics("bỏ A", "vì Visited[A]", "quét tiếp");
-    }, null, 0.68);
-    tl.call(() => {
-      setNodeStates(part2States.start, {
-        focus: ["C"],
-        correct: ["A", "C"],
-        target: ["K"],
-        showNodeCosts: true,
-        nodeCostNodes: ["A", "C", "B", "D", "E"],
-      });
-      showMemoryPanel({
-        cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
-        visited: ["A"],
-        focus: ["C"],
-        amber: ["B", "D", "E"],
-      });
-      setMetrics("eligible", "C=2", "min = C");
-    }, null, 1.06);
-    tl.fromTo(".visited-pass-marker", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.26), ease: "back.out(1.5)" }, 1.08);
-    pulsePart3Nodes(tl, ["C"], 1.1, { toScale: 1.14, duration: 0.3 });
+    tl.to(".visited-probe", { opacity: 1, duration: dur(0.3), ease: "power2.out" }, 0.4);
+
+    let t = 0.54;
+    scanOrder.forEach((node) => {
+      const point = nodes[node];
+      tl.to(".part3-probe-cursor", { attr: { transform: `translate(${point.x} ${point.y})` }, duration: dur(0.16), ease: "power2.inOut" }, t);
+      pulsePart3Nodes(tl, [node], t + 0.02, { toScale: 1.1, duration: 0.16 });
+      if (node === "A") {
+        // Gate: A is in Visited, so the scan steps over it without it ever
+        // becoming a candidate.
+        tl.fromTo(".visited-settled", { opacity: 0, scale: 0.82, y: 6 }, { opacity: 1, scale: 1, y: 0, duration: dur(0.3), ease: "back.out(1.5)" }, t + 0.08);
+        tl.to(".node-A", { opacity: 0.6, duration: dur(0.24) }, t + 0.08);
+        drawPart3ScanTag(node, "bỏ qua", { tone: "lose", className: "visited-tag-A", dy: 52 });
+        gsap.set(".visited-tag-A", { opacity: 0 });
+        tl.fromTo(".visited-tag-A", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.22), ease: "power2.out" }, t + 0.14);
+        tl.call(() => setMetrics("gặp A", "Visited[A] = đúng", "bỏ qua"), null, t + 0.12);
+      } else if (node === "B") {
+        // First eligible vertex becomes the provisional champion.
+        tl.to(".visited-holder", { opacity: 1, duration: dur(0.26), ease: "power2.out" }, t + 0.08);
+        moveMinHolder(tl, ".visited-holder", node, costs[node], t + 0.12, { grab: true });
+        drawPart3ScanTag(node, "nhận 4", { tone: "keep", className: "visited-tag-B", dy: 52 });
+        gsap.set(".visited-tag-B", { opacity: 0 });
+        tl.fromTo(".visited-tag-B", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.24), ease: "back.out(1.6)" }, t + 0.16);
+        tl.call(() => setMetrics("đỉnh mở đầu", "min = B", "cost 4"), null, t + 0.16);
+      } else if (node === "C") {
+        // C beats the held value, so the token jumps from B to C.
+        moveMinHolder(tl, ".visited-holder", node, costs[node], t + 0.12, { grab: true });
+        drawPart3ScanTag(node, "2 < 4 · giữ", { tone: "keep", className: "visited-tag-C", dy: 54 });
+        gsap.set(".visited-tag-C", { opacity: 0 });
+        tl.fromTo(".visited-tag-C", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.24), ease: "back.out(1.6)" }, t + 0.16);
+        tl.call(() => setMetrics("2 < 4", "min nhảy sang C", "min = C"), null, t + 0.16);
+      } else {
+        drawPart3ScanTag(node, `${costs[node]} > 2`, { tone: "lose", className: `visited-tag-${node}`, dy: 54 });
+        gsap.set(`.visited-tag-${node}`, { opacity: 0 });
+        tl.fromTo(`.visited-tag-${node}`, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.22), ease: "power2.out" }, t + 0.12);
+        tl.call(() => setMetrics("so sánh", `${costs[node]} > 2`, "min vẫn C"), null, t + 0.12);
+      }
+      // Verdicts are transient; A keeps only its standing "đã chốt" pill.
+      tl.to(`.visited-tag-${node}`, { opacity: 0, duration: dur(0.18), ease: "power2.in" }, t + 0.4);
+      t += 0.44;
+    });
+
+    tl.to(".visited-probe", { opacity: 0, duration: dur(0.26), ease: "power2.in" }, t);
+    tl.call(() => setMetrics("quét xong", "min = C · 2", "C nhỏ nhất"), null, t + 0.04);
+    pulsePart3Nodes(tl, ["C"], t + 0.08, { toScale: 1.14, duration: 0.3 });
     return tl;
   }
 
@@ -4153,9 +4307,11 @@
       showNodeCosts: true,
       nodeCostNodes: ["A", "C", "B", "E", "D", "F", "G"],
     });
-    ["A", "C", "B", "E", "D", "F", "G"].forEach((node) => {
-      drawPart3NodeMarker(node, { tone: "warn", symbol: "x", className: "empty-closed-marker" });
+    const closedNodes = ["A", "C", "B", "E", "D", "F", "G"];
+    closedNodes.forEach((node) => {
+      drawPart3SettledTag(node, { className: "empty-settled-tag", compact: true, dy: -42 });
     });
+    gsap.set(".empty-settled-tag", { opacity: 0, transformOrigin: "center center" });
     showMemoryPanel({
       cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9 },
       visited: ["A", "C", "B", "E", "D", "F", "G"],
@@ -4166,7 +4322,9 @@
 
     animatePart3SceneIntro(tl, 0.16);
     moveCameraOnTimeline(tl, part3GuardCamera.center, part3GuardCamera.scale, 0.2, 0.58);
-    tl.call(() => setMetrics("frontier rỗng", "min không đổi", "cần break"), null, 0.9);
+    tl.to(closedNodes.map((node) => `.node-${node}`).join(", "), { opacity: 0.55, duration: dur(0.4), ease: "power2.out" }, 0.4);
+    tl.fromTo(".empty-settled-tag", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, stagger: dur(0.06), duration: dur(0.3), ease: "back.out(1.7)" }, 0.46);
+    tl.call(() => setMetrics("frontier rỗng", "không còn ứng viên", "cần break"), null, 0.9);
     return tl;
   }
 
