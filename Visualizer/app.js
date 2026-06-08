@@ -4925,6 +4925,7 @@
 
   function enterPart3ReplayScene() {
     const tl = makeTimeline();
+    if (!prefersReducedMotion) tl.timeScale(1.18);
     const finalEdges = [
       ["A", "C"],
       ["C", "B"],
@@ -5018,7 +5019,7 @@
         visited: ["A", "C", "B", "E", "D"],
         prev: { C: "A", B: "C", D: "C", E: "B", F: "E", G: "E" },
         focus: ["D"],
-        danger: ["F", "G"],
+        danger: ["F:6", "G:9"],
       },
       afterF: {
         cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
@@ -5091,9 +5092,20 @@
       pulsePart3Nodes(tl, [node], at + 0.06, { toScale: 1.1, duration: 0.24 });
     }
 
-    function animateReplayBundles(selector, at, duration = 0.96) {
-      animatePart3FlowChips(tl, selector, at, duration);
-      tl.to(selector, { opacity: 0, scale: 0.82, duration: dur(0.22), ease: "power2.in" }, at + duration + 0.42);
+    function animateReplayBundles() {
+      // Replay is already explained by code focus, edge highlight, and memory.
+      // Extra moving update labels made this scene visually noisy.
+    }
+
+    function flashReplayRejectTrace(at) {
+      tl.fromTo(
+        ".replay-reject-trace",
+        { opacity: 0 },
+        { opacity: 0.86, stagger: dur(0.06), duration: dur(0.18), ease: "power2.out", immediateRender: false },
+        at,
+      );
+      tl.to(".replay-reject-trace .part3-edge-trace-path", { strokeDashoffset: 0, stagger: dur(0.05), duration: dur(0.42), ease: "power2.out" }, at + 0.04);
+      tl.to(".replay-reject-trace", { opacity: 0, duration: dur(0.28), ease: "power2.in" }, at + 1.08);
     }
 
     function revealReplayParent(selector, at) {
@@ -5115,6 +5127,8 @@
     drawPart3UpdateBundle({ from: "D", to: "F", cost: 7, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: 22 });
     drawPart3UpdateBundle({ from: "D", to: "G", cost: 12, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: -26 });
     drawPart3UpdateBundle({ from: "F", to: "K", cost: 10, parent: "F", className: "is-deferred replay-bundle replay-bundle-F", offset: -20 });
+    drawPart3EdgeTrace(["D", "F"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-trace-F", offset: 18 });
+    drawPart3EdgeTrace(["D", "G"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-trace-G", offset: -18 });
     drawPart3ParentArrow("K", "F", { className: "is-deferred replay-parent replay-parent-K" });
     drawPart3ParentArrow("F", "E", { className: "is-deferred replay-parent replay-parent-F" });
     drawPart3ParentArrow("E", "B", { className: "is-deferred replay-parent replay-parent-E" });
@@ -5129,10 +5143,10 @@
     setNodeStates(emptyState, { showNodeCosts: true });
     showMemoryPanel(memory.empty);
     showPart3Code("replay", "Mã giả hoàn chỉnh", "chạy từ đầu");
-    setReplayCode([2, 3, 4], "khởi tạo", "trống", "trống", 1);
+    setReplayCode([], "khởi tạo", "trống", "trống", 1);
 
     gsap.set(
-      ".replay-probe-shell, .replay-bundle, .replay-reject-bundle, .replay-parent, .replay-backtrack-cursor-shell, .replay-backtrack-strip, .replay-final-trace",
+      ".replay-probe-shell, .replay-bundle, .replay-reject-bundle, .replay-reject-trace, .replay-parent, .replay-backtrack-cursor-shell, .replay-backtrack-strip, .replay-final-trace",
       { opacity: 0, transformOrigin: "center center" },
     );
     gsap.set(".replay-parent .part3-parent-arrow-head, .replay-parent .part3-parent-label", { opacity: 0 });
@@ -5140,7 +5154,7 @@
       opacity: 0,
       transformOrigin: "center center",
     });
-    prepareSvgPathDraw(".replay-parent .part3-parent-arrow-path, .replay-final-trace .part3-edge-trace-path");
+    prepareSvgPathDraw(".replay-parent .part3-parent-arrow-path, .replay-final-trace .part3-edge-trace-path, .replay-reject-trace .part3-edge-trace-path");
 
     animatePart3SceneIntro(tl, 0.18);
     tl.to(".stage-copy", { opacity: 0.16, duration: dur(0.5), ease: "power2.out" }, 2.72);
@@ -5160,7 +5174,7 @@
     tl.fromTo(".replay-probe-shell", { opacity: 0, scale: 0.84 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 1.54);
     tl.call(() => {
       applyReplayFrame({
-        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        lines: [10],
         state: seedState,
         focus: ["A"],
         memoryState: memory.seed,
@@ -5171,7 +5185,7 @@
 
     tl.call(() => {
       applyReplayFrame({
-        lines: [15, 16, 17],
+        lines: [17],
         state: settleAState,
         focus: ["A"],
         memoryState: memory.aSettled,
@@ -5182,7 +5196,7 @@
     moveCameraOnTimeline(tl, part2Cameras.frontier.center, part2Cameras.frontier.scale, 2.78, 0.92);
     tl.call(() => {
       applyReplayFrame({
-        lines: [18, 19, 20, 21, 22, 23],
+        lines: [23],
         state: part2States.start,
         visible: edgesAfterA,
         focusEdges: part2Edges.fromA,
@@ -5198,7 +5212,7 @@
 
     tl.call(() => {
       applyReplayFrame({
-        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        lines: [10],
         state: part2States.start,
         visible: edgesAfterA,
         locked: treeAfterA,
@@ -5210,7 +5224,7 @@
     moveReplayProbe("C", 5.1, 0.42);
     tl.call(() => {
       applyReplayFrame({
-        lines: [15, 16, 17],
+        lines: [17],
         state: part3AfterCSettledState,
         visible: edgesAfterA,
         locked: treeAfterA,
@@ -5221,7 +5235,7 @@
     }, null, 5.78);
     tl.call(() => {
       applyReplayFrame({
-        lines: [18, 19, 20, 21, 22, 23],
+        lines: [23],
         state: part2States.afterC,
         visible: edgesAfterC,
         focusEdges: part2Edges.fromC,
@@ -5237,7 +5251,7 @@
 
     tl.call(() => {
       applyReplayFrame({
-        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        lines: [10],
         state: part2States.afterC,
         visible: edgesAfterC,
         locked: treeAfterC,
@@ -5249,7 +5263,7 @@
     moveReplayProbe("B", 8.18, 0.42);
     tl.call(() => {
       applyReplayFrame({
-        lines: [15, 16, 17],
+        lines: [17],
         state: settleBState,
         visible: edgesAfterC,
         locked: treeAfterC,
@@ -5261,7 +5275,7 @@
     moveCameraOnTimeline(tl, part2Cameras.middle.center, part2Cameras.middle.scale, 9.1, 0.82);
     tl.call(() => {
       applyReplayFrame({
-        lines: [18, 19, 20, 21, 22, 23],
+        lines: [23],
         state: part2States.afterB,
         visible: edgesAfterB,
         focusEdges: part2Edges.fromB,
@@ -5276,7 +5290,7 @@
 
     tl.call(() => {
       applyReplayFrame({
-        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        lines: [10],
         state: part2States.afterB,
         visible: edgesAfterB,
         locked: treeAfterB,
@@ -5288,7 +5302,7 @@
     moveReplayProbe("E", 11.0, 0.42);
     tl.call(() => {
       applyReplayFrame({
-        lines: [15, 16, 17],
+        lines: [17],
         state: settleEState,
         visible: edgesAfterB,
         locked: treeAfterB,
@@ -5299,7 +5313,7 @@
     }, null, 11.66);
     tl.call(() => {
       applyReplayFrame({
-        lines: [18, 19, 20, 21, 22, 23],
+        lines: [23],
         state: part2States.afterE,
         visible: edgesAfterE,
         focusEdges: part2Edges.fromE,
@@ -5315,7 +5329,7 @@
 
     tl.call(() => {
       applyReplayFrame({
-        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        lines: [10],
         state: part2States.afterE,
         visible: edgesAfterE,
         locked: treeAfterE,
@@ -5327,7 +5341,7 @@
     moveReplayProbe("D", 14.12, 0.42);
     tl.call(() => {
       applyReplayFrame({
-        lines: [15, 16, 17],
+        lines: [17],
         state: part2States.afterD,
         visible: edgesAfterE,
         locked: treeAfterE,
@@ -5338,10 +5352,9 @@
     }, null, 14.76);
     tl.call(() => {
       applyReplayFrame({
-        lines: [18, 19, 20, 21],
+        lines: [21],
         state: part2States.afterD,
         visible: edgesAfterD,
-        focusEdges: part2Edges.fromD,
         locked: treeAfterE,
         context: treeAfterE,
         focus: ["D", "F", "G"],
@@ -5350,13 +5363,14 @@
       });
     }, null, 15.38);
     revealEdges(part2Edges.fromD, 15.46);
+    flashReplayRejectTrace(15.58);
     animateReplayBundles(".replay-reject-bundle", 15.52, 0.96);
     pulsePart3Nodes(tl, ["F", "G"], 16.18, { toScale: 1.08, stagger: 0.08, duration: 0.24 });
 
     moveCameraOnTimeline(tl, part2Cameras.toK.center, part2Cameras.toK.scale, 16.7, 0.88);
     tl.call(() => {
       applyReplayFrame({
-        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        lines: [10],
         state: part2States.afterD,
         visible: edgesAfterD,
         locked: treeAfterE,
@@ -5368,7 +5382,7 @@
     moveReplayProbe("F", 17.1, 0.42);
     tl.call(() => {
       applyReplayFrame({
-        lines: [15, 16, 17],
+        lines: [17],
         state: settleFState,
         visible: edgesAfterD,
         locked: treeAfterE,
@@ -5379,7 +5393,7 @@
     }, null, 17.78);
     tl.call(() => {
       applyReplayFrame({
-        lines: [18, 19, 20, 21, 22, 23],
+        lines: [23],
         state: part2States.afterF,
         visible: edgesAfterF,
         focusEdges: [["F", "K"]],
@@ -5396,7 +5410,7 @@
 
     tl.call(() => {
       applyReplayFrame({
-        lines: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        lines: [10],
         state: part2States.afterF,
         visible: edgesAfterF,
         locked: treeAfterF,

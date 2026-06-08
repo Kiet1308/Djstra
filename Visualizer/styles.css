@@ -885,6 +885,12 @@ button {
   stroke-dasharray: 14 10;
 }
 
+.replay-reject-trace .part3-edge-trace-path {
+  stroke: rgba(255, 84, 68, 0.98);
+  stroke-width: 9;
+  stroke-dasharray: 12 8;
+}
+
 .part3-cost-slot-visual {
   filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.42));
 }
