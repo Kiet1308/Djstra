@@ -1291,7 +1291,6 @@
   let adjacency = new Map();
   let part4ComplexityState = null;
   let part4ComplexityHistory = [];
-  let part4AutoAdvanceTimer = null;
   let part4NegativeIndex = 0;
 
   init();
@@ -1590,7 +1589,6 @@
     if (activeRouteTween) activeRouteTween.kill();
     if (ghostRouteTween) ghostRouteTween.kill();
     if (activeCodeRevealTween) activeCodeRevealTween.kill();
-    clearPart4AutoAdvanceTimer();
     gsap.killTweensOf("*");
     activeRouteTween = null;
     ghostRouteTween = null;
@@ -5422,7 +5420,6 @@
 
   function restartPart4ComplexityScene() {
     if (getActivePart().id !== "part4" || currentScene !== 0) return;
-    clearPart4AutoAdvanceTimer();
     if (activeTimeline) {
       activeTimeline.kill();
       activeTimeline = null;
@@ -5431,32 +5428,7 @@
     resetPart4ComplexityState();
     renderPart4Complexity();
     preparePart4ComplexityAdvance();
-    schedulePart4ComplexityAutoAdvance(420);
     updatePauseButton();
-  }
-
-  function clearPart4AutoAdvanceTimer() {
-    if (!part4AutoAdvanceTimer) return;
-    window.clearTimeout(part4AutoAdvanceTimer);
-    part4AutoAdvanceTimer = null;
-  }
-
-  function shouldAutoAdvancePart4Complexity() {
-    return getActivePart().id === "part4" && currentScene === 0 && part4ComplexityState && part4ComplexityState.phase !== "finished";
-  }
-
-  function schedulePart4ComplexityAutoAdvance(delay = 560) {
-    clearPart4AutoAdvanceTimer();
-    if (!shouldAutoAdvancePart4Complexity()) return;
-    part4AutoAdvanceTimer = window.setTimeout(() => {
-      part4AutoAdvanceTimer = null;
-      if (!shouldAutoAdvancePart4Complexity()) return;
-      if (activeTimeline || visualAdvanceBlocked) {
-        schedulePart4ComplexityAutoAdvance(260);
-        return;
-      }
-      if (pendingVisualAdvance) advancePendingVisual();
-    }, prefersReducedMotion ? Math.min(delay, 180) : delay);
   }
 
   function setPart4CodeFocus(keys, text) {
@@ -5667,7 +5639,7 @@
         : "Thuật toán scan A -> F, bỏ qua đỉnh đã đóng open và chọn d[v] nhỏ nhất.";
       el.part4Formula.textContent = "V lần x V đỉnh";
       el.part4FormulaNote.textContent = "Mỗi vòng chọn min tốn một lượt quét qua danh sách đỉnh.";
-      el.part4Result.textContent = "Demo đang tự chạy một vài lượt để thấy pattern, không chạy hết thuật toán.";
+      el.part4Result.textContent = "Click Tiếp để chạy trọn một vòng FOR 1. Lần click sau sẽ chạy FOR 2.";
       setMetrics(`vòng ${s.round}`, `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
     } else if (s.phase === "edges") {
       el.part4PhaseTitle.textContent = `FOR 2: duyệt cạnh của ${s.current}`;
@@ -5676,7 +5648,7 @@
       el.part4OverlayText.textContent = `Bây giờ chỉ mở các cạnh kề của ${s.current}. Toàn bộ thuật toán cộng lại sẽ đi qua các cạnh kề này.`;
       el.part4Formula.textContent = "O(V^2 + E)";
       el.part4FormulaNote.textContent = "Phần chọn min là V^2, phần mở hàng xóm cộng theo số cạnh.";
-      el.part4Result.innerHTML = `Đỉnh <b>${s.current}</b> đã được đánh dấu Visited. Demo sẽ tự duyệt một lượt cạnh kề rồi qua vòng scan kế tiếp.`;
+      el.part4Result.innerHTML = `Đỉnh <b>${s.current}</b> đã được đánh dấu Visited. Click Tiếp để chạy trọn FOR 2 của đỉnh này.`;
       setMetrics(`u = ${s.current}`, `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
     } else {
       const path = getPart4FinalPath("F");
@@ -5689,7 +5661,7 @@
       el.part4Formula.textContent = "O(V^2 + E) -> O(V^2)";
       el.part4FormulaNote.textContent = "Với bản code vừa xây, điểm nghẽn là chọn min bằng cách quét mảng.";
       el.part4Result.innerHTML = s.sampleStopped
-        ? `Dừng minh họa sau <b>${s.round}</b> vòng: đã đủ để suy ra phần scan là V lần x V đỉnh, còn FOR 2 tính theo số cạnh.`
+        ? `Dừng minh họa sau <b>${s.round}</b> cặp FOR 1/FOR 2: đã đủ để suy ra phần scan là V lần x V đỉnh, còn FOR 2 tính theo số cạnh.`
         : path.length
           ? `Ví dụ đường tốt tới F: <b>${path.join(" -> ")}</b>, cost <b>${s.dist.F}</b>.`
           : "Thuật toán đã kết thúc.";
@@ -5714,7 +5686,7 @@
   function part4ComplexityNextLabel() {
     const s = part4ComplexityState;
     if (!s || s.phase === "finished") return null;
-    return s.phase === "scan" ? "Tự chạy FOR 1" : `Tự chạy cạnh ${s.current}`;
+    return s.phase === "scan" ? "Chạy FOR 1" : "Chạy FOR 2";
   }
 
   function preparePart4ComplexityAdvance() {
@@ -5728,7 +5700,6 @@
     const s = part4ComplexityState;
     if (s && s.phase !== "finished") {
       preparePart4ComplexityAdvance();
-      schedulePart4ComplexityAutoAdvance(520);
     } else {
       pendingVisualAdvance = null;
       pendingVisualLabel = null;
@@ -5739,7 +5710,6 @@
   }
 
   function beginPart4InternalTimeline() {
-    clearPart4AutoAdvanceTimer();
     visualAdvanceBlocked = true;
     pendingVisualAdvance = null;
     pendingVisualLabel = null;
@@ -5774,12 +5744,12 @@
       setPart4CodeFocus(["while", "min"], `Vòng ${s.round}: đặt min = null trước khi quét FOR 1.`);
       renderPart4Complexity();
     });
-    tl.to({}, { duration: dur(0.18) });
+    tl.to({}, { duration: dur(0.12) });
     tl.call(() => {
       setPart4CodeFocus(["for1"], "Bắt đầu FOR 1: duyệt từng ô Cost để tìm đỉnh nhỏ nhất chưa Visited.");
       renderPart4Complexity();
     });
-    tl.to({}, { duration: dur(0.18) });
+    tl.to({}, { duration: dur(0.12) });
 
     part4Order.forEach((node) => {
       tl.call(() => {
@@ -5789,7 +5759,7 @@
         setPart4CodeFocus(["for1", "ifMin"], `dinh = ${node}: Visited=${s.visited[node] ? "true" : "false"}, Cost=${p4Fmt(s.dist[node])}; min hiện tại: ${bestText}.`);
         renderPart4Complexity();
       });
-      tl.to({}, { duration: dur(0.24) });
+      tl.to({}, { duration: dur(0.14) });
       tl.call(() => {
         if (!s.visited[node] && s.dist[node] < Infinity && (s.best === null || s.dist[node] < s.dist[s.best])) {
           const oldMin = s.best ? p4Fmt(s.dist[s.best]) : "∞";
@@ -5804,7 +5774,7 @@
         }
         renderPart4Complexity();
       });
-      tl.to({}, { duration: dur(0.22) });
+      tl.to({}, { duration: dur(0.13) });
     });
 
     tl.call(() => {
@@ -5818,17 +5788,6 @@
       }
       s.current = s.best;
       s.visited[s.current] = true;
-      if (s.round >= part4ComplexityDemoRounds) {
-        s.phase = "finished";
-        s.sampleStopped = true;
-        s.showTree = true;
-        setPart4CodeFocus(
-          ["closeOpen", "return"],
-          "Dừng mẫu ở đây: đã thấy FOR 1 phải quét lại toàn bộ danh sách ở vòng tiếp theo.",
-        );
-        renderPart4Complexity();
-        return;
-      }
       s.phase = "edges";
       setPart4CodeFocus(["end", "closeOpen"], `FOR 1 kết thúc: chọn min = ${s.current}, đánh dấu Visited[${s.current}] = true.`);
       renderPart4Complexity();
@@ -5847,7 +5806,7 @@
       setPart4CodeFocus(["for2"], `Bắt đầu FOR 2: chỉ duyệt canh of map[min] với min = ${current}.`);
       renderPart4Complexity();
     });
-    tl.to({}, { duration: dur(0.18) });
+    tl.to({}, { duration: dur(0.12) });
 
     neighbors.forEach((edge) => {
       tl.call(() => {
@@ -5857,7 +5816,7 @@
         setPart4CodeFocus(["for2", "setKe", "newCost"], `Đang xét cạnh ${edge.from} -> ${edge.to}: ke = ${edge.to}, newCost = Cost[min] + ${edge.cost}.`);
         renderPart4Complexity();
       });
-      tl.to({}, { duration: dur(0.22) });
+      tl.to({}, { duration: dur(0.14) });
       tl.call(() => {
         if (s.visited[edge.to]) {
           setPart4CodeFocus(["ifRelax"], `${edge.to} đã Visited, không relax lại.`);
@@ -5868,7 +5827,7 @@
         setPart4CodeFocus(["ifRelax"], `Ứng viên tới ${edge.to}: ${p4Fmt(s.dist[current])} + ${edge.cost} = ${candidate}, so với Cost[${edge.to}] = ${p4Fmt(s.dist[edge.to])}.`);
         renderPart4Complexity();
       });
-      tl.to({}, { duration: dur(0.24) });
+      tl.to({}, { duration: dur(0.15) });
       tl.call(() => {
         if (!s.visited[edge.to]) {
           const candidate = s.dist[current] + edge.cost;
@@ -5883,7 +5842,7 @@
         }
         renderPart4Complexity();
       });
-      tl.to({}, { duration: dur(0.22) });
+      tl.to({}, { duration: dur(0.13) });
     });
 
     tl.call(() => {
@@ -5917,7 +5876,6 @@
     preparePart4ComplexityAdvance();
     const tl = makeTimeline();
     tl.fromTo(".part4-complexity-view > *", { y: 16, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.08), duration: dur(0.42), ease: "power3.out" });
-    tl.call(() => schedulePart4ComplexityAutoAdvance(420));
     return tl;
   }
 
