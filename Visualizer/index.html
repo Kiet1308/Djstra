@@ -219,7 +219,7 @@
           <div class="workbench" id="workbench" aria-hidden="true">
             <div class="workbench-head">
               <div>
-                <p class="panel-kicker" id="workbenchKicker">Workload</p>
+                <p class="panel-kicker" id="workbenchKicker">Khối lượng việc</p>
                 <h3 id="workbenchTitle">Các tuyến phải xét</h3>
               </div>
               <strong id="workbenchStatus">0/0</strong>
@@ -290,7 +290,7 @@
                 <p class="panel-kicker">Mã giả</p>
                 <h3 id="codePanelTitle">Xây từng dòng</h3>
               </div>
-              <strong id="codePanelStatus">draft</strong>
+              <strong id="codePanelStatus">nháp</strong>
             </div>
             <pre class="code-block" id="codeBlock"></pre>
             <p id="codeNote"></p>
@@ -336,14 +336,14 @@
                 <svg id="part4GraphSvg" class="part4-graph-svg" viewBox="0 0 820 680" role="img" aria-label="Graph minh họa vòng quét mảng và duyệt cạnh"></svg>
                 <div class="part4-overlay">
                   <strong id="part4OverlayTitle">Sẵn sàng chạy FOR 1</strong>
-                  <span id="part4OverlayText">Mỗi lượt chọn min phải nhìn qua các ô dist đang có.</span>
+                  <span id="part4OverlayText">Mỗi lượt chọn min phải nhìn qua các ô Cost đang có.</span>
                 </div>
                 <div class="part4-scan-strip" id="part4ScanStrip" aria-label="Thứ tự scan các đỉnh"></div>
               </div>
 
               <aside class="part4-side-card">
                 <div class="part4-formula">
-                  <span>Array scan model</span>
+                  <span>Đếm theo cách quét mảng</span>
                   <strong id="part4Formula">O(V^2 + E)</strong>
                   <small id="part4FormulaNote">FOR 1 tạo phần V lần x V đỉnh, FOR 2 cộng thêm số cạnh đã duyệt.</small>
                 </div>
@@ -354,7 +354,7 @@
                   </div>
                   <div>
                     <strong id="part4ScanCounter">0</strong>
-                    <span>đỉnh đã scan</span>
+                    <span>đỉnh đã quét</span>
                   </div>
                   <div>
                     <strong id="part4EdgeCounter">0</strong>
@@ -366,7 +366,7 @@
                   <button class="part4-mini-button" id="part4ResetButton" type="button">Đặt lại</button>
                   <button class="part4-mini-button" id="part4TreeButton" type="button">Hiện cây</button>
                 </div>
-                <table class="part4-dist-table" id="part4DistTable" aria-label="Bảng dist và open"></table>
+                <table class="part4-dist-table" id="part4DistTable" aria-label="Bảng Cost và trạng thái"></table>
                 <div class="part4-result" id="part4Result">Nhấn Tiếp để chạy một vòng FOR.</div>
               </aside>
             </section>
@@ -388,10 +388,10 @@
                   <p>Mỗi vòng hỏi min bằng cách nhìn lại toàn bộ danh sách đỉnh.</p>
                 </div>
                 <div class="part4-compare-card is-better">
-                  <span>Priority Queue</span>
+                  <span>Hàng đợi ưu tiên</span>
                   <strong>O((V + E) log V)</strong>
                   <div class="part4-bar"><i id="part4HeapBar"></i></div>
-                  <p>Min được giữ ở đầu hàng đợi, lấy ra nhanh hơn nhiều khi graph lớn.</p>
+                  <p>Min được giữ ở đầu hàng đợi, lấy ra nhanh hơn nhiều khi đồ thị lớn.</p>
                 </div>
               </div>
               <div class="part4-heap-visual" aria-hidden="true">
@@ -407,14 +407,14 @@
                 <p id="part4NegativeText">Ta muốn tìm đường ngắn nhất từ A đến B. Ban đầu chỉ A có khoảng cách 0.</p>
                 <ol class="part4-negative-steps" id="part4NegativeSteps"></ol>
                 <div class="part4-negative-result" id="part4NegativeResult">
-                  <span>Dijkstra giữ d[B]</span>
+                  <span>Thuật toán giữ Cost[B]</span>
                   <strong id="part4NegativeDijkstra">?</strong>
                   <small id="part4NegativeResultText">Chưa có kết quả cho B.</small>
                 </div>
               </aside>
 
               <div class="part4-negative-graph">
-                <svg id="part4NegativeSvg" viewBox="0 0 760 430" role="img" aria-label="Ví dụ cạnh âm làm Dijkstra sai">
+                <svg id="part4NegativeSvg" viewBox="0 0 760 430" role="img" aria-label="Ví dụ cạnh âm làm thuật toán sai">
                   <defs>
                     <marker id="part4NegArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
                       <path d="M0,0 L12,6 L0,12 Z" fill="#6f7971"></path>
@@ -439,21 +439,21 @@
                   <g id="part4NegNodeA" class="part4-neg-node is-source" transform="translate(120 220)">
                     <circle r="34"></circle>
                     <text class="part4-neg-name" y="8">A</text>
-                    <text class="part4-neg-dist" id="part4NegNodeDistA" y="58">d=0</text>
+                    <text class="part4-neg-dist" id="part4NegNodeDistA" y="58">Cost 0</text>
                   </g>
                   <g id="part4NegNodeB" class="part4-neg-node" transform="translate(560 150)">
                     <circle r="34"></circle>
                     <text class="part4-neg-name" y="8">B</text>
-                    <text class="part4-neg-dist" id="part4NegNodeDistB" y="58">d=∞</text>
+                    <text class="part4-neg-dist" id="part4NegNodeDistB" y="58">Cost ?</text>
                   </g>
                   <g id="part4NegNodeC" class="part4-neg-node" transform="translate(560 330)">
                     <circle r="34"></circle>
                     <text class="part4-neg-name" y="8">C</text>
-                    <text class="part4-neg-dist" id="part4NegNodeDistC" y="58">d=∞</text>
+                    <text class="part4-neg-dist" id="part4NegNodeDistC" y="58">Cost ?</text>
                   </g>
                 </svg>
                 <div class="part4-negative-callout" id="part4NegativeCallout">
-                  Luật Dijkstra: khi một đỉnh đã được chọn là nhỏ nhất, thuật toán sẽ không mở lại nó nữa.
+                  Luật ta vừa xây: đỉnh đã được chốt là nhỏ nhất thì không bị mở lại nữa.
                 </div>
               </div>
 
@@ -461,7 +461,7 @@
                 <div class="part4-neg-dist-grid" id="part4NegativeDistGrid"></div>
                 <div class="part4-negative-compare">
                   <span>Đường đúng</span>
-                  <strong>A -> C -> B = 1</strong>
+                  <strong id="part4NegativeTruthValue">?</strong>
                   <p id="part4NegativeCompare">Cạnh âm chưa làm hỏng gì ở bước đầu. Nó chỉ trở thành vấn đề khi xuất hiện sau lúc B đã bị chốt.</p>
                 </div>
               </aside>
@@ -469,11 +469,14 @@
 
             <section class="part4-view part4-final-view" id="part4FinalView" aria-label="Kết phần 4">
               <div class="part4-final-copy">
-                <p class="panel-kicker">Kết luận</p>
-                <h2>Ta vừa tự xây được Dijkstra</h2>
-                <p>
-                  Không bắt đầu bằng tên thuật toán. Ta bắt đầu từ câu hỏi tìm đường, tự rút ra luật chọn đỉnh nhỏ nhất,
-                  rồi mới thấy giới hạn, cách tối ưu và điều kiện không có cạnh âm.
+                <p class="panel-kicker">Kết bài</p>
+                <p class="part4-final-lead">Thuật toán ta vừa tự xây bằng suy luận, thế giới gọi nó là…</p>
+                <h2 class="part4-final-name" id="part4FinalName" aria-label="Dijkstra">
+                  <span>D</span><span>i</span><span>j</span><span>k</span><span>s</span><span>t</span><span>r</span><span>a</span>
+                </h2>
+                <p class="part4-final-sub">
+                  Edsger W. Dijkstra nghĩ ra nó năm 1956, trong khoảng 20 phút bên một tách cà phê, không cần giấy nháp.
+                  Nhưng như ta vừa thấy: chỉ cần đặt đúng câu hỏi, bất kỳ ai cũng có thể tự suy luận ra nó. Bạn vừa làm điều đó.
                 </p>
               </div>
               <div class="part4-final-grid">

@@ -103,7 +103,7 @@
         "Số trên mỗi đoạn đường là chi phí phải trả khi đi qua đoạn đó.",
         "Trong các tuyến đang thấy, tuyến xanh có tổng chi phí thấp nhất.",
       ],
-      metricLabels: ["Đang nhìn", "So sánh", "Mục tiêu"],
+      metricLabels: ["Tuyến ví dụ", "Chi phí từng tuyến", "Cần tìm"],
       enter: enterProblemScene,
     },
     {
@@ -115,7 +115,7 @@
       audienceBullets: [
         "Mỗi ô nhỏ là một tuyến từ A đến B phải đi tới cuối.",
         "Ô vàng là tuyến đang thử, ô xanh là mốc tốt nhất hiện tại.",
-        "Muốn chắc chắn đúng, cách này phải làm sáng hết 303 ô.",
+        "Muốn chắc chắn đúng, cách này phải làm sáng hết {ROUTES} ô.",
       ],
       metricLabels: ["Đã thử", "Đoạn đã đi", "Tốt nhất"],
       enter: enterBruteForceScene,
@@ -129,7 +129,7 @@
       audienceBullets: [
         "Mỗi đường mờ là một khả năng phải tính chi phí.",
         "Nhiều tuyến chỉ khác nhau ở vài đoạn cuối nhưng vẫn bị thử lại.",
-        "Chỉ graph nhỏ này đã có 303 tuyến cần xét.",
+        "Chỉ bản đồ nhỏ này đã có {ROUTES} tuyến cần xét.",
       ],
       metricLabels: ["Số tuyến", "Việc phải làm", "Tốt nhất"],
       enter: enterSlowScene,
@@ -138,11 +138,11 @@
       tab: "Cắt nhánh",
       kicker: "Tối ưu đầu tiên",
       title: "Tệ hơn thì dừng",
-      body: "Giả sử ta đã tìm được một đường tạm tốt có chi phí 36. Tuyến nào đang đi mà vượt 36 thì dừng ngay tại đó.",
+      body: "Giả sử ta đã tìm được một đường tạm tốt có chi phí {BENCH}. Tuyến nào đang đi mà vượt {BENCH} thì dừng ngay tại đó.",
       audienceTitle: "Quy tắc cắt nhánh",
       audienceBullets: [
         "Đường xanh là mốc tốt nhất hiện tại, chưa chắc là đáp án cuối.",
-        "Khung trên bản đồ so sánh chi phí đang đi với mốc 36.",
+        "Khung trên bản đồ so sánh chi phí đang đi với mốc {BENCH}.",
         "Nét đứt đỏ là phần đường được bỏ qua, nhưng vẫn còn rất nhiều tuyến phải xét.",
       ],
       metricLabels: ["Ví dụ", "So sánh", "Mốc"],
@@ -152,10 +152,10 @@
       tab: "Áp dụng",
       kicker: "Sau khi có quy tắc",
       title: "Vẫn phải quét nhiều",
-      body: "Bây giờ áp dụng quy tắc cắt nhánh cho toàn bộ 303 tuyến. Nhiều tuyến dừng sớm, nhưng ta vẫn phải xét từng tuyến.",
+      body: "Bây giờ áp dụng quy tắc cắt nhánh cho toàn bộ {ROUTES} tuyến. Nhiều tuyến dừng sớm, nhưng ta vẫn phải xét từng tuyến.",
       audienceTitle: "Hiệu quả thật sự",
       audienceBullets: [
-        "Đường xanh là mốc tốt nhất hiện tại, bắt đầu từ 36.",
+        "Đường xanh là mốc tốt nhất hiện tại, bắt đầu từ {BENCH}.",
         "Khi tìm được đường tốt hơn, mốc xanh được thay bằng mốc mới.",
         "Số đoạn giảm mạnh, nhưng vẫn phải quét qua cả khối tuyến.",
       ],
@@ -183,9 +183,10 @@
       tab: "Ngược",
       kicker: "Tư duy ngược",
       title: "Nhìn từ K",
-      body: "Sang graph nhỏ hơn, mục tiêu là đi từ A đến K. Trước hết hãy nhìn từ K: K có thể đến từ đâu?",
+      body: "Phần 1 cho thấy thử đường là ngõ cụt. Ta đổi cách nghĩ trên một bản đồ mới, nhỏ hơn để dễ soi từng bước: lần này cần đi từ A đến K. Trước hết hãy nhìn ngược từ đích: K có thể đến từ đâu?",
       audienceTitle: "Đảo chiều câu hỏi",
       audienceBullets: [
+        "Bản đồ mới, đích mới: ta cần đi từ A đến K.",
         "Đích K chỉ nối trực tiếp với F và G.",
         "Đường tốt nhất tới K chỉ có hai dạng: tốt nhất tới F rồi thêm 4, hoặc tốt nhất tới G rồi thêm 2.",
         "Vấn đề chưa giải xong; ta chỉ vừa biến K thành hai câu hỏi nhỏ hơn.",
@@ -253,9 +254,10 @@
       tab: "Đổi bài",
       kicker: "Kết luận",
       title: "Đổi bài toán",
-      body: "Tìm đường ngắn nhất từ A tới từng đỉnh.",
+      body: "Truy ngược cho thấy: muốn chắc một đỉnh, phải chắc các đỉnh đứng trước nó. Mà đường tới K có thể đi qua bất kỳ đỉnh nào, nên bài toán trở thành: tìm đường ngắn nhất từ A tới từng đỉnh.",
       audienceTitle: "Bài toán mới",
       audienceBullets: [
+        "Đỉnh nào cũng có thể nằm trên đường tới K, nên đỉnh nào cũng cần được trả lời.",
         "Mỗi đỉnh X: đường ngắn nhất từ A tới X là bao nhiêu?",
         "A = 0; các đỉnh còn lại chưa biết.",
       ],
@@ -294,11 +296,11 @@
       tab: "Chốt C",
       kicker: "Mở thêm",
       title: "C làm rõ hơn",
-      body: "Khi C được chốt, các cạnh từ C tạo ra chi phí mới rẻ hơn cho B và D.",
+      body: "Khi C được chốt, các cạnh từ C mở ra những đường mới đi qua C. Có đường còn rẻ hơn đường cũ.",
       audienceTitle: "Sau khi chốt C",
       audienceBullets: [
-        "B giảm từ 4 xuống 3 nhờ đường A -> C -> B.",
-        "D giảm từ 7 xuống 5 nhờ đường A -> C -> D.",
+        "Cạnh C -> B = 1 và C -> D = 3 vừa mở ra các đường mới đi qua C.",
+        "Cộng các cạnh đang thấy trên hình là ra tổng của từng đường.",
         "Ta lặp lại đúng câu hỏi: trong phần đang mở, đỉnh nào đã chắc chắn?",
       ],
       metricLabels: ["Vừa chốt", "Cập nhật", "Chọn tiếp"],
@@ -353,9 +355,9 @@
       tab: "Khung",
       kicker: "Sang code",
       title: "Nghĩ rồi viết",
-      body: "Ta đã có nhịp chạy trên graph. Bây giờ chỉ biến từng nhu cầu vừa thấy thành dòng mã giả, không nhảy thẳng vào công thức.",
+      body: "Ta đã có nhịp chạy trên hình. Bây giờ chỉ biến từng nhu cầu vừa thấy thành dòng mã giả, không nhảy thẳng vào công thức.",
       audienceTitle: "Code chỉ là ghi lại suy luận",
-      audienceBullets: ["Graph chạy trước, code xuất hiện sau.", "Mỗi dòng code trả lời một nhu cầu vừa thấy."],
+      audienceBullets: ["Hình chạy trước, code xuất hiện sau.", "Mỗi dòng code trả lời một nhu cầu vừa thấy."],
       metricLabels: ["Đang viết", "Biến cần nhớ", "Ý nghĩa"],
       enter: enterPart3FrameScene,
     },
@@ -381,9 +383,9 @@
     },
     {
       tab: "Min",
-      kicker: "Quét frontier",
+      kicker: "Quét vùng mở",
       title: "Chọn nhỏ nhất",
-      body: "Ta quét các Cost đang có để lấy số nhỏ nhất. Nếu chỉ nhìn số, A = 0 sẽ thắng lại, nghĩa là code còn thiếu cách loại đỉnh đã xử lý.",
+      body: "Ta duyệt từng đỉnh, đỉnh nào đã có Cost thì đem ra so để lấy số nhỏ nhất. Nếu chỉ nhìn số, A = 0 sẽ thắng lại, nghĩa là code còn thiếu cách loại đỉnh đã xử lý.",
       audienceTitle: "Tìm min",
       audienceBullets: ["Cost khác rỗng nghĩa là đỉnh đã được mở.", "min giữ số rẻ nhất, nhưng chưa biết bỏ qua đỉnh đã xử lý."],
       metricLabels: ["Đang quét", "Nhỏ nhất", "Sẽ chốt"],
@@ -423,7 +425,7 @@
       tab: "Chốt",
       kicker: "Không phải đích",
       title: "Chốt min",
-      body: "Nếu min không phải đích, ta chốt nó. C đang rẻ nhất trong frontier, nên Cost[C] đã chắc và C được đưa vào Visited.",
+      body: "Nếu min không phải đích, ta chốt nó. C đang rẻ nhất trong các đỉnh đang mở, nên Cost[C] đã chắc và C được đưa vào Visited.",
       audienceTitle: "Chốt",
       audienceBullets: ["Visited[min] lưu việc này.", "Sau đó mới mở hàng xóm."],
       metricLabels: ["min", "C", "Visited"],
@@ -498,24 +500,24 @@
       audienceTitle: "Tối ưu tự nhiên",
       audienceBullets: [
         "Bản mảng: hỏi min là quét lại các đỉnh đang mở.",
-        "Priority queue giữ ứng viên theo cost, lấy min nhanh hơn.",
+        "Hàng đợi ưu tiên (priority queue) giữ ứng viên theo cost, lấy min nhanh hơn.",
         "Độ phức tạp thường viết thành O((V + E) log V).",
       ],
-      metricLabels: ["Bản mảng", "Priority queue", "Giảm ở min"],
+      metricLabels: ["Bản mảng", "Hàng đợi ưu tiên", "Giảm ở min"],
       enter: enterPart4HeapScene,
     },
     {
       tab: "Cạnh âm",
       kicker: "Giới hạn",
       title: "Khi cost âm phá lời hứa",
-      body: "Dijkstra đúng vì khi đã chốt một đỉnh, ta tin không có đường đi muộn nào kéo nó xuống thấp hơn. Cạnh âm phá đúng niềm tin đó.",
+      body: "Thuật toán của ta đúng vì khi đã chốt một đỉnh, ta tin không có đường đi muộn nào kéo nó xuống thấp hơn. Cạnh âm phá đúng niềm tin đó.",
       audienceTitle: "Điều kiện cần",
       audienceBullets: [
         "Thuật toán chốt sớm đường ngắn nhất đến một đỉnh.",
         "Nếu cạnh âm xuất hiện muộn, cost của đỉnh đã chốt có thể giảm.",
-        "Vì vậy thuật toán cần graph không có cạnh âm.",
+        "Vì vậy thuật toán cần đồ thị không có cạnh âm.",
       ],
-      metricLabels: ["Đang xét", "d[B]", "Đường đúng"],
+      metricLabels: ["Đang xét", "Cost[B]", "Đường đúng"],
       enter: enterPart4NegativeScene,
     },
     {
@@ -775,7 +777,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -796,7 +798,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -818,7 +820,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -840,7 +842,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -863,7 +865,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -887,7 +889,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -916,7 +918,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -949,7 +951,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -983,7 +985,7 @@
         "  Cost[start] = 0",
         "  while (true) {",
         "    min = null",
-        "    for (dinh in Cost) {",
+        "    for (dinh in map) {",
         "      if (Cost[dinh] != null && !Visited[dinh]) {",
         "        if (min == null || Cost[dinh] < Cost[min]) {",
         "          min = dinh",
@@ -1093,8 +1095,8 @@
   }));
 
   const part4NegativeStepLabels = [
-    "Khởi tạo d[A]=0",
-    "Relax cạnh đi ra từ A",
+    "Khởi tạo Cost[A] = 0",
+    "Mở các cạnh đi ra từ A",
     "B bị chốt quá sớm",
     "Cạnh âm tạo đường tốt hơn",
     "Kết luận: lời hứa bị phá",
@@ -1103,41 +1105,44 @@
   const part4NegativeStates = [
     {
       title: "Khởi tạo",
-      text: "Ta muốn tìm đường ngắn nhất từ A đến B. Ban đầu chỉ A có khoảng cách 0.",
+      text: "Ta muốn tìm đường ngắn nhất từ A đến B. Ban đầu chỉ A có Cost 0.",
       dist: { A: 0, B: Infinity, C: Infinity },
       node: { A: "source" },
       edge: {},
-      statuses: { A: "source", B: "open", C: "open" },
+      statuses: { A: "gốc", B: "đang mở", C: "đang mở" },
       result: "Chưa có kết quả cho B.",
       dijkstraB: "?",
+      showTruth: false,
       compare: "Cạnh âm chưa làm hỏng gì ở bước đầu. Nó chỉ trở thành vấn đề khi xuất hiện sau lúc B đã bị chốt.",
-      callout: "Luật Dijkstra: khi một đỉnh đã được chọn là nhỏ nhất, thuật toán sẽ không mở lại nó nữa.",
+      callout: "Luật ta vừa xây: đỉnh đã được chốt là nhỏ nhất thì không bị mở lại nữa.",
       resultTone: "",
     },
     {
-      title: "Relax từ A",
-      text: "Từ A ta thấy B có d=2 và C có d=5. Trong các đỉnh đang mở, B nhỏ nhất.",
+      title: "Mở cạnh từ A",
+      text: "Từ A ta thấy B có Cost 2 và C có Cost 5. Trong các đỉnh đang mở, B nhỏ nhất.",
       dist: { A: 0, B: 2, C: 5 },
       node: { A: "final", B: "frontier", C: "frontier" },
       edge: { AB: "active", AC: "active" },
-      statuses: { A: "final", B: "open / d=2", C: "open / d=5" },
-      result: "B đang có nhãn tạm thời 2.",
+      statuses: { A: "đã chốt", B: "đang mở · 2", C: "đang mở · 5" },
+      result: "B đang có Cost tạm thời 2.",
       dijkstraB: "2",
+      showTruth: false,
       compare: "Nếu mọi cạnh không âm, không có đường đi muộn nào có thể kéo B xuống dưới 2.",
-      callout: "Sau A: d[B]=2, d[C]=5. Dijkstra chuẩn bị chọn B vì 2 < 5.",
+      callout: "Sau A: Cost[B] = 2, Cost[C] = 5. Thuật toán chuẩn bị chốt B vì 2 < 5.",
       resultTone: "good",
     },
     {
       title: "Chốt B quá sớm",
-      text: "Dijkstra chọn B vì B có d nhỏ nhất trong open. B được xem là final và không được cập nhật nữa.",
+      text: "Thuật toán chốt B vì B có Cost nhỏ nhất trong các đỉnh đang mở. B coi như xong, không được cập nhật nữa.",
       dist: { A: 0, B: 2, C: 5 },
       node: { A: "final", B: "locked", C: "frontier" },
       edge: { AB: "good" },
-      statuses: { A: "final", B: "final / locked", C: "open / d=5" },
-      result: "Dijkstra tạm tin d[B]=2 là đáp án cuối.",
+      statuses: { A: "đã chốt", B: "đã chốt / khoá", C: "đang mở · 5" },
+      result: "Thuật toán tạm tin Cost[B] = 2 là đáp án cuối.",
       dijkstraB: "2",
-      compare: "Đây là lời hứa quan trọng của Dijkstra: đã chốt thì không quay lại.",
-      callout: "B đã bị khóa. Nếu sau này có đường tốt hơn đến B, bản chuẩn vẫn bỏ qua.",
+      showTruth: false,
+      compare: "Đây chính là lời hứa của luật chốt sớm: đã chốt thì không quay lại.",
+      callout: "B đã bị khóa. Nếu sau này có đường tốt hơn đến B, thuật toán vẫn bỏ qua.",
       resultTone: "",
     },
     {
@@ -1146,24 +1151,26 @@
       dist: { A: 0, B: 2, C: 5 },
       node: { A: "final", B: "locked", C: "current" },
       edge: { CB: "failed" },
-      statuses: { A: "final", B: "final / không mở lại", C: "đang xét" },
-      result: "Có đề xuất tốt hơn cho B: 1, nhưng B đã final.",
+      statuses: { A: "đã chốt", B: "đã chốt / không mở lại", C: "đang xét" },
+      result: "Có đề xuất tốt hơn cho B: 1, nhưng B đã chốt.",
       dijkstraB: "2",
-      compare: "Nếu được relax lại, B phải thành 1. Nhưng thuật toán không cập nhật đỉnh đã chốt.",
-      callout: "Cạnh âm đề xuất d[B] = d[C] + (-4) = 1, nhỏ hơn 2. Đây là lúc thuật toán gãy.",
+      showTruth: true,
+      compare: "Nếu được cập nhật lại, B phải thành 1. Nhưng thuật toán không cập nhật đỉnh đã chốt.",
+      callout: "Cạnh âm đề xuất Cost[B] = Cost[C] + (-4) = 1, nhỏ hơn 2. Đây là lúc thuật toán gãy.",
       resultTone: "",
     },
     {
       title: "Kết luận",
-      text: "Dijkstra trả A -> B với cost 2, trong khi đường thật ngắn nhất là A -> C -> B với cost 1.",
+      text: "Thuật toán trả A -> B với cost 2, trong khi đường thật ngắn nhất là A -> C -> B với cost 1.",
       dist: { A: 0, B: 2, C: 5 },
       node: { A: "final", B: "wrong", C: "frontier" },
       edge: { AB: "bad", AC: "good", CB: "good" },
-      statuses: { A: "final", B: "sai / đáng ra là 1", C: "đường đúng đi qua C" },
-      result: "Sai: Dijkstra giữ 2, đáp án đúng là 1.",
+      statuses: { A: "đã chốt", B: "sai / đáng ra là 1", C: "đường đúng đi qua C" },
+      result: "Sai: thuật toán giữ 2, đáp án đúng là 1.",
       dijkstraB: "2",
-      compare: "Cốt lõi: Dijkstra cần mọi cạnh không âm để đảm bảo đỉnh nhỏ nhất hiện tại không thể bị cải thiện bởi đường đi xuất hiện muộn.",
-      callout: "Không phải do code bug. Giả định toán học của Dijkstra đã bị cạnh âm phá vỡ.",
+      showTruth: true,
+      compare: "Cốt lõi: thuật toán cần mọi cạnh không âm để đảm bảo đỉnh nhỏ nhất hiện tại không thể bị cải thiện bởi đường đi xuất hiện muộn.",
+      callout: "Không phải code sai. Giả định nền tảng của luật chốt sớm đã bị cạnh âm phá vỡ.",
       resultTone: "bad",
     },
   ];
@@ -1285,12 +1292,16 @@
   let pendingCodePayload = null;
   let pendingVisualAdvance = null;
   let pendingVisualLabel = null;
+  let pendingTimelineResume = false;
   let visualAdvanceBlocked = false;
+  let partTransitionActive = false;
   let activeCodeRevealTween = null;
   let paused = false;
   let allRoutes = [];
   let exhaustiveRoutes = [];
   let pruningRoutes = [];
+  let part1RouteTotal = 0;
+  let part1BenchmarkCost = 0;
   let demoScanRoutes = [];
   let pathIndex = new Map();
   let adjacency = new Map();
@@ -1325,6 +1336,8 @@
     pruningRoutes = orderRoutesForPruning(discoveredRoutes);
     allRoutes = [...discoveredRoutes].sort((a, b) => a.cost - b.cost);
     demoScanRoutes = demoScanRoutePaths.map((path) => ({ path, cost: routeCost(path) }));
+    part1RouteTotal = discoveredRoutes.length;
+    part1BenchmarkCost = routeCost(benchmarkPath);
   }
 
   function applyPartGraph(part) {
@@ -1472,7 +1485,7 @@
       button.type = "button";
       button.className = "part-tab";
       button.textContent = part.label;
-      button.addEventListener("click", () => switchPart(index));
+      button.addEventListener("click", () => switchPartAnimated(index));
       el.partSwitcher.appendChild(button);
     });
   }
@@ -1489,16 +1502,67 @@
     });
   }
 
-  function switchPart(index, initial = false) {
+  function switchPart(index, initial = false, sceneOverride = null) {
     const nextIndex = Math.max(0, Math.min(parts.length - 1, index));
     if (!initial && nextIndex === currentPartIndex) return;
     currentPartIndex = nextIndex;
-    currentScene = initial ? getInitialSceneIndex(getActivePart()) : getActivePart().lastScene || 0;
+    currentScene = initial
+      ? getInitialSceneIndex(getActivePart())
+      : sceneOverride != null
+        ? Math.max(0, Math.min(getActivePart().scenes.length - 1, sceneOverride))
+        : getActivePart().lastScene || 0;
     applyPartGraph(getActivePart());
     renderSceneTabs();
     updatePartHeader();
     setActivePartTab();
     loadScene(currentScene);
+  }
+
+  // Chuyển phần có chuyển cảnh: fade vùng trình chiếu ra, đổi phần, fade vào.
+  // Fade-in được tạo SAU switchPart vì resetVisualState() bên trong loadScene
+  // gọi gsap.killTweensOf("*") — tween tạo trước thời điểm đó sẽ bị giết.
+  function switchPartAnimated(index, sceneOverride = null) {
+    if (partTransitionActive) return;
+    const nextIndex = Math.max(0, Math.min(parts.length - 1, index));
+    if (nextIndex === currentPartIndex) return;
+    partTransitionActive = true;
+    updateControlAvailability();
+
+    // Nếu tween chuyển cảnh bị giết giữa chừng (vd. killTweensOf("*") của một
+    // loadScene chen ngang), phải nhả cờ + trả lại opacity, không thì toàn bộ
+    // điều hướng bị kẹt.
+    const releaseTransition = () => {
+      partTransitionActive = false;
+      gsap.set(el.presenterGrid, { clearProps: "opacity,transform" });
+      updateControlAvailability();
+    };
+
+    gsap.to(el.presenterGrid, {
+      opacity: 0,
+      y: 14,
+      duration: dur(0.26),
+      ease: "power2.in",
+      onInterrupt: releaseTransition,
+      onComplete: () => {
+        switchPart(nextIndex, false, sceneOverride);
+        gsap.fromTo(
+          el.presenterGrid,
+          { opacity: 0, y: -14 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: dur(0.46),
+            ease: "power3.out",
+            clearProps: "opacity,transform",
+            onInterrupt: releaseTransition,
+            onComplete: () => {
+              partTransitionActive = false;
+              updateControlAvailability();
+            },
+          },
+        );
+      },
+    });
   }
 
   function updatePartHeader() {
@@ -1515,7 +1579,7 @@
   }
 
   function bindControls() {
-    el.prevButton.addEventListener("click", () => loadScene(Math.max(0, currentScene - 1)));
+    el.prevButton.addEventListener("click", handlePrev);
     el.nextButton.addEventListener("click", handleNext);
     el.replayButton.addEventListener("click", () => loadScene(currentScene));
     el.pauseButton.addEventListener("click", togglePause);
@@ -1532,7 +1596,7 @@
 
       if (event.key === "ArrowLeft") {
         event.preventDefault();
-        loadScene(Math.max(0, currentScene - 1));
+        handlePrev();
       }
 
       if (event.key.toLowerCase() === "r") {
@@ -1558,7 +1622,19 @@
   }
 
   function handleNext() {
+    if (partTransitionActive) return;
     if (visualAdvanceBlocked) return;
+
+    // Một timeline đang dừng giữa chừng: "Tiếp" nghĩa là chạy tiếp,
+    // không phải nhảy sang scene khác.
+    if (pendingTimelineResume && activeTimeline) {
+      pendingTimelineResume = false;
+      paused = false;
+      activeTimeline.play();
+      updatePauseButton();
+      updateControlAvailability();
+      return;
+    }
 
     if (pendingVisualAdvance) {
       advancePendingVisual();
@@ -1570,7 +1646,30 @@
       return;
     }
 
-    loadScene(Math.min(getActiveScenes().length - 1, currentScene + 1));
+    if (currentScene < getActiveScenes().length - 1) {
+      loadScene(currentScene + 1);
+      return;
+    }
+
+    // Hết scene của phần này: đi tiếp sang phần sau thay vì load lại scene
+    // hiện tại (chính là lỗi spam mũi tên làm animation chạy lại từ đầu).
+    if (currentPartIndex < parts.length - 1) {
+      switchPartAnimated(currentPartIndex + 1, 0);
+    }
+  }
+
+  function handlePrev() {
+    if (partTransitionActive) return;
+
+    if (currentScene > 0) {
+      loadScene(currentScene - 1);
+      return;
+    }
+
+    // Đang ở scene đầu: lùi về scene cuối của phần trước, không reload chính nó.
+    if (currentPartIndex > 0) {
+      switchPartAnimated(currentPartIndex - 1, parts[currentPartIndex - 1].scenes.length - 1);
+    }
   }
 
   function loadScene(index) {
@@ -1603,6 +1702,7 @@
     activeNodeClickHandler = null;
     pendingVisualAdvance = null;
     pendingVisualLabel = null;
+    pendingTimelineResume = false;
     visualAdvanceBlocked = false;
     hidePart4Views();
     clearLayer(el.routeCloud);
@@ -1639,16 +1739,23 @@
     if (el.part4Workspace) el.part4Workspace.setAttribute("aria-hidden", isPart4Workspace ? "false" : "true");
   }
 
+  // Lời thoại có thể chứa {ROUTES} / {BENCH}; số liệu được điền lúc chạy để
+  // copy không bao giờ lệch với graph thật.
+  function formatSceneText(text) {
+    if (typeof text !== "string") return text;
+    return text.replaceAll("{ROUTES}", String(part1RouteTotal)).replaceAll("{BENCH}", String(part1BenchmarkCost));
+  }
+
   function setSceneCopy(scene) {
-    el.sceneKicker.textContent = scene.kicker;
-    el.sceneTitle.textContent = scene.title;
-    el.sceneBody.textContent = scene.body;
+    el.sceneKicker.textContent = formatSceneText(scene.kicker);
+    el.sceneTitle.textContent = formatSceneText(scene.title);
+    el.sceneBody.textContent = formatSceneText(scene.body);
     setMetricLabels(scene.metricLabels);
-    el.audienceTitle.textContent = scene.audienceTitle;
+    el.audienceTitle.textContent = formatSceneText(scene.audienceTitle);
     el.audienceBullets.innerHTML = "";
     scene.audienceBullets.forEach((bullet) => {
       const li = document.createElement("li");
-      li.textContent = bullet;
+      li.textContent = formatSceneText(bullet);
       el.audienceBullets.appendChild(li);
     });
   }
@@ -1670,14 +1777,29 @@
 
   function updateControlAvailability() {
     const scenes = getActiveScenes();
-    el.prevButton.disabled = currentScene === 0;
-    el.nextButton.disabled = visualAdvanceBlocked || (currentScene === scenes.length - 1 && !pendingCodeReveal && !pendingVisualAdvance);
+    const atLastScene = currentScene === scenes.length - 1;
+    const hasNextPart = currentPartIndex < parts.length - 1;
+    const hasPrevPart = currentPartIndex > 0;
+    el.prevButton.disabled = partTransitionActive || (currentScene === 0 && !hasPrevPart);
+    el.nextButton.disabled =
+      partTransitionActive ||
+      visualAdvanceBlocked ||
+      (atLastScene && !hasNextPart && !pendingCodeReveal && !pendingVisualAdvance && !pendingTimelineResume);
     const isCodeEdit = pendingCodePayload && ((pendingCodePayload.changed || []).length > 0 || /sửa/.test(pendingCodePayload.status || ""));
-    if (pendingVisualAdvance && pendingVisualLabel) {
+    if (pendingTimelineResume) {
+      el.nextButton.textContent = "Chạy tiếp";
+    } else if (pendingVisualAdvance && pendingVisualLabel) {
       el.nextButton.textContent = pendingVisualLabel;
+    } else if (pendingCodeReveal) {
+      el.nextButton.textContent = isCodeEdit ? "Sửa code" : "Viết code";
+    } else if (atLastScene && hasNextPart) {
+      el.nextButton.textContent = `Sang ${parts[currentPartIndex + 1].label}`;
     } else {
-      el.nextButton.textContent = pendingCodeReveal ? (isCodeEdit ? "Sửa code" : "Viết code") : "Tiếp";
+      el.nextButton.textContent = "Tiếp";
     }
+    // Khi "Tiếp" đang là hành động trong scene (không phải chuyển scene),
+    // đổi diện mạo nút để người trình bày không bấm nhầm nhịp.
+    el.nextButton.classList.toggle("is-step-mode", Boolean(pendingTimelineResume || pendingVisualAdvance || pendingCodeReveal));
     el.pauseButton.disabled = !activeTimeline;
   }
 
@@ -1784,6 +1906,18 @@
       row.appendChild(code);
       el.codeBlock.appendChild(row);
     });
+
+    if (!lines.length) {
+      const row = document.createElement("span");
+      row.className = "code-line is-placeholder";
+      const gutter = document.createElement("span");
+      gutter.textContent = "--";
+      const code = document.createElement("code");
+      code.textContent = '// tờ giấy trắng — bấm "Viết code" để bắt đầu';
+      row.appendChild(gutter);
+      row.appendChild(code);
+      el.codeBlock.appendChild(row);
+    }
   }
 
   function focusCodeLines(lineNumbers, context = 3) {
@@ -2240,7 +2374,7 @@
       label.textContent = node;
       const cost = document.createElement("span");
       cost.className = "state-cost";
-      cost.textContent = row.cost == null ? "?" : showCosts || row.status === "settled" ? String(row.cost) : "ẩn";
+      cost.textContent = row.cost == null ? "?" : showCosts || row.status === "settled" ? String(row.cost) : "?";
       const status = document.createElement("span");
       status.textContent = showPrev ? (row.prev && row.prev !== "-" ? "từ" : "gốc") : statusText[row.status];
       const prev = document.createElement("em");
@@ -2261,7 +2395,7 @@
     el.workloadGrid.innerHTML = "";
   }
 
-  function setupCandidateQuiz({ candidates, answer, title, status, candidateMeta = {}, onCorrect, onWrong }) {
+  function setupCandidateQuiz({ candidates, answer, title, status, candidateMeta = {}, onCorrect, onWrong, advanceLabel = "Chốt đỉnh" }) {
     let completed = false;
     showPart2Workbench("Quiz", title, status, "is-quiz");
 
@@ -2289,12 +2423,17 @@
       if (candidates.includes(node)) choose(node);
     };
 
+    // "Tiếp" không được nhảy qua bước chọn: chừng nào quiz chưa xong, nút Tiếp
+    // đóng vai trò thực hiện lựa chọn đúng (vẫn có thể bấm tay vào đỉnh/nút).
+    prepareVisualAdvance(() => choose(answer), advanceLabel);
+
     function choose(node) {
       if (completed) return;
       const button = el.workloadGrid.querySelector(`[data-node="${node}"]`);
       if (node === answer) {
         completed = true;
         activeNodeClickHandler = null;
+        prepareVisualAdvance(null);
         [...el.workloadGrid.children].forEach((child) => {
           child.disabled = true;
           child.classList.toggle("is-correct", child.dataset.node === node);
@@ -2319,11 +2458,18 @@
     button.type = "button";
     button.className = "action-button";
     button.textContent = label;
-    button.addEventListener("click", () => {
+    const activate = () => {
+      if (button.disabled) return;
       button.disabled = true;
       onClick();
+    };
+    button.addEventListener("click", () => {
+      prepareVisualAdvance(null);
+      activate();
     });
     el.workloadGrid.appendChild(button);
+    // Nút Tiếp cũng kích hoạt được hành động này thay vì bỏ qua scene.
+    prepareVisualAdvance(activate, options.advanceLabel || label);
   }
 
   function drawGhostRoute(route, options = {}) {
@@ -2518,8 +2664,8 @@
 
     const formulas = [
       "K = min(tốt F + 4, tốt G + 2)",
-      "F = min(tốt E + 2, tốt D + 2)    G = min(tốt E + 5, tốt D + 7)",
-      "D/E lại hỏi tiếp về A/B/C; vậy ta phải xây từ A lên.",
+      "F và G lại hỏi tiếp về D/E; D/E lại hỏi về A/B/C.",
+      "Cứ thế, câu hỏi bị kéo ngược về phía A.",
     ];
 
     formulas.forEach((line, index) => {
@@ -2595,7 +2741,8 @@
     setEdgeStates({ visible: step.visible, focus: step.focus || step.visible, context: step.contextEdges || [] });
     setNodeStates(state, { focus: step.nodes, target: [step.target], context: step.contextNodes || [] });
     drawDependencyRoutes(step.routes || step.visible);
-    drawTraceStepCard(step);
+    if (step.useRibbon) drawReverseDependencyRibbon(step.ribbonX || 48, step.ribbonY || 430);
+    else drawTraceStepCard(step);
     renderRouteList(step.rows || []);
     el.routeCountLabel.textContent = step.countLabel || "truy ngược";
     setMetrics(step.metrics[0], step.metrics[1], step.metrics[2]);
@@ -2694,7 +2841,10 @@
     setMetrics("K hỏi F/G", "F+4 hoặc G+2", "chưa biết");
 
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" });
-    tl.fromTo(el.annotationLayer.children, { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.42), ease: "power3.out" }, "<0.12");
+    // Animate layer + opacity riêng: gán y lên children sẽ ghi đè mất
+    // translate(x y) gốc của từng card SVG.
+    tl.fromTo(el.annotationLayer, { y: -10 }, { y: 0, duration: dur(0.42), ease: "power3.out" }, "<0.12");
+    tl.fromTo(el.annotationLayer.children, { opacity: 0 }, { opacity: 1, duration: dur(0.42), ease: "power3.out" }, "<");
     tl.fromTo(".node-group.is-focus", { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, stagger: dur(0.08), duration: dur(0.45), ease: "back.out(1.55)" }, "<0.08");
     tl.fromTo(".edge-group.is-focus, .edge-label-group.is-focus", { opacity: 0 }, { opacity: 1, duration: dur(0.45), ease: "power2.out" }, "<0.1");
     return tl;
@@ -2760,6 +2910,7 @@
           ["F", "K"],
           ["G", "K"],
         ],
+        useRibbon: true,
         title: "K hỏi F/G",
         lines: ["Muốn tới K,", "phải biết tốt tới F hoặc G."],
         note: "Ta chọn một nhánh để nhìn sâu hơn.",
@@ -2843,8 +2994,8 @@
     const cameras = [
       null,
       { center: { x: 548, y: 374 }, scale: 1.3 },
-      { center: { x: 340, y: 368 }, scale: 1.52 },
-      { center: { x: 214, y: 332 }, scale: 1.62 },
+      { center: { x: 426, y: 366 }, scale: 1.32 },
+      { center: { x: 304, y: 348 }, scale: 1.4 },
     ];
     const step = steps[stepIndex] || steps[0];
     const camera = cameras[stepIndex] || null;
@@ -2869,7 +3020,8 @@
 
     if (camera) moveCameraOnTimeline(tl, camera.center, camera.scale, 0);
     tl.fromTo(".stage-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.55), ease: "power3.out" }, 0);
-    tl.fromTo(el.annotationLayer.children, { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.42), ease: "power3.out" }, annotationAt);
+    tl.fromTo(el.annotationLayer, { y: -12 }, { y: 0, duration: dur(0.42), ease: "power3.out" }, annotationAt);
+    tl.fromTo(el.annotationLayer.children, { opacity: 0 }, { opacity: 1, duration: dur(0.42), ease: "power3.out" }, annotationAt);
     tl.fromTo(enteringNodes, { scale: 0.84, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, stagger: dur(0.06), duration: dur(0.42), ease: "back.out(1.45)" }, revealAt);
     tl.fromTo(".route-dependency", { opacity: 0, strokeDashoffset: 40 }, { opacity: 0.62, strokeDashoffset: 0, stagger: dur(0.035), duration: dur(0.45), ease: "power2.out" }, routeAt);
     tl.fromTo(`${enteringEdges}, ${enteringLabels}`, { autoAlpha: 0 }, { autoAlpha: 1, duration: dur(0.46), ease: "power2.out" }, "<");
@@ -2918,7 +3070,7 @@
       tl.to(`.node-${step.node}`, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.45)" }, step.at + 0.02);
       tl.to(`.state-row[data-node="${step.node}"]`, { opacity: 1, y: 0, duration: dur(0.25), ease: "power2.out" }, step.at + 0.08);
     });
-    tl.call(() => setMetrics("A mở 4", "chưa chốt", "suy tiếp"), [], 1.72);
+    tl.call(() => setMetrics("A mở 4 đỉnh", "chưa chốt đỉnh nào", "suy tiếp"), [], 1.72);
     return tl;
   }
 
@@ -2961,10 +3113,10 @@
       title: "Thử chốt một đỉnh",
       status: "C/B/D/E",
       candidateMeta: {
-        C: "cost 2",
-        B: "cost 4",
-        D: "cost 7",
-        E: "cost 6",
+        C: "cạnh A → C",
+        B: "cạnh A → B",
+        D: "cạnh A → D",
+        E: "cạnh A → E",
       },
       onWrong: (node) => {
         const info = wrongInfo[node];
@@ -2972,7 +3124,7 @@
         clearAnnotations();
         animateCameraTo(part2Cameras.frontier, 0.44);
         setNodeStates(state, { focus: candidates, wrong: [node], clickable: candidates });
-        renderDijkstraTable(state, { focus: [node, "C"] });
+        renderDijkstraTable(state, { focus: [node, "C"], showCosts: false });
         drawGhostRoute(info.path, {
           offset: 22,
           costLabel: info.ghostLabel,
@@ -2993,9 +3145,9 @@
           locked: [[["A", "C"]]],
         });
         setNodeStates(part2States.afterC, { focus: ["C", "B", "D"], correct: ["C"] });
-        renderDijkstraTable(part2States.afterC, { focus: ["C", "B", "D"] });
+        renderDijkstraTable(part2States.afterC, { focus: ["C", "B", "D"], showCosts: false });
         showBestRoute(["A", "C"]);
-        setMetrics("chốt C", "vòng >= 4", "C chắc");
+        setMetrics("chốt C", "đường vòng nào cũng ≥ 4", "C chắc chắn");
         el.workbenchStatus.textContent = "đúng";
       },
     });
@@ -3030,11 +3182,11 @@
       locked: [[["A", "C"]]],
     });
     setNodeStates(part2States.afterC, { focus: candidates, clickable: candidates });
-    renderDijkstraTable(part2States.afterC, { focus: candidates });
+    renderDijkstraTable(part2States.afterC, { focus: candidates, showCosts: false });
     showBestRoute(["A", "C"]);
     el.metricStrip.classList.add("is-hidden");
     clearAnnotations();
-    setMetrics("C đã chốt", "B=3, D=5, E=6", "hãy chọn tiếp");
+    setMetrics("C đã chốt", "đường mới qua C", "hãy chọn tiếp");
 
     setupCandidateQuiz({
       candidates,
@@ -3042,9 +3194,9 @@
       title: "Bây giờ chốt ai?",
       status: "B/D/E",
       candidateMeta: {
-        B: "cost 3",
-        D: "cost 5",
-        E: "cost 6",
+        B: "đường A → C → B",
+        D: "đường A → C → D",
+        E: "đường A → E",
       },
       onWrong: (node) => {
         const info = wrongInfo[node];
@@ -3052,7 +3204,7 @@
         clearAnnotations();
         animateCameraTo(part2Cameras.frontier, 0.44);
         setNodeStates(part2States.afterC, { focus: ["B", node], wrong: [node], clickable: candidates });
-        renderDijkstraTable(part2States.afterC, { focus: ["B", node] });
+        renderDijkstraTable(part2States.afterC, { focus: ["B", node], showCosts: false });
         drawGhostRoute(info.pathData ? info.pathData() : info.path, { offset: info.offset || 22, label: `${node}-wrong`, costLabel: info.ghostLabel });
         setMetrics(`${node} chưa chắc`, info.metric, info.status);
         el.workbenchStatus.textContent = "chưa chắc";
@@ -3067,9 +3219,9 @@
           locked: [[["A", "C"], ["C", "B"]]],
         });
         setNodeStates(part2States.afterB, { focus: ["B", "E"], correct: ["B"] });
-        renderDijkstraTable(part2States.afterB, { focus: ["B", "E"] });
+        renderDijkstraTable(part2States.afterB, { focus: ["B", "E"], showCosts: false });
         showBestRoute(["A", "C", "B"]);
-        setMetrics("chốt B", "E=4 qua B", "tiếp theo E");
+        setMetrics("chốt B", "đường mới qua B", "tiếp theo E");
         el.workbenchStatus.textContent = "đúng";
       },
     });
@@ -3093,6 +3245,7 @@
         answer: "E",
         title: "Đỉnh nào nhỏ hơn?",
         status: "D/E",
+        advanceLabel: "Chọn min",
         candidateMeta: {
           D: "cost 5",
           E: "cost 4",
@@ -3247,6 +3400,12 @@
             if (node === nextStep.node) applyManualStep(currentManualStep);
           }
         : null;
+
+      // Bấm Tiếp = mở bước kế tiếp; hết 4 bước thì Tiếp mới chuyển scene.
+      prepareVisualAdvance(
+        nextStep ? () => applyManualStep(currentManualStep) : null,
+        nextStep ? `Mở ${nextStep.node}` : null,
+      );
     }
 
     function applyManualStep(index) {
@@ -3396,7 +3555,7 @@
     moveCameraOnTimeline(tl, part3LoopCamera.center, part3LoopCamera.scale, 0.28, 0.72);
     tl.call(() => {
       setEdgeStates({ visible: [part2Edges.fromA], focus: [part2Edges.fromA] });
-      setMetrics("A đã chọn", "C/B/D/E", "frontier mới");
+      setMetrics("A đã chọn", "C/B/D/E", "vùng mở mới");
     }, null, 0.52);
     tl.fromTo(
       ".route-candidate",
@@ -3418,7 +3577,7 @@
         focus: ["C", "B", "D", "E"],
         amber: ["C", "B", "D", "E"],
       });
-      setMetrics("frontier", "4 ứng viên", "cần vòng sau");
+      setMetrics("đang mở", "4 ứng viên", "cần vòng sau");
     }, null, 0.96);
     tl.fromTo(
       ".node-C, .node-B, .node-D, .node-E",
@@ -4164,7 +4323,6 @@
     });
     showMemoryPanel({
       cost: { A: 0, C: 2, B: 4, D: 7, E: 6 },
-      visited: ["A"],
       focus: ["A"],
       amber: ["C", "B", "D", "E"],
     });
@@ -4324,7 +4482,7 @@
     moveCameraOnTimeline(tl, part3GuardCamera.center, part3GuardCamera.scale, 0.2, 0.58);
     tl.to(closedNodes.map((node) => `.node-${node}`).join(", "), { opacity: 0.55, duration: dur(0.4), ease: "power2.out" }, 0.4);
     tl.fromTo(".empty-settled-tag", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, stagger: dur(0.06), duration: dur(0.3), ease: "back.out(1.7)" }, 0.46);
-    tl.call(() => setMetrics("frontier rỗng", "không còn ứng viên", "cần break"), null, 0.9);
+    tl.call(() => setMetrics("hết đỉnh mở", "không còn ứng viên", "cần break"), null, 0.9);
     return tl;
   }
 
@@ -4401,7 +4559,7 @@
         visited: ["A", "C"],
         focus: ["C"],
       });
-      setMetrics("C đã chắc", "ra khỏi frontier", "mở cạnh C");
+      setMetrics("C đã chắc", "ra khỏi vùng mở", "mở cạnh C");
     }, null, 0.78);
     pulsePart3Nodes(tl, ["C"], 0.84, { toScale: 1.1, duration: 0.26 });
     return tl;
@@ -4925,7 +5083,19 @@
 
   function enterPart3ReplayScene() {
     const tl = makeTimeline();
-    if (!prefersReducedMotion) tl.timeScale(1.18);
+    // Replay chạy tự động một mạch, nhưng tốc độ thay đổi theo chương:
+    // mở đầu chậm để khán giả bắt nhịp, các vòng giữa nhanh dần vì lặp lại
+    // cùng một khuôn, chậm hẳn lại ở khoảnh khắc gặp K, rồi thong thả khi
+    // lần ngược Prev ra đường đi cuối cùng.
+    const setReplaySpeed = (at, speed) => tl.call(() => tl.timeScale(speed), null, at);
+    if (!prefersReducedMotion) {
+      tl.timeScale(0.95);
+      setReplaySpeed(3.04, 1.2); // vòng chốt C/B: luật vừa xem xong, tăng nhẹ
+      setReplaySpeed(10.9, 1.5); // vòng E/D/F: cùng một nhịp, lướt nhanh
+      setReplaySpeed(19.9, 0.9); // gặp K: chậm lại để nhấn "min chính là đích"
+      setReplaySpeed(22.15, 1.15); // lần ngược Prev từng bước
+      setReplaySpeed(27.6, 0.95); // đảo chiều, vẽ đường cuối cùng
+    }
     const finalEdges = [
       ["A", "C"],
       ["C", "B"],
@@ -5517,7 +5687,7 @@
   }
 
   function p4Fmt(value) {
-    return value === Infinity ? "∞" : String(value);
+    return value === Infinity ? "?" : String(value);
   }
 
   function part4EdgeKey(from, to) {
@@ -5767,7 +5937,7 @@
       label.textContent = node;
       group.appendChild(label);
       const dist = svg("text", { x: p.x, y: p.y + 54, class: "part4-node-dist" });
-      dist.textContent = `d=${p4Fmt(s.dist[node])}`;
+      dist.textContent = `Cost ${p4Fmt(s.dist[node])}`;
       group.appendChild(dist);
       el.part4GraphSvg.appendChild(group);
     });
@@ -5782,7 +5952,7 @@
         if (node === s.scanning) classes.push("is-scan");
         if (node === s.best) classes.push("is-best");
         if (s.visited[node]) classes.push("is-visited");
-        return `<div class="${classes.join(" ")}"><strong>${node}</strong><span>d=${p4Fmt(s.dist[node])}</span></div>`;
+        return `<div class="${classes.join(" ")}"><strong>${node}</strong><span>${p4Fmt(s.dist[node])}</span></div>`;
       })
       .join("");
   }
@@ -5791,11 +5961,12 @@
     const s = part4ComplexityState;
     if (!s || !el.part4DistTable) return;
     el.part4DistTable.innerHTML = `
-      <tr><th>Đỉnh</th><th>d[v]</th><th>open</th><th>prev</th></tr>
+      <tr><th>Đỉnh</th><th>Cost</th><th>Trạng thái</th><th>Prev</th></tr>
       ${part4Order
         .map((node) => {
           const isFocus = node === s.scanning || node === s.best || node === s.current || node === s.updatedNode;
-          return `<tr class="${isFocus ? "is-focus" : ""}"><td><b>${node}</b></td><td>${p4Fmt(s.dist[node])}</td><td>${s.visited[node] ? "0" : "1"}</td><td>${s.prev[node] || "-"}</td></tr>`;
+          const status = s.visited[node] ? "đã chốt" : s.dist[node] < Infinity ? "đang mở" : "chưa biết";
+          return `<tr class="${isFocus ? "is-focus" : ""}"><td><b>${node}</b></td><td>${p4Fmt(s.dist[node])}</td><td>${status}</td><td>${s.prev[node] || "-"}</td></tr>`;
         })
         .join("")}
     `;
@@ -5832,12 +6003,12 @@
       el.part4PhaseBadge.textContent = "O(V)";
       el.part4OverlayTitle.textContent = s.scanning ? `Đang nhìn ô ${s.scanning}` : "Sẵn sàng chạy FOR 1";
       el.part4OverlayText.textContent = s.best
-        ? `Min tạm thời là ${s.best} với d=${p4Fmt(s.dist[s.best])}, nhưng FOR 1 vẫn phải nhìn hết các ô còn lại.`
-        : "Thuật toán scan A -> F, bỏ qua đỉnh đã đóng open và chọn d[v] nhỏ nhất.";
+        ? `Min tạm thời là ${s.best} với Cost ${p4Fmt(s.dist[s.best])}, nhưng FOR 1 vẫn phải nhìn hết các ô còn lại.`
+        : "Quét lần lượt A -> F, bỏ qua đỉnh đã chốt và chọn Cost nhỏ nhất.";
       el.part4Formula.textContent = "V lần x V đỉnh";
       el.part4FormulaNote.textContent = "Mỗi vòng chọn min tốn một lượt quét qua danh sách đỉnh.";
       el.part4Result.textContent = "Click Tiếp để chạy trọn một vòng FOR 1. Lần click sau sẽ chạy FOR 2.";
-      setMetrics(`vòng ${s.round}`, `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
+      setMetrics(`vòng ${s.round}`, `${s.scanOps} lượt quét`, `${s.edgeOps} cạnh`);
     } else if (s.phase === "edges") {
       el.part4PhaseTitle.textContent = `FOR 2: duyệt cạnh của ${s.current}`;
       el.part4PhaseBadge.textContent = "+E";
@@ -5846,7 +6017,7 @@
       el.part4Formula.textContent = "O(V^2 + E)";
       el.part4FormulaNote.textContent = "Phần chọn min là V^2, phần mở hàng xóm cộng theo số cạnh.";
       el.part4Result.innerHTML = `Đỉnh <b>${s.current}</b> đã được đánh dấu Visited. Click Tiếp để chạy trọn FOR 2 của đỉnh này.`;
-      setMetrics(`u = ${s.current}`, `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
+      setMetrics(`min = ${s.current}`, `${s.scanOps} lượt quét`, `${s.edgeOps} cạnh`);
     } else {
       const path = getPart4FinalPath("F");
       el.part4PhaseTitle.textContent = s.sampleStopped ? "Đủ mẫu để đếm bước" : "Hoàn tất đếm bước";
@@ -5862,7 +6033,7 @@
         : path.length
           ? `Ví dụ đường tốt tới F: <b>${path.join(" -> ")}</b>, cost <b>${s.dist.F}</b>.`
           : "Thuật toán đã kết thúc.";
-      setMetrics(s.sampleStopped ? "mẫu đủ" : "xong", `${s.scanOps} scan`, `${s.edgeOps} cạnh`);
+      setMetrics(s.sampleStopped ? "mẫu đủ" : "xong", `${s.scanOps} lượt quét`, `${s.edgeOps} cạnh`);
     }
   }
 
@@ -5959,7 +6130,7 @@
       tl.to({}, { duration: dur(0.14) });
       tl.call(() => {
         if (!s.visited[node] && s.dist[node] < Infinity && (s.best === null || s.dist[node] < s.dist[s.best])) {
-          const oldMin = s.best ? p4Fmt(s.dist[s.best]) : "∞";
+          const oldMin = s.best ? p4Fmt(s.dist[s.best]) : "trống";
           s.best = node;
           setPart4CodeFocus(["ifMinBetter", "setMin"], `${node} tốt hơn min cũ ${oldMin}, nên gán min = ${node}.`);
         } else if (s.visited[node]) {
@@ -6016,7 +6187,7 @@
       tl.to({}, { duration: dur(0.14) });
       tl.call(() => {
         if (s.visited[edge.to]) {
-          setPart4CodeFocus(["ifRelax"], `${edge.to} đã Visited, không relax lại.`);
+          setPart4CodeFocus(["ifRelax"], `${edge.to} đã Visited, không cập nhật lại.`);
           renderPart4Complexity();
           return;
         }
@@ -6098,7 +6269,7 @@
   }
 
   function negPart4Fmt(value) {
-    return value === Infinity ? "∞" : String(value);
+    return value === Infinity ? "?" : String(value);
   }
 
   function setPart4NegativeClass(id, className) {
@@ -6153,7 +6324,7 @@
       const nodeState = state.node[node] || "";
       setPart4NegativeClass(`part4NegNode${node}`, `part4-neg-node ${nodeState ? `is-${nodeState}` : ""}`.trim());
       const dist = document.getElementById(`part4NegNodeDist${node}`);
-      if (dist) dist.textContent = `d=${negPart4Fmt(state.dist[node])}`;
+      if (dist) dist.textContent = `Cost ${negPart4Fmt(state.dist[node])}`;
     });
     ["AB", "AC", "CB"].forEach((edge) => setPart4NegativeEdge(edge, state.edge[edge] || ""));
 
@@ -6161,10 +6332,12 @@
       .map((node) => {
         const nodeState = state.node[node] || "";
         const tone = nodeState === "wrong" || nodeState === "locked" ? "is-bad" : nodeState === "frontier" || nodeState === "current" ? "is-warn" : nodeState ? "is-focus" : "";
-        return `<div class="${tone}"><span>${node}</span><strong>${negPart4Fmt(state.dist[node])}</strong><small>${state.statuses[node] || "open"}</small></div>`;
+        return `<div class="${tone}"><span>${node}</span><strong>${negPart4Fmt(state.dist[node])}</strong><small>${state.statuses[node] || "đang mở"}</small></div>`;
       })
       .join("");
-    setMetrics(`${part4NegativeIndex + 1}/${part4NegativeStates.length}`, state.dijkstraB, "1");
+    const truthValue = document.getElementById("part4NegativeTruthValue");
+    if (truthValue) truthValue.textContent = state.showTruth ? "A -> C -> B = 1" : "?";
+    setMetrics(`${part4NegativeIndex + 1}/${part4NegativeStates.length}`, state.dijkstraB, state.showTruth ? "1" : "?");
   }
 
   function advancePart4Negative() {
@@ -6206,8 +6379,15 @@
     pendingVisualLabel = null;
     setMetrics("Dijkstra", "không cạnh âm", "O(V^2)");
     const tl = makeTimeline();
-    tl.fromTo(".part4-final-copy", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.52), ease: "power3.out" });
-    tl.fromTo(".part4-final-grid > div", { y: 22, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.12), duration: dur(0.48), ease: "power3.out" }, "<0.1");
+    tl.fromTo(".part4-final-copy .panel-kicker, .part4-final-lead", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.5), ease: "power3.out" });
+    tl.fromTo(
+      "#part4FinalName span",
+      { y: 34, opacity: 0, scale: 0.86 },
+      { y: 0, opacity: 1, scale: 1, stagger: dur(0.07), duration: dur(0.55), ease: "back.out(1.7)" },
+      "<0.35",
+    );
+    tl.fromTo(".part4-final-sub", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.5), ease: "power3.out" }, "<0.45");
+    tl.fromTo(".part4-final-grid > div", { y: 22, opacity: 0 }, { y: 0, opacity: 1, stagger: dur(0.12), duration: dur(0.48), ease: "power3.out" }, "<0.2");
     return tl;
   }
 
@@ -6225,7 +6405,7 @@
       return path;
     });
 
-    setMetrics("3 tuyến ví dụ", "36/22/16", "nhỏ nhất");
+    setMetrics("3 tuyến", sampleRoutes.map((route) => route.cost).join(" / "), "tuyến rẻ nhất");
     renderRouteList(sampleRoutes, { bestIndex: 2 });
 
     tl.fromTo(".stage-copy", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: dur(0.65), ease: "power3.out" });
@@ -6233,7 +6413,7 @@
     routeEls.forEach((path, index) => {
       animatePathOnTimeline(tl, path, index === 2 ? 0.7 : 0.44, index === 2 ? "<0.1" : "<0.05");
     });
-    tl.call(() => setMetrics("3 tuyến ví dụ", "36/22/16", "chi phí nhỏ nhất"));
+    tl.call(() => setMetrics("3 tuyến", sampleRoutes.map((route) => route.cost).join(" / "), `rẻ nhất = ${sampleRoutes[2].cost}`));
     return tl;
   }
 
@@ -6246,7 +6426,7 @@
     let bestIndex = -1;
     let walkedSegments = 0;
 
-    showWorkbench("Vét cạn", "303 tuyến phải đi tới B", `0/${totalRoutes}`, false);
+    showWorkbench("Vét cạn", `${totalRoutes} tuyến phải đi tới B`, `0/${totalRoutes}`, false);
     renderWorkloadGrid(routes);
     renderRouteWindow(routes, 0, -1);
     setMetrics(`0/${totalRoutes}`, "0 đoạn", "-");
@@ -6270,8 +6450,12 @@
         updateWorkloadCell(index, "current");
         renderRouteWindow(routes, index, bestIndex);
       });
-      animatePathOnTimeline(tl, routeEl, 0.44, undefined, 0.026);
-      tl.to(routeEl, { opacity: 0, duration: dur(0.012), ease: "power2.out" });
+      // Vài tuyến đầu đi chậm để khán giả hiểu chuyện gì đang diễn ra,
+      // phần đuôi tua nhanh dần: cảm giác "quá nhiều" không cần chờ thật lâu.
+      const drawDuration = index < 6 ? 0.3 : index < 40 ? 0.028 : 0.007;
+      const fadeDuration = index < 6 ? 0.05 : 0.008;
+      animatePathOnTimeline(tl, routeEl, 0.44, undefined, drawDuration);
+      tl.to(routeEl, { opacity: 0, duration: dur(fadeDuration), ease: "power2.out" });
       tl.call(() => routeEl.remove());
 
       if (willImproveBest) {
@@ -6413,7 +6597,7 @@
     showBenchmarkRoute(currentBest.path);
     updatePruneLens(getPruneInfo(routes[0], currentBest.cost), currentBest.cost);
     showPruneLens();
-    showWorkbench("Cắt nhánh", "Cùng 303 tuyến, dừng sớm nhiều tuyến", `0/${totalRoutes}`, true);
+    showWorkbench("Cắt nhánh", `Cùng ${totalRoutes} tuyến, dừng sớm nhiều tuyến`, `0/${totalRoutes}`, true);
     renderWorkloadGrid(routes);
     updateCompareBars(bruteSegments, 0, bruteSegments, prunedSegments);
     setMetrics(`0/${totalRoutes}`, "0 đoạn", currentBest.cost);
@@ -6451,12 +6635,12 @@
         updateWorkloadCell(index, "current");
         renderPruneRouteWindow(routes, index, bestBefore, { pruned: info.pruned, prunedCount: prunedSoFar });
       });
-      animatePathOnTimeline(tl, partialEl, info.pruned ? 0.56 : 0.32, undefined, index < 8 ? 0.08 : 0.02);
+      animatePathOnTimeline(tl, partialEl, info.pruned ? 0.56 : 0.32, undefined, index < 8 ? 0.08 : 0.01);
       if (remainingEl) {
-        tl.to(remainingEl, { opacity: index < 8 ? 0.58 : 0.38, duration: dur(index < 8 ? 0.08 : 0.015), ease: "power2.out" }, "<0.02");
-        tl.to(remainingEl, { opacity: 0, duration: dur(index < 8 ? 0.08 : 0.012), ease: "power2.out" });
+        tl.to(remainingEl, { opacity: index < 8 ? 0.58 : 0.38, duration: dur(index < 8 ? 0.08 : 0.008), ease: "power2.out" }, "<0.02");
+        tl.to(remainingEl, { opacity: 0, duration: dur(index < 8 ? 0.08 : 0.006), ease: "power2.out" });
       }
-      tl.to(partialEl, { opacity: 0, duration: dur(index < 8 ? 0.035 : 0.012), ease: "power2.out" }, remainingEl ? "<" : undefined);
+      tl.to(partialEl, { opacity: 0, duration: dur(index < 8 ? 0.035 : 0.006), ease: "power2.out" }, remainingEl ? "<" : undefined);
       tl.call(() => {
         partialEl.remove();
         if (remainingEl) remainingEl.remove();
@@ -6672,8 +6856,10 @@
       activeTimeline.pause();
       if (activeRouteTween) activeRouteTween.pause();
     } else {
+      pendingTimelineResume = false;
       activeTimeline.resume();
       if (activeRouteTween) activeRouteTween.resume();
+      updateControlAvailability();
     }
     updatePauseButton();
   }

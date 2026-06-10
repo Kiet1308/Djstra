@@ -9,6 +9,14 @@
   const overlay = document.getElementById("introOverlay");
   if (!overlay) return;
 
+  // Mở bằng deep link (?part=...&scene=...) nghĩa là đang nhảy thẳng vào một
+  // phần cụ thể giữa buổi trình bày — bỏ qua màn dẫn nhập.
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("part") || params.has("scene")) {
+    overlay.remove();
+    return;
+  }
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hasGsap = typeof window.gsap !== "undefined";
   const SVGNS = "http://www.w3.org/2000/svg";
