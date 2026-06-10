@@ -1074,17 +1074,6 @@ button {
   fill: rgba(255, 230, 224, 0.98);
 }
 
-.guard-slot-current.is-under-overlay .part3-guard-slot-bg.is-current {
-  fill: rgba(66, 242, 161, 0.07);
-  stroke: rgba(66, 242, 161, 0.78);
-  stroke-width: 2.2;
-}
-
-.guard-slot-current.is-under-overlay .part3-guard-value {
-  fill: rgba(66, 242, 161, 0.7);
-  opacity: 0.16;
-}
-
 .part3-guard-slot-bg.is-bad,
 .part3-guard-chip-bg.is-bad {
   fill: rgba(255, 118, 89, 0.2);
@@ -1117,20 +1106,13 @@ button {
   font-weight: 840;
 }
 
-.part3-guard-arrow {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 4.2;
-  filter: url(#tightGlow);
-}
-
-.guard-arrow-six {
-  stroke: rgba(66, 242, 161, 0.86);
-}
-
-.guard-arrow-seven {
-  stroke: rgba(255, 118, 89, 0.84);
+.part3-guard-chip-src {
+  fill: rgba(244, 241, 232, 0.66);
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 11px;
+  font-weight: 840;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .part3-guard-compare-bg {
@@ -1150,9 +1132,7 @@ button {
 }
 
 .part3-guard-gate-line {
-  stroke: rgba(244, 201, 109, 0.96);
-  stroke-linecap: round;
-  stroke-width: 5;
+  fill: rgba(244, 201, 109, 0.96);
   filter: url(#tightGlow);
 }
 
@@ -1177,13 +1157,6 @@ button {
   font-weight: 870;
   text-anchor: middle;
   dominant-baseline: middle;
-}
-
-.part3-guard-lost-line {
-  stroke: rgba(255, 118, 89, 0.95);
-  stroke-linecap: round;
-  stroke-width: 4;
-  filter: url(#tightGlow);
 }
 
 .part3-gate-ring {
@@ -1375,7 +1348,11 @@ button {
   dominant-baseline: middle;
 }
 
-.part3-prev-reject-gate-line,
+.part3-prev-reject-gate-line {
+  fill: rgba(255, 118, 89, 0.95);
+  filter: url(#tightGlow);
+}
+
 .part3-prev-reject-gate-x {
   fill: none;
   stroke: rgba(255, 118, 89, 0.95);
@@ -1430,42 +1407,27 @@ button {
   filter: url(#tightGlow);
 }
 
-.part3-update-bundle-cost-bg,
-.part3-update-bundle-parent-bg {
-  stroke-width: 1.25;
+.part3-update-bundle-bg {
+  stroke-width: 1.35;
 }
 
-.part3-update-bundle.is-focus .part3-update-bundle-cost-bg {
-  fill: rgba(66, 242, 161, 0.18);
+.part3-update-bundle.is-focus .part3-update-bundle-bg {
+  fill: rgba(8, 14, 11, 0.92);
   stroke: rgba(66, 242, 161, 0.88);
 }
 
-.part3-update-bundle.is-focus .part3-update-bundle-parent-bg {
-  fill: rgba(244, 201, 109, 0.16);
-  stroke: rgba(244, 201, 109, 0.74);
-}
-
-.part3-update-bundle.is-warn .part3-update-bundle-cost-bg,
-.part3-update-bundle.is-warn .part3-update-bundle-parent-bg {
-  fill: rgba(255, 118, 89, 0.18);
+.part3-update-bundle.is-warn .part3-update-bundle-bg {
+  fill: rgba(15, 9, 8, 0.92);
   stroke: rgba(255, 118, 89, 0.82);
 }
 
-.part3-update-bundle-cost-text,
-.part3-update-bundle-parent-text {
+.part3-update-bundle-text {
   fill: rgba(244, 241, 232, 0.98);
   font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 14px;
   font-weight: 950;
   text-anchor: middle;
   dominant-baseline: middle;
-}
-
-.part3-update-bundle-cost-text {
-  font-size: 15px;
-}
-
-.part3-update-bundle-parent-text {
-  font-size: 12px;
 }
 
 .part3-backtrack-cursor-ring {

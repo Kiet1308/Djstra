@@ -375,19 +375,19 @@
       tab: "Lặp",
       kicker: "Làm lại",
       title: "Lặp nhịp",
-      body: "Từ Cost[A] = 0, ta chọn A rồi mở các cạnh đi ra C, B, D, E. Sau bước này lại phải chọn tiếp một đỉnh rẻ nhất, nên nhịp này cần được lặp.",
+      body: "Nhịp chọn rồi mở này phải lặp đến khi chốt hết mọi đỉnh hoặc tìm được đích. Hai điều kiện dừng đó chưa biết viết thế nào, nên cứ while (true) rồi ghi tạm hai dòng dừng bằng lời, lát nữa sửa dần thành code thật.",
       audienceTitle: "Vòng lặp",
-      audienceBullets: ["Một vòng: chọn một đỉnh, mở hàng xóm, cập nhật Cost.", "Chưa biết lặp bao nhiêu lần, nên viết khung while trước."],
-      metricLabels: ["Nhịp", "while", "chưa dừng"],
+      audienceBullets: ["Mục tiêu: chốt hết hoặc tìm được đích.", "Ghi tạm hai điều kiện dừng bằng lời, sửa dần sau."],
+      metricLabels: ["Nhịp", "while", "2 chỗ dừng tạm"],
       enter: enterPart3LoopScene,
     },
     {
       tab: "Min",
       kicker: "Quét vùng mở",
       title: "Chọn nhỏ nhất",
-      body: "Ta duyệt từng đỉnh, đỉnh nào đã có Cost thì đem ra so để lấy số nhỏ nhất. Nếu chỉ nhìn số, A = 0 sẽ thắng lại, nghĩa là code còn thiếu cách loại đỉnh đã xử lý.",
+      body: "Bắt đầu sửa dòng tạm thứ nhất: thế nào là chốt hết? Là không còn chọn được đỉnh nào nữa — vậy phải viết đoạn chọn đỉnh trước đã. Ta duyệt từng đỉnh có Cost để giữ số nhỏ nhất, nhưng nếu chỉ nhìn số thì A = 0 sẽ thắng lại.",
       audienceTitle: "Tìm min",
-      audienceBullets: ["Cost khác rỗng nghĩa là đỉnh đã được mở.", "min giữ số rẻ nhất, nhưng chưa biết bỏ qua đỉnh đã xử lý."],
+      audienceBullets: ["Muốn biết khi nào chốt hết, phải viết đoạn chọn đỉnh trước.", "min giữ số rẻ nhất, nhưng chưa biết bỏ qua đỉnh đã xử lý."],
       metricLabels: ["Đang quét", "Nhỏ nhất", "Sẽ chốt"],
       enter: enterPart3MinScene,
     },
@@ -403,21 +403,21 @@
     },
     {
       tab: "Hết",
-      kicker: "Van an toàn",
+      kicker: "Sửa dòng tạm 1",
       title: "Không còn ứng viên",
-      body: "Nếu cả lượt quét không có đỉnh nào lọt qua cổng, min vẫn rỗng. Khi đó vòng lặp phải dừng, nếu không code sẽ chạy mãi.",
+      body: "Giờ trả lời được câu chốt hết khi nào: nếu cả lượt quét không có đỉnh nào lọt qua, min vẫn rỗng — tức là đã chốt hết. Dòng tạm chốt hết? được sửa thành điều kiện thật: min == null.",
       audienceTitle: "min rỗng",
-      audienceBullets: ["Trường hợp này bảo vệ code khỏi lặp vô hạn.", "Nó cũng xử lý bài toán đích không tới được."],
+      audienceBullets: ["min == null chính là chốt hết.", "Nó cũng xử lý bài toán đích không tới được."],
       metricLabels: ["Quét xong", "min = null", "break"],
       enter: enterPart3EmptyScene,
     },
     {
       tab: "Đích",
-      kicker: "Đủ chắc",
+      kicker: "Sửa dòng tạm 2",
       title: "Gặp K",
-      body: "Nếu đỉnh rẻ nhất còn lại là K, ta đã có câu trả lời. Mọi ứng viên khác đều không thể làm K rẻ hơn số nhỏ nhất hiện tại.",
+      body: "Còn dòng tạm tìm được đích: vì min là đỉnh sắp được chốt, nếu min chính là K thì ta đã có câu trả lời. Dòng tạm được sửa thành min == end.",
       audienceTitle: "Đích nhỏ nhất",
-      audienceBullets: ["K không cần bị đánh dấu Visited.", "Ta đã có Cost[K]."],
+      audienceBullets: ["min == end chính là tìm được đích.", "K không cần bị đánh dấu Visited — ta đã có Cost[K]."],
       metricLabels: ["min", "K", "break"],
       enter: enterPart3EndScene,
     },
@@ -709,6 +709,10 @@
   const part3LoopCamera = { center: { x: 278, y: 392 }, scale: 1.28 };
   const part3GuardCamera = { center: { x: 360, y: 382 }, scale: 1.06 };
   const part3CostSlotCamera = { center: { x: 550, y: 330 }, scale: 1.12 };
+  // Cửa vào (trái) và ô giữ số (phải) trên bảng quyết định Cost[F] — dùng chung
+  // cho cả scene "Chỉ khi rẻ" và scene "Prev" để bảng hiện lại đúng chỗ quen.
+  const GUARD_CHIP_HOME = { x: -96, y: 40 };
+  const GUARD_SLOT_POS = { x: 96, y: 40 };
   // Offset of the floating "min" holder card from the node it currently holds.
   // Kept constant so the card can slide between nodes while its tether + anchor
   // halo keep pointing at whichever node sits below it.
@@ -758,17 +762,22 @@
       inserted: [2, 3],
       active: [2, 3],
     },
+    // Theo đúng nhịp dẫn dắt: viết khung while với HAI ĐIỀU KIỆN DỪNG TẠM
+    // bằng lời trước ("chốt hết?", "tìm được đích?"), các bước sau mới quay
+    // lại sửa dần từng dòng tạm đó thành code thật.
     loop: {
       lines: [
         "function NganNhat(map, start, end) {",
         "  Cost = []",
         "  Cost[start] = 0",
         "  while (true) {",
+        "    if (chốt hết?) break",
+        "    if (tìm được đích?) break",
         "  }",
         "}",
       ],
-      inserted: [4, 5],
-      active: [4, 5],
+      inserted: [4, 5, 6, 7],
+      active: [4, 5, 6],
     },
     min: {
       lines: [
@@ -784,6 +793,8 @@
         "        }",
         "      }",
         "    }",
+        "    if (chốt hết?) break",
+        "    if (tìm được đích?) break",
         "  }",
         "}",
       ],
@@ -805,6 +816,8 @@
         "        }",
         "      }",
         "    }",
+        "    if (chốt hết?) break",
+        "    if (tìm được đích?) break",
         "  }",
         "}",
       ],
@@ -828,10 +841,11 @@
         "      }",
         "    }",
         "    if (min == null) break",
+        "    if (tìm được đích?) break",
         "  }",
         "}",
       ],
-      inserted: [14],
+      changed: [14],
       active: [14],
     },
     end: {
@@ -854,7 +868,7 @@
         "  }",
         "}",
       ],
-      inserted: [15],
+      changed: [15],
       active: [15],
     },
     settle: {
@@ -3539,7 +3553,7 @@
     setEdgeStates({ context: [part2Edges.fromA] });
     setNodeStates(initState, { focus: ["A"], target: ["K"], context: ["C", "B", "D", "E"], showNodeCosts: true, nodeCostNodes: ["A"] });
     showMemoryPanel({ cost: { A: 0 }, focus: ["A"] });
-    showPart3Code("loop", "Tạo vòng lặp", "chờ viết");
+    showPart3Code("loop", "Vòng lặp và chỗ dừng tạm", "chờ viết");
     drawCandidateRoutes([
       ["A", "C"],
       ["A", "B"],
@@ -3925,7 +3939,11 @@
     return group;
   }
 
-  function drawPart3GuardDecisionBoard(node, { className = "", dx = 126, dy = -80 } = {}) {
+  // Bảng quyết định "Cost[F]" xếp theo một dây chuyền duy nhất, đọc từ trái
+  // sang phải: ứng viên đi vào -> cổng so sánh -> ô đang giữ số. Mỗi vùng có
+  // chỗ riêng nên các bước không đè lên nhau. Bảng được neo lên khoảng trời
+  // trống phía trên cạnh F-K để không che node F và hành động trên đồ thị.
+  function drawPart3GuardDecisionBoard(node, { className = "", dx = 184, dy = -104 } = {}) {
     const point = nodes[node];
     const group = drawPart3GraphGroup(`part3-guard-decision-visual ${className}`);
     const board = svg("g", {
@@ -3933,76 +3951,69 @@
       transform: `translate(${point.x + dx} ${point.y + dy})`,
     });
 
-    board.appendChild(svg("rect", { x: -160, y: -106, width: 370, height: 220, rx: 16, class: "part3-guard-shell" }));
+    board.appendChild(svg("rect", { x: -160, y: -96, width: 320, height: 204, rx: 16, class: "part3-guard-shell" }));
 
-    const title = svg("text", { x: -130, y: -76, class: "part3-guard-title" });
+    const title = svg("text", { x: -136, y: -66, class: "part3-guard-title" });
     title.textContent = `Cost[${node}]`;
     board.appendChild(title);
 
-    const note = svg("text", { x: -130, y: -54, class: "part3-guard-note" });
+    const note = svg("text", { x: -136, y: -44, class: "part3-guard-note" });
     note.textContent = "giữ số tốt nhất đang biết";
     board.appendChild(note);
 
-    const emptySlot = svg("g", { class: "part3-guard-slot guard-slot-empty", transform: "translate(52 14)" });
+    const slotTransform = `translate(${GUARD_SLOT_POS.x} ${GUARD_SLOT_POS.y})`;
+    const emptySlot = svg("g", { class: "part3-guard-slot guard-slot-empty", transform: slotTransform });
     emptySlot.appendChild(svg("rect", { x: -44, y: -32, width: 88, height: 64, rx: 14, class: "part3-guard-slot-bg is-empty" }));
     const emptyText = svg("text", { x: 0, y: 1, class: "part3-guard-slot-text is-muted" });
     emptyText.textContent = "trống";
     emptySlot.appendChild(emptyText);
     board.appendChild(emptySlot);
 
-    const currentSlot = svg("g", { class: "part3-guard-slot guard-slot-current", transform: "translate(52 14)" });
+    const currentSlot = svg("g", { class: "part3-guard-slot guard-slot-current", transform: slotTransform });
     currentSlot.appendChild(svg("rect", { x: -44, y: -32, width: 88, height: 64, rx: 14, class: "part3-guard-slot-bg is-current" }));
     const currentText = svg("text", { x: 0, y: 2, class: "part3-guard-value" });
     currentText.textContent = "6";
     currentSlot.appendChild(currentText);
     board.appendChild(currentSlot);
 
-    const badSlot = svg("g", { class: "part3-guard-slot guard-slot-bad", transform: "translate(146 14)" });
-    badSlot.appendChild(svg("rect", { x: -44, y: -32, width: 88, height: 64, rx: 14, class: "part3-guard-slot-bg is-bad" }));
-    const badText = svg("text", { x: 0, y: 2, class: "part3-guard-value" });
-    badText.textContent = "7";
-    badSlot.appendChild(badText);
-    board.appendChild(badSlot);
+    // Hai chip ứng viên cùng xuất phát từ một "cửa vào" bên trái; nguồn gốc
+    // (từ E / từ D) ghi ngay trong chip nên không cần mũi tên phụ.
+    const makeCandidate = (value, source, tone, chipClass) => {
+      const chip = svg("g", { class: `part3-guard-chip ${chipClass}`, transform: `translate(${GUARD_CHIP_HOME.x} ${GUARD_CHIP_HOME.y})` });
+      chip.appendChild(svg("rect", { x: -32, y: -24, width: 64, height: 48, rx: 12, class: `part3-guard-chip-bg is-${tone}` }));
+      const valueText = svg("text", { x: 0, y: -5, class: "part3-guard-value" });
+      valueText.textContent = value;
+      chip.appendChild(valueText);
+      const sourceText = svg("text", { x: 0, y: 15, class: "part3-guard-chip-src" });
+      sourceText.textContent = source;
+      chip.appendChild(sourceText);
+      return chip;
+    };
+    board.appendChild(makeCandidate("6", "từ E", "current", "guard-candidate-six"));
+    board.appendChild(makeCandidate("7", "từ D", "bad", "guard-candidate-seven"));
 
-    const candidate6 = svg("g", { class: "part3-guard-chip guard-candidate-six", transform: "translate(-86 -20)" });
-    candidate6.appendChild(svg("rect", { x: -32, y: -24, width: 64, height: 48, rx: 12, class: "part3-guard-chip-bg is-current" }));
-    const candidate6Text = svg("text", { x: 0, y: 1, class: "part3-guard-value" });
-    candidate6Text.textContent = "6";
-    candidate6.appendChild(candidate6Text);
-    board.appendChild(candidate6);
-
-    const candidate7 = svg("g", { class: "part3-guard-chip guard-candidate-seven", transform: "translate(-86 58)" });
-    candidate7.appendChild(svg("rect", { x: -32, y: -24, width: 64, height: 48, rx: 12, class: "part3-guard-chip-bg is-bad" }));
-    const candidate7Text = svg("text", { x: 0, y: 1, class: "part3-guard-value" });
-    candidate7Text.textContent = "7";
-    candidate7.appendChild(candidate7Text);
-    board.appendChild(candidate7);
-
-    board.appendChild(svg("path", { d: "M -50 -18 C -22 -18 -4 -6 14 8", class: "part3-guard-arrow guard-arrow-six" }));
-    board.appendChild(svg("path", { d: "M -50 58 C -18 58 -6 36 10 24", class: "part3-guard-arrow guard-arrow-seven" }));
-
-    const compare = svg("g", { class: "part3-guard-compare guard-compare", transform: "translate(-22 58)" });
-    compare.appendChild(svg("rect", { x: -43, y: -19, width: 86, height: 38, rx: 11, class: "part3-guard-compare-bg" }));
+    const compare = svg("g", { class: "part3-guard-compare guard-compare", transform: "translate(16 -10)" });
+    compare.appendChild(svg("rect", { x: -43, y: -17, width: 86, height: 34, rx: 10, class: "part3-guard-compare-bg" }));
     const compareText = svg("text", { x: 0, y: 1, class: "part3-guard-compare-text" });
     compareText.textContent = "7 < 6 ?";
     compare.appendChild(compareText);
     board.appendChild(compare);
 
-    const gate = svg("g", { class: "part3-guard-gate guard-gate", transform: "translate(9 42)" });
-    gate.appendChild(svg("line", { x1: 0, y1: -32, x2: 0, y2: 32, class: "part3-guard-gate-line" }));
-    gate.appendChild(svg("path", { d: "M -14 -14 L 14 14 M 14 -14 L -14 14", class: "part3-guard-gate-x" }));
+    const gate = svg("g", { class: "part3-guard-gate guard-gate", transform: "translate(-6 40)" });
+    // Rect thay vì line: line dọc có bbox rộng 0 nên filter glow nuốt mất nó.
+    gate.appendChild(svg("rect", { x: -2.5, y: -42, width: 5, height: 84, rx: 2.5, class: "part3-guard-gate-line" }));
+    gate.appendChild(svg("path", { d: "M -12 -12 L 12 12 M 12 -12 L -12 12", class: "part3-guard-gate-x" }));
     board.appendChild(gate);
 
-    const reject = svg("g", { class: "part3-guard-reject guard-reject", transform: "translate(-22 92)" });
+    const reject = svg("g", { class: "part3-guard-reject guard-reject", transform: `translate(${GUARD_CHIP_HOME.x} 86)` });
     reject.appendChild(svg("rect", { x: -44, y: -15, width: 88, height: 30, rx: 10, class: "part3-guard-reject-bg" }));
     const rejectText = svg("text", { x: 0, y: 1, class: "part3-guard-reject-text" });
     rejectText.textContent = "không ghi";
     reject.appendChild(rejectText);
     board.appendChild(reject);
 
-    const lost = svg("g", { class: "part3-guard-lost guard-lost", transform: "translate(52 68)" });
-    lost.appendChild(svg("path", { d: "M -28 0 L 28 0", class: "part3-guard-lost-line" }));
-    const lostText = svg("text", { x: 0, y: 23, class: "part3-guard-lost-text" });
+    const lost = svg("g", { class: "part3-guard-lost guard-lost", transform: `translate(${GUARD_SLOT_POS.x} 86)` });
+    const lostText = svg("text", { x: 0, y: 1, class: "part3-guard-lost-text" });
     lostText.textContent = "6 bị mất";
     lost.appendChild(lostText);
     board.appendChild(lost);
@@ -4054,7 +4065,10 @@
     return group;
   }
 
-  function drawPart3PrevUpdateBoard(node, { className = "", dx = 142, dy = -76 } = {}) {
+  // Bảng "Khi nhận Cost[F]" dùng đúng kích thước, vị trí neo và lối đọc của
+  // bảng quyết định ở scene "Chỉ khi rẻ" (ứng viên trái -> cổng -> ô đang giữ),
+  // chỉ thêm hàng Prev bên dưới hàng Cost. Người xem gặp lại đúng khung quen.
+  function drawPart3PrevUpdateBoard(node, { className = "", dx = 184, dy = -104 } = {}) {
     const point = nodes[node];
     const group = drawPart3GraphGroup(`part3-prev-update-board-visual ${className}`);
     const board = svg("g", {
@@ -4062,52 +4076,46 @@
       transform: `translate(${point.x + dx} ${point.y + dy})`,
     });
 
-    board.appendChild(svg("rect", { x: -154, y: -92, width: 328, height: 192, rx: 16, class: "part3-prev-panel-shell" }));
-    const title = svg("text", { x: -126, y: -62, class: "part3-prev-board-title prev-board-title-accept" });
+    board.appendChild(svg("rect", { x: -160, y: -96, width: 320, height: 204, rx: 16, class: "part3-prev-panel-shell" }));
+    const title = svg("text", { x: -136, y: -66, class: "part3-prev-board-title prev-board-title-accept" });
     title.textContent = `Khi nhận Cost[${node}]`;
     board.appendChild(title);
-    const rejectTitle = svg("text", { x: -126, y: -62, class: "part3-prev-board-title prev-board-title-reject" });
+    const rejectTitle = svg("text", { x: -136, y: -66, class: "part3-prev-board-title prev-board-title-reject" });
     rejectTitle.textContent = `${node} đang giữ tốt nhất`;
     board.appendChild(rejectTitle);
 
     const rows = [
-      { label: `Cost[${node}]`, empty: "trống", value: "6", y: -18, slot: "cost" },
-      { label: `Prev[${node}]`, empty: "-", value: "E", y: 48, slot: "prev" },
+      { label: `Cost[${node}]`, empty: "trống", value: "6", y: -12, slot: "cost" },
+      { label: `Prev[${node}]`, empty: "-", value: "E", y: 44, slot: "prev" },
     ];
 
     rows.forEach((row) => {
-      const label = svg("text", { x: -120, y: row.y + 1, class: "part3-prev-board-label" });
+      const label = svg("text", { x: -136, y: row.y + 1, class: "part3-prev-board-label" });
       label.textContent = row.label;
       board.appendChild(label);
 
-      const empty = svg("g", { class: `part3-prev-board-slot prev-${row.slot}-empty`, transform: `translate(78 ${row.y})` });
-      empty.appendChild(svg("rect", { x: -46, y: -22, width: 92, height: 44, rx: 12, class: "part3-prev-board-slot-bg is-empty" }));
+      const empty = svg("g", { class: `part3-prev-board-slot prev-${row.slot}-empty`, transform: `translate(96 ${row.y})` });
+      empty.appendChild(svg("rect", { x: -44, y: -22, width: 88, height: 44, rx: 12, class: "part3-prev-board-slot-bg is-empty" }));
       const emptyText = svg("text", { x: 0, y: 1, class: "part3-prev-board-slot-text is-muted" });
       emptyText.textContent = row.empty;
       empty.appendChild(emptyText);
       board.appendChild(empty);
 
-      const current = svg("g", { class: `part3-prev-board-slot prev-${row.slot}-current`, transform: `translate(78 ${row.y})` });
-      current.appendChild(svg("rect", { x: -46, y: -22, width: 92, height: 44, rx: 12, class: `part3-prev-board-slot-bg is-${row.slot}` }));
+      const current = svg("g", { class: `part3-prev-board-slot prev-${row.slot}-current`, transform: `translate(96 ${row.y})` });
+      current.appendChild(svg("rect", { x: -44, y: -22, width: 88, height: 44, rx: 12, class: `part3-prev-board-slot-bg is-${row.slot}` }));
       const currentText = svg("text", { x: 0, y: 1, class: "part3-prev-board-slot-text" });
       currentText.textContent = row.value;
       current.appendChild(currentText);
       board.appendChild(current);
     });
 
-    const lock = svg("g", { class: "part3-prev-board-lock prev-board-lock", transform: "translate(78 84)" });
-    lock.appendChild(svg("rect", { x: -74, y: -14, width: 148, height: 28, rx: 9, class: "part3-prev-board-lock-bg" }));
-    const lockText = svg("text", { x: 0, y: 1, class: "part3-prev-board-lock-text" });
-    lockText.textContent = "không ghi 7/D";
-    lock.appendChild(lockText);
-    board.appendChild(lock);
-
+    // Đề xuất 7/D đứng hẳn bên trái, cách cổng một khoảng rõ ràng.
     const rejectCandidates = [
-      { value: "7", y: -18, className: "prev-cost-reject-chip" },
-      { value: "D", y: 48, className: "prev-prev-reject-chip" },
+      { value: "7", y: -12, className: "prev-cost-reject-chip" },
+      { value: "D", y: 44, className: "prev-prev-reject-chip" },
     ];
     rejectCandidates.forEach((candidate) => {
-      const chip = svg("g", { class: `part3-prev-reject-chip ${candidate.className}`, transform: `translate(-10 ${candidate.y})` });
+      const chip = svg("g", { class: `part3-prev-reject-chip ${candidate.className}`, transform: `translate(-44 ${candidate.y})` });
       chip.appendChild(svg("rect", { x: -28, y: -20, width: 56, height: 40, rx: 10, class: "part3-prev-reject-chip-bg" }));
       const chipText = svg("text", { x: 0, y: 1, class: "part3-prev-reject-chip-text" });
       chipText.textContent = candidate.value;
@@ -4115,10 +4123,19 @@
       board.appendChild(chip);
     });
 
-    const rejectGate = svg("g", { class: "part3-prev-reject-gate prev-cost-reject-gate", transform: "translate(28 15)" });
-    rejectGate.appendChild(svg("line", { x1: 0, y1: -54, x2: 0, y2: 54, class: "part3-prev-reject-gate-line" }));
+    // Một cổng duy nhất chặn cả hai hàng: Cost và Prev cùng bị từ chối một nhịp.
+    const rejectGate = svg("g", { class: "part3-prev-reject-gate prev-cost-reject-gate", transform: "translate(8 16)" });
+    // Rect thay vì line: line dọc có bbox rộng 0 nên filter glow nuốt mất nó.
+    rejectGate.appendChild(svg("rect", { x: -2.2, y: -56, width: 4.4, height: 112, rx: 2.2, class: "part3-prev-reject-gate-line" }));
     rejectGate.appendChild(svg("path", { d: "M -11 -11 L 11 11 M 11 -11 L -11 11", class: "part3-prev-reject-gate-x" }));
     board.appendChild(rejectGate);
+
+    const lock = svg("g", { class: "part3-prev-board-lock prev-board-lock", transform: "translate(8 86)" });
+    lock.appendChild(svg("rect", { x: -66, y: -14, width: 132, height: 28, rx: 9, class: "part3-prev-board-lock-bg" }));
+    const lockText = svg("text", { x: 0, y: 1, class: "part3-prev-board-lock-text" });
+    lockText.textContent = "không ghi 7/D";
+    lock.appendChild(lockText);
+    board.appendChild(lock);
 
     group.appendChild(board);
     return group;
@@ -4137,14 +4154,14 @@
       "data-end-y": String(end.y),
     });
 
-    group.appendChild(svg("rect", { x: -54, y: -19, width: 44, height: 38, rx: 10, class: "part3-update-bundle-cost-bg" }));
-    const costText = svg("text", { x: -32, y: 1, class: "part3-update-bundle-cost-text" });
-    costText.textContent = String(cost);
-    group.appendChild(costText);
-    group.appendChild(svg("rect", { x: -3, y: -15, width: 72, height: 30, rx: 9, class: "part3-update-bundle-parent-bg" }));
-    const parentText = svg("text", { x: 33, y: 1, class: "part3-update-bundle-parent-text" });
-    parentText.textContent = `từ ${parent}`;
-    group.appendChild(parentText);
+    // Một viên duy nhất "cost · từ X": gói cost và cửa vào đi cùng nhau mà
+    // không thành hai chip dính nhau, đỡ rối khi bay ngang các nhãn cạnh.
+    const text = `${cost} · từ ${parent}`;
+    const width = Math.max(84, text.length * 9 + 26);
+    group.appendChild(svg("rect", { x: -width / 2, y: -17, width, height: 34, rx: 10, class: "part3-update-bundle-bg" }));
+    const label = svg("text", { x: 0, y: 1, class: "part3-update-bundle-text" });
+    label.textContent = text;
+    group.appendChild(label);
     el.activeRouteLayer.appendChild(group);
     return group;
   }
@@ -4475,7 +4492,7 @@
       visited: ["A", "C", "B", "E", "D", "F", "G"],
       focus: ["A", "C", "B", "E", "D", "F", "G"],
     });
-    showPart3Code("empty", "Van an toàn", "chờ viết");
+    showPart3Code("empty", "Sửa dòng chốt hết", "chờ sửa");
     setMetrics("quét xong", "min = null", "break");
 
     animatePart3SceneIntro(tl, 0.16);
@@ -4506,7 +4523,7 @@
       visited: ["A", "C", "B", "E", "D", "F", "G"],
       focus: ["K"],
     });
-    showPart3Code("end", "Đích là min", "chờ viết");
+    showPart3Code("end", "Sửa dòng gặp đích", "chờ sửa");
     setMetrics("nhánh thật", "min = K", "dừng");
 
     animatePart3SceneIntro(tl, 0.14);
@@ -4684,11 +4701,10 @@
       return stepTl;
     }
 
-    function setGuardCurrentSlot(value, overwritten = false, underOverlay = false) {
+    function setGuardCurrentSlot(value, overwritten = false) {
       const slot = document.querySelector(".guard-slot-current");
       if (!slot) return;
       slot.classList.toggle("is-overwritten", overwritten);
-      slot.classList.toggle("is-under-overlay", underOverlay);
       const valueLabel = slot.querySelector(".part3-guard-value");
       if (valueLabel) valueLabel.textContent = value;
     }
@@ -4741,17 +4757,20 @@
         setNodeStates(beforeFState, { focus: ["E", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
         showMemoryPanel({ cost: { F: "-" }, visited: ["E"], focus: ["F"] });
         setGuardCopy("Đầu tiên, nếu Cost[F] còn trống, số đầu tiên tìm được có quyền mở ô đó. E tạo ứng viên 4 + 2 = 6, nên F nhận 6.", ["ô trống", "6", "nhận"]);
-        stepTl.fromTo(".guard-candidate-six", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.4)" }, 0);
-        stepTl.fromTo(".guard-arrow-six", { opacity: 0, strokeDashoffset: 70 }, { opacity: 1, strokeDashoffset: 0, duration: dur(0.48), ease: "power2.out" }, 0.12);
-        animateGuardChipTranslate(stepTl, ".guard-candidate-six", { x: -86, y: -20 }, { x: 52, y: 14 }, 0.34, 0.68, "power2.inOut");
-        stepTl.to(".guard-slot-empty", { opacity: 0, scale: 0.82, duration: dur(0.2), ease: "power2.in" }, 0.78);
-        stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.34), ease: "back.out(1.35)" }, 0.84);
+        // Chip 6 hiện ở cửa vào bên trái rồi trượt một mạch sang ô bên phải.
+        stepTl.call(() => setGuardChipTranslate(".guard-candidate-six", GUARD_CHIP_HOME.x, GUARD_CHIP_HOME.y), null, 0);
+        stepTl.fromTo(".guard-candidate-six", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.4)" }, 0.04);
+        animateGuardChipTranslate(stepTl, ".guard-candidate-six", GUARD_CHIP_HOME, GUARD_SLOT_POS, 0.52, 0.62, "power2.inOut");
+        stepTl.to(".guard-slot-empty", { opacity: 0, scale: 0.82, duration: dur(0.2), ease: "power2.in" }, 1.0);
+        stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 1.1);
+        // Ô đã nhận số thì chip biến mất — chỉ còn một hình duy nhất giữ số 6.
+        stepTl.to(".guard-candidate-six", { opacity: 0, duration: dur(0.22), ease: "power2.in" }, 1.18);
         stepTl.call(() => {
           setNodeStates(currentFState, { focus: ["F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
           showMemoryPanel({ cost: { F: 6 }, visited: ["E"], focus: ["F"] });
           showBestRoute(bestToF);
-        }, null, 0.88);
-        pulsePart3Nodes(stepTl, ["F"], 1.02, { toScale: 1.12, duration: 0.28 });
+        }, null, 1.24);
+        pulsePart3Nodes(stepTl, ["F"], 1.34, { toScale: 1.12, duration: 0.28 });
         return stepTl;
       },
       () => {
@@ -4760,25 +4779,29 @@
         setNodeStates(testingFromDState, { focus: ["D", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
         showMemoryPanel({ cost: { F: 6 }, visited: ["D"], focus: ["F"], amber: ["D"] });
         setGuardCopy("Sau đó D cũng đi tới F và tạo ứng viên 5 + 2 = 7. Vấn đề là F không còn trống nữa: trong ô đã có 6.", ["D -> F", "7", "đã có 6"]);
-        stepTl.fromTo(".guard-arrow-seven", { opacity: 0, strokeDashoffset: 74 }, { opacity: 1, strokeDashoffset: 0, duration: dur(0.5), ease: "power2.out" }, 0);
-        stepTl.fromTo(".guard-candidate-seven", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 0.16);
-        stepTl.fromTo(".guard-slot-current", { scale: 0.96 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.22), ease: "power2.inOut" }, 0.48);
-        pulsePart3Nodes(stepTl, ["F"], 0.62, { toScale: 1.1, duration: 0.28 });
+        stepTl.fromTo(".guard-edge-seven", { opacity: 0 }, { opacity: 0.72, duration: dur(0.26), ease: "power2.out" }, 0);
+        stepTl.to(".guard-edge-seven .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(0.52), ease: "power2.out" }, 0.06);
+        stepTl.call(() => setGuardChipTranslate(".guard-candidate-seven", GUARD_CHIP_HOME.x, GUARD_CHIP_HOME.y), null, 0.3);
+        stepTl.fromTo(".guard-candidate-seven", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.4)" }, 0.4);
+        stepTl.fromTo(".guard-slot-current", { scale: 0.96 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.22), ease: "power2.inOut" }, 0.74);
+        pulsePart3Nodes(stepTl, ["F"], 0.88, { toScale: 1.1, duration: 0.28 });
         return stepTl;
       },
       () => {
         const stepTl = startGuardStep();
         setGuardCopy("Nếu dòng code vẫn gán thẳng Cost[F] = newCost, ứng viên 7 sẽ ghi đè lên 6. Ta vừa làm mất đường tốt hơn đã tìm được trước đó.", ["gán bừa", "7 ghi vào", "mất 6"]);
         stepTl.to(".route-best", { opacity: 0.18, duration: dur(0.28), ease: "power2.inOut" }, 0);
-        stepTl.call(() => setGuardCurrentSlot("6", false, true), null, 0.06);
-        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", { x: -86, y: 58 }, { x: 52, y: 14 }, 0.18, 0.82, "power3.inOut");
-        stepTl.fromTo(".guard-slot-current", { scale: 0.98 }, { scale: 1.03, yoyo: true, repeat: 1, duration: dur(0.26), ease: "sine.inOut" }, 0.86);
-        stepTl.fromTo(".guard-lost", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 0.94);
+        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", GUARD_CHIP_HOME, GUARD_SLOT_POS, 0.12, 0.66, "power3.inOut");
+        // 7 đè vào ô: ô lật sang đỏ, chip ẩn đi, lời nhắc "6 bị mất" nằm ngay dưới ô.
+        stepTl.call(() => setGuardCurrentSlot("7", true), null, 0.8);
+        stepTl.to(".guard-candidate-seven", { opacity: 0, duration: dur(0.16), ease: "power2.in" }, 0.8);
+        stepTl.fromTo(".guard-slot-current", { scale: 0.94 }, { scale: 1.06, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 0.84);
+        stepTl.fromTo(".guard-lost", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: dur(0.26), ease: "back.out(1.4)" }, 0.98);
         stepTl.call(() => {
           setNodeStates(overwrittenState, { focus: ["F"], wrong: ["F"], showNodeCosts: true });
           showMemoryPanel({ cost: { F: 7 }, visited: ["D"], danger: ["F"], amber: ["D"] });
-        }, null, 1.04);
-        pulsePart3Nodes(stepTl, ["F"], 1.14, { toScale: 1.16, duration: 0.32 });
+        }, null, 1.08);
+        pulsePart3Nodes(stepTl, ["F"], 1.18, { toScale: 1.16, duration: 0.32 });
         return stepTl;
       },
       () => {
@@ -4789,26 +4812,35 @@
           setNodeStates(testingFromDState, { focus: ["D", "F"], correct: ["A", "C", "B", "E"], showNodeCosts: true });
           showMemoryPanel({ cost: { F: 6 }, visited: ["D"], focus: ["F"], amber: ["D"] });
           showBestRoute(bestToF);
+          setGuardChipTranslate(".guard-candidate-seven", GUARD_CHIP_HOME.x, GUARD_CHIP_HOME.y);
         }, null, 0);
-        stepTl.to(".guard-slot-bad, .guard-lost", { opacity: 0, duration: dur(0.22), ease: "power2.in" }, 0);
-        stepTl.call(() => setGuardChipTranslate(".guard-candidate-seven", -86, 58), null, 0.04);
-        stepTl.set(".guard-candidate-seven", { opacity: 1 }, 0.04);
-        stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.32), ease: "back.out(1.35)" }, 0.08);
-        stepTl.fromTo(".guard-compare", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 0.34);
-        stepTl.fromTo(".guard-gate", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 0.52);
-        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", { x: -86, y: 58 }, { x: -18, y: 58 }, 0.66, 0.52, "power2.inOut");
-        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", { x: -18, y: 58 }, { x: -56, y: 58 }, 1.18, 0.26, "back.out(2.1)");
-        stepTl.fromTo(".guard-reject", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 1.28);
-        stepTl.fromTo(".guard-slot-current", { scale: 0.94 }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 1.36);
-        pulsePart3Nodes(stepTl, ["F"], 1.42, { toScale: 1.13, duration: 0.32 });
+        stepTl.to(".guard-lost", { opacity: 0, duration: dur(0.2), ease: "power2.in" }, 0);
+        stepTl.fromTo(".guard-slot-current", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: dur(0.3), ease: "back.out(1.35)" }, 0.06);
+        stepTl.fromTo(".guard-candidate-seven", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: dur(0.26), ease: "back.out(1.4)" }, 0.24);
+        // Lần này giữa đường có cổng so sánh: câu hỏi treo phía trên, thanh chặn đứng giữa.
+        stepTl.fromTo(".guard-compare", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.4)" }, 0.5);
+        stepTl.fromTo(".guard-gate", { opacity: 0, scaleY: 0.6, transformOrigin: "center center" }, { opacity: 1, scaleY: 1, duration: dur(0.28), ease: "back.out(1.4)" }, 0.66);
+        // 7 lao tới cổng, bị bật ngược lại, dấu X nhấn đúng khoảnh khắc va chạm.
+        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", GUARD_CHIP_HOME, { x: -44, y: GUARD_CHIP_HOME.y }, 0.92, 0.38, "power2.in");
+        animateGuardChipTranslate(stepTl, ".guard-candidate-seven", { x: -44, y: GUARD_CHIP_HOME.y }, GUARD_CHIP_HOME, 1.3, 0.34, "back.out(1.8)");
+        stepTl.fromTo(".guard-gate .part3-guard-gate-x", { opacity: 0, scale: 0.6, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.22), ease: "back.out(2)" }, 1.28);
+        stepTl.fromTo(".guard-reject", { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: dur(0.26), ease: "back.out(1.4)" }, 1.46);
+        stepTl.fromTo(".guard-slot-current", { scale: 0.96 }, { scale: 1.07, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 1.56);
+        pulsePart3Nodes(stepTl, ["F"], 1.64, { toScale: 1.13, duration: 0.32 });
         return stepTl;
       },
       () => {
-        el.stageShell.classList.remove("is-visual-proof");
-        setCameraView({ center: { x: 476, y: 352 }, scale: 0.96 });
+        const stepTl = startGuardStep();
         setGuardCopy("Sau khi bản chất đã rõ, dòng gán Cost[ke] không được đứng một mình nữa. Nó phải nằm trong điều kiện: chưa có cost, hoặc newCost nhỏ hơn cost hiện tại.", ["đổi code", "if", "chỉ ghi khi rẻ"]);
-        showPart3Code("relaxGuard", "Không ghi đè đường tốt", "chờ sửa");
-        setCodeActiveLines([20, 21, 22]);
+        // Dọn bảng trước khi mở lại panel code để hai lớp không đè nhau.
+        stepTl.to(".guard-decision-board, .guard-edge-six, .guard-edge-seven", { opacity: 0, duration: dur(0.3), ease: "power2.in" }, 0);
+        stepTl.call(() => {
+          el.stageShell.classList.remove("is-visual-proof");
+          setCameraView({ center: { x: 476, y: 352 }, scale: 0.96 });
+          showPart3Code("relaxGuard", "Không ghi đè đường tốt", "chờ sửa");
+          setCodeActiveLines([20]);
+        }, null, 0.36);
+        return stepTl;
       },
     ];
 
@@ -4825,11 +4857,12 @@
     queueNextGuardStep();
 
     gsap.set(".guard-edge-six, .guard-edge-seven", { opacity: 0 });
-    gsap.set(".guard-candidate-six, .guard-candidate-seven, .guard-slot-current, .guard-slot-bad, .guard-arrow-six, .guard-arrow-seven, .guard-compare, .guard-gate, .guard-reject, .guard-lost", {
+    gsap.set(".guard-candidate-six, .guard-candidate-seven, .guard-slot-current, .guard-compare, .guard-gate, .guard-reject, .guard-lost", {
       opacity: 0,
       transformOrigin: "center center",
     });
-    prepareSvgPathDraw(".guard-edge-six .part3-edge-trace-path, .guard-edge-seven .part3-edge-trace-path, .guard-arrow-six, .guard-arrow-seven");
+    gsap.set(".guard-gate .part3-guard-gate-x", { opacity: 0 });
+    prepareSvgPathDraw(".guard-edge-six .part3-edge-trace-path, .guard-edge-seven .part3-edge-trace-path");
     animatePart3SceneIntro(tl, 0.16);
     moveCameraOnTimeline(tl, part3CostSlotCamera.center, part3CostSlotCamera.scale, 0.2, 0.68);
     tl.fromTo(".guard-decision-board", { opacity: 0, scale: 0.9, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.44), ease: "back.out(1.35)" }, 0.52);
@@ -4942,7 +4975,8 @@
         setPrevCopy("Bây giờ quay lại đúng lúc E mở F. Khi gói 6 được nhận vào Cost[F], nó phải mang theo cửa vào: gói này đến từ E.", ["E -> F", "Cost[F]=6", "Prev[F]=E"]);
         stepTl.to(".prev-path-panel, .prev-route-f, .prev-route-k, .prev-parent-K, .prev-parent-rest, .prev-backtrack-cursor-shell", { opacity: 0, duration: dur(0.28), ease: "power2.in" }, 0);
         stepTl.to(".prev-parent-F", { opacity: 0, duration: dur(0.18), ease: "power2.in" }, 0);
-        moveCameraOnTimeline(stepTl, part2Cameras.middle.center, part2Cameras.middle.scale, 0.06, 0.64);
+        // Cùng góc máy với scene "Chỉ khi rẻ" để bảng cập nhật hiện lại đúng chỗ cũ.
+        moveCameraOnTimeline(stepTl, part3CostSlotCamera.center, part3CostSlotCamera.scale, 0.06, 0.64);
         stepTl.call(() => {
           setEdgeStates({ visible: visibleBeforeF, focus: [[["E", "F"]]], locked: [lockedToE], context: [part3AllEdges] });
           setNodeStates(beforeFState, { focus: ["E", "F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
@@ -4954,6 +4988,8 @@
           setNodeStates(afterFOnlyState, { focus: ["F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
         }, null, 1.6);
         stepTl.to(".prev-cost-empty, .prev-prev-empty", { opacity: 0, scale: 0.82, duration: dur(0.2), ease: "power2.in" }, 1.6);
+        // Gói đã được bảng nhận thì biến mất khỏi cạnh, nhường chỗ cho mũi tên Prev.
+        stepTl.to(".prev-good-bundle", { opacity: 0, scale: 0.84, duration: dur(0.22), ease: "power2.in" }, 1.62);
         stepTl.fromTo(".prev-cost-current, .prev-prev-current", { opacity: 0, scale: 0.76 }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.3), ease: "back.out(1.35)" }, 1.68);
         stepTl.fromTo(".prev-parent-F", { opacity: 0 }, { opacity: 1, duration: dur(0.22), ease: "power2.out" }, 1.78);
         stepTl.to(".prev-parent-F .part3-parent-arrow-path", { strokeDashoffset: 0, duration: dur(0.42), ease: "power2.out" }, 1.8);
@@ -4967,23 +5003,27 @@
         setNodeStates(afterFOnlyState, { focus: ["D", "F"], correct: ["A", "C", "B", "E"], target: ["K"], showNodeCosts: true });
         setPrevCopy("D đưa một đề xuất mới cho F. Nếu nhận đề xuất này, Cost[F] sẽ thành 7 và Prev[F] sẽ thành D. Nhưng đây mới chỉ là ứng viên, chưa được ghi.", ["ứng viên", "7 + D", "chưa ghi"]);
         stepTl.to(".prev-good-bundle", { opacity: 0, scale: 0.82, duration: dur(0.18), ease: "power2.in" }, 0);
-        stepTl.to(".prev-parent-F", { opacity: 0.28, duration: dur(0.22), ease: "power2.out" }, 0);
+        // Bảng đang giữ Cost/Prev rồi, mũi tên trên đồ thị tạm cất hẳn cho sạch hình.
+        stepTl.to(".prev-parent-F", { opacity: 0, duration: dur(0.22), ease: "power2.in" }, 0);
         stepTl.to(".prev-board-title-accept", { opacity: 0, duration: dur(0.16), ease: "power2.in" }, 0);
         stepTl.fromTo(".prev-board-title-reject", { opacity: 0, y: 5 }, { opacity: 1, y: 0, duration: dur(0.24), ease: "power2.out" }, 0.08);
         stepTl.fromTo(".prev-bad-bundle", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 1, duration: dur(0.24), ease: "back.out(1.35)" }, 0.12);
         animatePart3FlowChips(stepTl, ".prev-bad-bundle", 0.18, 0.86);
         stepTl.to(".prev-bad-bundle", { opacity: 0, scale: 0.78, duration: dur(0.18), ease: "power2.in" }, 1.18);
-        stepTl.fromTo(".prev-cost-reject-chip, .prev-prev-reject-chip", { opacity: 0, x: -34, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, x: 0, scale: 1, stagger: dur(0.08), duration: dur(0.28), ease: "back.out(1.35)" }, 0.96);
+        stepTl.fromTo(".prev-cost-reject-chip, .prev-prev-reject-chip", { opacity: 0, x: -78, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, x: -44, scale: 1, stagger: dur(0.08), duration: dur(0.28), ease: "back.out(1.35)" }, 0.96);
         return stepTl;
       },
       () => {
         const stepTl = startPrevStep();
         setPrevCopy("Bây giờ mới so sánh trước khi ghi. Vì 7 lớn hơn 6, đề xuất 7 + D bị chặn: Cost[F] vẫn là 6 và Prev[F] vẫn là E.", ["7 > 6", "chặn", "giữ 6/E"]);
         stepTl.fromTo(".prev-cost-reject-gate", { opacity: 0, scaleY: 0.5, transformOrigin: "center center" }, { opacity: 1, scaleY: 1, duration: dur(0.22), ease: "power2.out" }, 0.12);
-        stepTl.to(".prev-cost-reject-chip, .prev-prev-reject-chip", { x: -12, yoyo: true, repeat: 1, duration: dur(0.16), ease: "power2.inOut" }, 0.22);
-        stepTl.fromTo(".prev-board-lock", { opacity: 0, scale: 0.8, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 0.34);
-        stepTl.fromTo(".prev-cost-current", { scale: 0.94, transformOrigin: "center center" }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.22), ease: "power2.inOut" }, 0.46);
-        stepTl.fromTo(".prev-prev-current", { scale: 0.94, transformOrigin: "center center" }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 0.64);
+        // Đề xuất nhích về phía cổng rồi bị bật lại.
+        stepTl.to(".prev-cost-reject-chip, .prev-prev-reject-chip", { x: -24, yoyo: true, repeat: 1, duration: dur(0.18), ease: "power2.inOut" }, 0.24);
+        stepTl.fromTo(".prev-board-lock", { opacity: 0, scale: 0.8, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 0.44);
+        stepTl.fromTo(".prev-cost-current", { scale: 0.94, transformOrigin: "center center" }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.22), ease: "power2.inOut" }, 0.56);
+        stepTl.fromTo(".prev-prev-current", { scale: 0.94, transformOrigin: "center center" }, { scale: 1.08, yoyo: true, repeat: 1, duration: dur(0.24), ease: "power2.inOut" }, 0.72);
+        // Chốt xong, mũi tên Prev[F]=E quay lại trên đồ thị như cũ.
+        stepTl.to(".prev-parent-F", { opacity: 1, duration: dur(0.3), ease: "power2.out" }, 0.92);
         return stepTl;
       },
       () => {
