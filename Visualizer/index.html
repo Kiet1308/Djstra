@@ -14,7 +14,7 @@
       <header class="deck-topline">
         <span class="deck-mark" aria-hidden="true"></span>
         <span class="deck-mark-text">Nhóm 2</span>
-        <span class="deck-topline-right">Tìm đường ngắn nhất</span>
+        <span class="deck-topline-right">Thuyết trình tương tác</span>
       </header>
 
       <main class="slides" id="slides">
@@ -33,21 +33,23 @@
           </svg>
 
           <div class="title-stack">
-            <p class="title-eyebrow" id="titleEyebrow">Tìm con đường ngắn nhất</p>
+            <p class="title-eyebrow" id="titleEyebrow">Một câu hỏi quen thuộc</p>
             <h1 class="title-head" id="titleHead">
-              <span class="line">Phương Pháp</span>
-              <span class="line accent">Tìm Đường</span>
+              <span class="line">Đường nào</span>
+              <span class="line accent">ngắn nhất?</span>
             </h1>
             <p class="title-sub" id="titleSub">
-              Tự mình suy luận ra cách tìm con đường ngắn nhất từ A đến B,
-              trước khi ai đó gọi tên nó.
+              Google Maps trả lời nó trong một cái chớp mắt.
+              Hôm nay, chúng ta sẽ cùng tự tìm ra câu trả lời ấy.
             </p>
             <div class="title-cta" id="titleCta">
               <button class="btn btn-primary" id="startBtn" type="button">
                 Bắt đầu
                 <span class="btn-arrow" aria-hidden="true">&rarr;</span>
               </button>
-              <span class="title-byline">Nhóm 2 trình bày</span>
+              <span class="title-keys" aria-hidden="true">
+                <kbd>&larr;</kbd><kbd>&rarr;</kbd> để điều khiển
+              </span>
             </div>
           </div>
         </section>
@@ -58,7 +60,7 @@
             <div class="problem-copy">
               <p class="problem-index" id="problemIndex">Vấn đề</p>
               <h2 class="problem-head" id="problemHead">
-                Google Maps tìm đường<br />như thế nào?
+                Google Maps<br />tìm đường như thế nào?
               </h2>
               <p class="problem-lead" id="problemLead">
                 Bạn cần đi từ A đến B. Giữa hai điểm luôn có rất nhiều tuyến,
@@ -67,16 +69,25 @@
 
               <ul class="problem-points" id="problemPoints">
                 <li>
-                  <span class="point-key">Nhiều tuyến</span>
-                  <span class="point-val">Vô số cách đi từ A sang B</span>
+                  <span class="point-num">01</span>
+                  <div class="point-text">
+                    <span class="point-key">Rất nhiều tuyến</span>
+                    <span class="point-val">Giữa A và B có vô số cách đi</span>
+                  </div>
                 </li>
                 <li>
-                  <span class="point-key">Chi phí khác nhau</span>
-                  <span class="point-val">Thời gian, khoảng cách, tiền xăng</span>
+                  <span class="point-num">02</span>
+                  <div class="point-text">
+                    <span class="point-key">Mỗi tuyến một chi phí</span>
+                    <span class="point-val">Thời gian, quãng đường, tiền xăng&hellip;</span>
+                  </div>
                 </li>
                 <li>
-                  <span class="point-key">Mục tiêu</span>
-                  <span class="point-val">Chọn tuyến có chi phí nhỏ nhất</span>
+                  <span class="point-num">03</span>
+                  <div class="point-text">
+                    <span class="point-key">Mục tiêu</span>
+                    <span class="point-val">Chọn tuyến có tổng chi phí nhỏ nhất</span>
+                  </div>
                 </li>
               </ul>
 
@@ -117,15 +128,16 @@
                   </defs>
                   <g id="mapRoutes" class="map-routes"></g>
                   <g id="mapFlow" class="map-flow"></g>
+                  <g id="mapBadges" class="map-badges"></g>
                   <g id="mapPins" class="map-pins"></g>
                 </svg>
-                <span class="map-chip" id="mapChip" aria-hidden="true">
-                  <span class="map-chip-dot"></span>Tuyến nhanh nhất
+                <span class="map-chip is-more" id="mapChip" aria-hidden="true">
+                  <span class="map-chip-dot"></span>+ hàng nghìn tuyến khác chưa vẽ
                 </span>
               </div>
               <figcaption class="route-caption" id="routeCaption">
-                Cùng đi từ A đến B có rất nhiều tuyến. Tuyến xanh chỉ tốn
-                <strong>9 phút</strong>, nhưng làm sao tìm ra nó mà không phải thử hết?
+                Google chỉ ra tuyến <strong>9 phút</strong> gần như tức thì, giữa hàng nghìn
+                tuyến có thể đi. Làm thế nào nó biết, nếu không phải thử từng tuyến một?
               </figcaption>
             </figure>
           </div>

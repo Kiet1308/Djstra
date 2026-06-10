@@ -36,49 +36,168 @@
   }
 
   /* ---------------------------------------------------------------------------
-     Slide 1 background: a faint road network with one glowing shortest route.
-     Purely decorative, mirrors the visualizer's graph aesthetic.
+     Slide 1 background: a constellation-style network filling the whole
+     canvas. Three depth layers keep it rich but quiet: a faint curved web
+     (flight-map arcs, not straight wires), a scatter of twinkling dust dots,
+     and one glowing gradient route that sweeps from A to B under the title.
+     A radial mask sinks whatever sits directly behind the text.
   --------------------------------------------------------------------------- */
   function buildNetwork() {
+    const svg = $("#netBg");
     const edgeG = $("#netEdges");
     const routeG = $("#netRoute");
     const nodeG = $("#netNodes");
-    if (!edgeG || !routeG || !nodeG) return;
+    if (!svg || !edgeG || !routeG || !nodeG) return;
 
-    const nodes = [
-      { x: 120, y: 150 }, { x: 300, y: 90 }, { x: 470, y: 200 },
-      { x: 250, y: 320 }, { x: 90, y: 470 }, { x: 430, y: 430 },
-      { x: 640, y: 120 }, { x: 720, y: 330 }, { x: 590, y: 560 },
-      { x: 880, y: 220 }, { x: 980, y: 440 }, { x: 820, y: 620 },
-      { x: 1080, y: 180 }, { x: 1130, y: 560 }, { x: 1010, y: 90 },
-    ];
+    const defs = el("defs");
+    const grad = el("linearGradient", { id: "netRouteGrad", x1: "0", y1: "0", x2: "1", y2: "0" });
+    [["0%", "#2fcf86"], ["55%", "#42f2a1"], ["100%", "#9ef9d4"]].forEach(([offset, color]) => {
+      grad.appendChild(el("stop", { offset, "stop-color": color }));
+    });
+    defs.appendChild(grad);
+    svg.insertBefore(defs, svg.firstChild);
+
+    // Structural constellation. The route band sits low, cradling the title;
+    // top and side nodes keep the upper canvas inhabited.
+    const N = {
+      t1: { x: 120, y: 150 }, t2: { x: 300, y: 90 }, t3: { x: 470, y: 200 },
+      t4: { x: 640, y: 120 }, t5: { x: 880, y: 220 }, t6: { x: 1010, y: 90 },
+      t7: { x: 1090, y: 185 },
+      s1: { x: 155, y: 305 }, s2: { x: 1132, y: 330 },
+      m1: { x: 255, y: 478 }, m2: { x: 975, y: 445 },
+      A:  { x: 100, y: 545 },
+      r1: { x: 320, y: 612 }, r2: { x: 560, y: 642 }, r3: { x: 820, y: 592 },
+      B:  { x: 1105, y: 470 },
+      b1: { x: 205, y: 688 }, b2: { x: 455, y: 702 }, b3: { x: 705, y: 692 },
+      b4: { x: 935, y: 672 },
+    };
+    const faintNodes = new Set(["t1", "t2", "t3", "t4", "t5", "t6", "t7", "s1", "s2"]);
+    const hot = new Set(["A", "r1", "r2", "r3", "B"]);
     const edges = [
-      [0, 1], [1, 2], [0, 3], [3, 4], [3, 5], [2, 5], [1, 6],
-      [2, 6], [6, 7], [5, 8], [7, 8], [6, 9], [9, 10], [7, 10],
-      [8, 11], [10, 11], [9, 14], [9, 12], [12, 13], [10, 13], [14, 12],
+      ["t1", "t2"], ["t2", "t3"], ["t3", "t4"], ["t4", "t5"], ["t5", "t6"],
+      ["t5", "t7"], ["t6", "t7"], ["t1", "s1"], ["s1", "m1"], ["m1", "A"],
+      ["t7", "s2"], ["s2", "m2"], ["m2", "B"], ["A", "b1"], ["b1", "r1"],
+      ["r1", "b2"], ["b2", "r2"], ["r2", "b3"], ["b3", "r3"], ["r3", "b4"],
+      ["b4", "B"], ["m1", "r1"], ["m2", "r3"],
+      // Two long ghost arcs crossing behind the title (the mask all but
+      // erases their middles, so only their ends surface at the edges).
+      ["s1", "m2"], ["t4", "m1"],
     ];
-    const route = [4, 3, 5, 8, 11, 10, 13];
 
-    edges.forEach(([a, b]) => {
-      edgeG.appendChild(
-        el("path", { class: "net-edge", d: `M ${nodes[a].x} ${nodes[a].y} L ${nodes[b].x} ${nodes[b].y}` })
-      );
+    const curveD = (a, b, bow) => {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const k = len * bow;
+      const mx = (a.x + b.x) / 2 - (dy / len) * k;
+      const my = (a.y + b.y) / 2 + (dx / len) * k;
+      return `M ${a.x} ${a.y} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${b.x} ${b.y}`;
+    };
+
+    edges.forEach(([a, b], i) => {
+      edgeG.appendChild(el("path", { class: "net-edge", d: curveD(N[a], N[b], i % 2 ? 0.09 : -0.09) }));
     });
 
-    let routeD = `M ${nodes[route[0]].x} ${nodes[route[0]].y}`;
-    for (let i = 1; i < route.length; i++) {
-      routeD += ` L ${nodes[route[i]].x} ${nodes[route[i]].y}`;
+    // The hero route: one smooth catmull-rom arc through the low band.
+    const pts = ["A", "r1", "r2", "r3", "B"].map((k) => N[k]);
+    let routeD = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[Math.min(pts.length - 1, i + 2)];
+      routeD +=
+        ` C ${(p1.x + (p2.x - p0.x) / 6).toFixed(1)} ${(p1.y + (p2.y - p0.y) / 6).toFixed(1)}` +
+        ` ${(p2.x - (p3.x - p1.x) / 6).toFixed(1)} ${(p2.y - (p3.y - p1.y) / 6).toFixed(1)}` +
+        ` ${p2.x} ${p2.y}`;
     }
     routeG.appendChild(el("path", { class: "net-route-seg", id: "netRoutePath", d: routeD }));
+    const netFlow = el("circle", { class: "net-flow-dot", id: "netFlowDot", r: 4, cx: N.A.x, cy: N.A.y });
+    netFlow.style.opacity = "0";
+    routeG.appendChild(netFlow);
 
-    const hot = new Set(route);
-    nodes.forEach((n, i) => {
+    // Dust layer: tiny scattered points (deterministic spread) that keep the
+    // space behind and around the title alive without competing with it.
+    for (let i = 0; i < 26; i++) {
+      const x = ((i * 211 + 83) % 1180) + 10;
+      const y = ((i * 157 + 61) % 640) + 56;
+      nodeG.appendChild(el("circle", { class: "net-node is-dust", cx: x, cy: y, r: 1.6 + (i % 3) * 0.5 }));
+    }
+
+    Object.keys(N).forEach((key) => {
+      const n = N[key];
+      const isEnd = key === "A" || key === "B";
+      if (isEnd) {
+        nodeG.appendChild(el("circle", { class: "net-pulse" + (key === "B" ? " is-b" : ""), cx: n.x, cy: n.y, r: 11 }));
+      }
       nodeG.appendChild(
         el("circle", {
-          class: "net-node" + (hot.has(i) ? " is-hot" : ""),
+          class:
+            "net-node" +
+            (isEnd ? " is-end" + (key === "B" ? " is-b" : "") : "") +
+            (!isEnd && hot.has(key) ? " is-hot" : "") +
+            (faintNodes.has(key) ? " is-faint" : ""),
           cx: n.x,
           cy: n.y,
-          r: hot.has(i) ? 9 : 6,
+          r: isEnd ? 11 : hot.has(key) ? 8 : faintNodes.has(key) ? 5 : 6,
+        })
+      );
+      if (isEnd) {
+        const label = el("text", { class: "net-label" + (key === "B" ? " is-b" : ""), x: n.x, y: n.y - 26 });
+        label.textContent = key;
+        nodeG.appendChild(label);
+      }
+    });
+  }
+
+  /* Ambient life on slide 1: a light dot travelling the route, dust dots
+     twinkling. Killed when the slide is left, rebuilt when re-entered. */
+  let netFx = [];
+
+  function killNetFx() {
+    netFx.forEach((t) => t.kill());
+    netFx = [];
+    const dot = $("#netFlowDot");
+    if (dot) dot.style.opacity = "0";
+  }
+
+  function startNetFx(baseDelay) {
+    if (reduceMotion || !hasGsap) return;
+    const gsap = window.gsap;
+    killNetFx();
+
+    const arc = $("#netRoutePath");
+    const dot = $("#netFlowDot");
+    if (arc && dot) {
+      const len = arc.getTotalLength();
+      const proxy = { t: 0 };
+      netFx.push(
+        gsap.to(proxy, {
+          t: 1,
+          duration: 3.4,
+          ease: "power1.inOut",
+          repeat: -1,
+          repeatDelay: 1.4,
+          delay: baseDelay + 2.4,
+          onUpdate: () => {
+            const pt = arc.getPointAtLength(len * proxy.t);
+            dot.setAttribute("cx", pt.x);
+            dot.setAttribute("cy", pt.y);
+            dot.style.opacity = proxy.t > 0.02 && proxy.t < 0.98 ? "1" : "0";
+          },
+        })
+      );
+    }
+
+    overlay.querySelectorAll(".net-node.is-dust").forEach((d, i) => {
+      netFx.push(
+        gsap.to(d, {
+          opacity: 0.14 + ((i * 29) % 30) / 100,
+          duration: 1.8 + ((i * 53) % 22) / 10,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: (i * 0.41) % 2.2,
         })
       );
     });
@@ -94,6 +213,7 @@
   function buildRouteMap() {
     const routeG = $("#mapRoutes");
     const flowG = $("#mapFlow");
+    const badgeG = $("#mapBadges");
     const pinG = $("#mapPins");
     if (!routeG) return null;
 
@@ -113,6 +233,50 @@
       { d: best, cls: "is-best", id: "mr-best" },
     ].forEach((r) => {
       routeG.appendChild(el("path", { class: "map-route " + r.cls, id: r.id, d: r.d }));
+    });
+
+    // Google-Maps-style time badges, one per route. This is what makes the
+    // core sentence of the slide visible: every route has a different cost.
+    function badge(id, x, y, label, isBest) {
+      const g = el("g", { class: "route-badge" + (isBest ? " is-best" : ""), id, transform: `translate(${x} ${y})` });
+      const w = Math.round(label.length * 7.8) + 26;
+      g.appendChild(el("rect", { x: -w / 2, y: -14, width: w, height: 28, rx: 14 }));
+      const t = el("text", { class: "route-badge-text", y: 1 });
+      t.textContent = label;
+      g.appendChild(t);
+      badgeG.appendChild(g);
+      return g;
+    }
+    badge("badge-altUp", 240, 128, "12 phút", false);
+    badge("badge-altDown", 360, 352, "15 phút", false);
+    badge("badge-best", 268, 226, "9 phút", true);
+
+    // Hovering a route (or its badge) spotlights that pair and dims the rest,
+    // so the presenter can point at one option while talking about it.
+    const overlaySvg = $("#mapOverlay");
+    [
+      ["mr-altUp", "badge-altUp"],
+      ["mr-altDown", "badge-altDown"],
+      ["mr-best", "badge-best"],
+    ].forEach(([routeId, badgeId]) => {
+      const route = $("#" + routeId);
+      const bdg = $("#" + badgeId);
+      const hit = el("path", { class: "map-route-hit", d: route.getAttribute("d") });
+      routeG.appendChild(hit);
+      const on = () => {
+        overlaySvg.classList.add("has-focus");
+        route.classList.add("is-focus");
+        bdg.classList.add("is-focus");
+      };
+      const off = () => {
+        overlaySvg.classList.remove("has-focus");
+        route.classList.remove("is-focus");
+        bdg.classList.remove("is-focus");
+      };
+      [hit, bdg].forEach((target) => {
+        target.addEventListener("mouseenter", on);
+        target.addEventListener("mouseleave", off);
+      });
     });
 
     const flow = el("circle", { class: "map-flow-dot", id: "mapFlowDot", r: 5, cx: A.x, cy: A.y });
@@ -172,9 +336,12 @@
       if (routePath) {
         const len = routePath.getTotalLength();
         gsap.set(routePath, { strokeDasharray: len, strokeDashoffset: len });
-        gsap.to(routePath, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut", delay: at(0.3) });
+        gsap.to(routePath, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut", delay: at(0.5) });
       }
-      gsap.from("#introOverlay .net-node", { scale: 0, transformOrigin: "center", opacity: 0, duration: 0.5, stagger: 0.02, ease: "back.out(1.6)", delay: at(0.2) });
+      gsap.from("#introOverlay .net-node", { scale: 0, transformOrigin: "center", opacity: 0, duration: 0.5, stagger: 0.012, ease: "back.out(1.6)", delay: at(0.15) });
+      gsap.from("#introOverlay .net-edge", { opacity: 0, duration: 0.9, stagger: 0.02, delay: at(0.25) });
+      gsap.from("#introOverlay .net-label", { opacity: 0, y: 8, duration: 0.5, ease: "power3.out", delay: at(0.6) });
+      startNetFx(baseDelay);
     } else if (index === 1) {
       gsap.from("#introOverlay .problem-index", { x: -16, opacity: 0, duration: 0.5, ease: "power3.out", delay: at() });
       gsap.from("#introOverlay .problem-head", { y: 26, opacity: 0, duration: 0.6, ease: "power3.out", delay: at(0.06) });
@@ -183,30 +350,28 @@
       gsap.from("#introOverlay .problem-cta", { y: 14, opacity: 0, duration: 0.5, ease: "power3.out", delay: at(0.5) });
       gsap.from("#introOverlay .problem-figure", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out", delay: at(0.1) });
 
-      // Draw the alternates first, then the glowing best route, then drop the pins.
+      // Story order: drop the endpoints first (you know where you are and
+      // where you are going), then draw each route with its time badge, the
+      // glowing best one last, then admit there are thousands more.
+      gsap.from("#introOverlay .map-pin", { y: -18, opacity: 0, duration: 0.5, stagger: 0.12, ease: "back.out(2)", delay: at(0.4) });
+
       const routes = [
-        { sel: "#mr-altUp", dur: 0.8, delay: at(0.45) },
-        { sel: "#mr-altDown", dur: 0.8, delay: at(0.55) },
-        { sel: "#mr-best", dur: 1.0, delay: at(0.7) },
+        { sel: "#mr-altUp", dur: 0.7, delay: at(0.8), badge: "#badge-altUp", badgeAt: at(1.4) },
+        { sel: "#mr-altDown", dur: 0.7, delay: at(1.0), badge: "#badge-altDown", badgeAt: at(1.6) },
+        { sel: "#mr-best", dur: 1.0, delay: at(1.85), badge: "#badge-best", badgeAt: at(2.65) },
       ];
       routes.forEach((r) => {
         const path = $(r.sel);
         if (!path) return;
         const len = path.getTotalLength();
-        const baseDash = path.classList.contains("is-alt") ? path.getAttribute("stroke-dasharray") : null;
         gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
-        gsap.to(path, {
-          strokeDashoffset: 0,
-          duration: r.dur,
-          ease: "power2.out",
-          delay: r.delay,
-          onComplete: () => {
-            if (baseDash) path.setAttribute("stroke-dasharray", baseDash);
-          },
-        });
+        gsap.to(path, { strokeDashoffset: 0, duration: r.dur, ease: "power2.out", delay: r.delay });
+        const bdg = $(r.badge);
+        if (bdg) {
+          gsap.from(bdg, { scale: 0, transformOrigin: "50% 50%", duration: 0.45, ease: "back.out(2.2)", delay: r.badgeAt });
+        }
       });
-      gsap.from("#introOverlay .map-pin", { y: -18, opacity: 0, duration: 0.5, stagger: 0.12, ease: "back.out(2)", delay: at(1.1) });
-      gsap.from("#introOverlay .map-chip", { y: 10, opacity: 0, duration: 0.5, ease: "power3.out", delay: at(1.5) });
+      gsap.from("#introOverlay .map-chip", { y: 10, opacity: 0, duration: 0.5, ease: "power3.out", delay: at(3.0) });
 
       runFlow(baseDelay);
     }
@@ -234,7 +399,7 @@
       ease: "power1.inOut",
       repeat: -1,
       repeatDelay: 0.7,
-      delay: baseDelay + 1.9,
+      delay: baseDelay + 3.4,
       onUpdate: function () {
         const pt = arc.getPointAtLength(len * proxy.t);
         flow.setAttribute("cx", pt.x);
@@ -257,6 +422,7 @@
       const incoming = slides[index];
       const incomingDelay = 0.18;
       if (prev === 1) stopFlow();
+      if (prev === 0) killNetFx();
       gsap.killTweensOf(outgoing.querySelectorAll("*"));
       gsap.killTweensOf(incoming.querySelectorAll("*"));
       incoming.classList.add("is-active");
@@ -313,6 +479,7 @@
     if (dismissed) return;
     dismissed = true;
     if (flowTween) flowTween.kill();
+    killNetFx();
 
     const finish = () => {
       overlay.remove();
