@@ -5125,16 +5125,16 @@
     const tl = makeTimeline();
     // Replay chạy tự động một mạch, nhưng tốc độ thay đổi theo chương:
     // mở đầu chậm để khán giả bắt nhịp, các vòng giữa nhanh dần vì lặp lại
-    // cùng một khuôn, chậm hẳn lại ở khoảnh khắc gặp K, rồi thong thả khi
-    // lần ngược Prev ra đường đi cuối cùng.
+    // cùng một khuôn, chậm hẳn lại ở hai lượt cuối (chốt G trước rồi mới
+    // gặp K), rồi thong thả khi lần ngược Prev ra đường đi cuối cùng.
     const setReplaySpeed = (at, speed) => tl.call(() => tl.timeScale(speed), null, at);
     if (!prefersReducedMotion) {
       tl.timeScale(0.95);
       setReplaySpeed(3.04, 1.2); // vòng chốt C/B: luật vừa xem xong, tăng nhẹ
       setReplaySpeed(10.9, 1.5); // vòng E/D/F: cùng một nhịp, lướt nhanh
-      setReplaySpeed(19.9, 0.9); // gặp K: chậm lại để nhấn "min chính là đích"
-      setReplaySpeed(22.15, 1.15); // lần ngược Prev từng bước
-      setReplaySpeed(27.6, 0.95); // đảo chiều, vẽ đường cuối cùng
+      setReplaySpeed(19.9, 0.9); // lượt G rồi gặp K: chậm để nhấn "G rẻ hơn nên phải chốt trước, min sau mới là đích"
+      setReplaySpeed(25.35, 1.15); // lần ngược Prev từng bước
+      setReplaySpeed(30.8, 0.95); // đảo chiều, vẽ đường cuối cùng
     }
     const finalEdges = [
       ["A", "C"],
@@ -5175,6 +5175,7 @@
     const edgesAfterE = [...edgesAfterB, ...part2Edges.fromE];
     const edgesAfterD = [...edgesAfterE, ...part2Edges.fromD];
     const edgesAfterF = [...edgesAfterD, ["F", "K"]];
+    const edgesAfterG = [...edgesAfterF, ["G", "K"]];
     const treeAfterA = [
       ["A", "C"],
       ["A", "B"],
@@ -5236,6 +5237,12 @@
         visited: ["A", "C", "B", "E", "D", "F"],
         prev: { C: "A", B: "C", D: "C", E: "B", F: "E", G: "E", K: "F" },
         focus: ["K"],
+      },
+      afterG: {
+        cost: { A: 0, C: 2, B: 3, E: 4, D: 5, F: 6, G: 9, K: 10 },
+        visited: ["A", "C", "B", "E", "D", "F", "G"],
+        prev: { C: "A", B: "C", D: "C", E: "B", F: "E", G: "E", K: "F" },
+        focus: ["G"],
       },
     };
 
@@ -5307,15 +5314,16 @@
       // Extra moving update labels made this scene visually noisy.
     }
 
-    function flashReplayRejectTrace(at) {
+    function flashReplayRejectTrace(at, groupClass) {
+      const group = `.${groupClass}`;
       tl.fromTo(
-        ".replay-reject-trace",
+        group,
         { opacity: 0 },
         { opacity: 0.86, stagger: dur(0.06), duration: dur(0.18), ease: "power2.out", immediateRender: false },
         at,
       );
-      tl.to(".replay-reject-trace .part3-edge-trace-path", { strokeDashoffset: 0, stagger: dur(0.05), duration: dur(0.42), ease: "power2.out" }, at + 0.04);
-      tl.to(".replay-reject-trace", { opacity: 0, duration: dur(0.28), ease: "power2.in" }, at + 1.08);
+      tl.to(`${group} .part3-edge-trace-path`, { strokeDashoffset: 0, stagger: dur(0.05), duration: dur(0.42), ease: "power2.out" }, at + 0.04);
+      tl.to(group, { opacity: 0, duration: dur(0.28), ease: "power2.in" }, at + 1.08);
     }
 
     function revealReplayParent(selector, at) {
@@ -5337,8 +5345,10 @@
     drawPart3UpdateBundle({ from: "D", to: "F", cost: 7, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: 22 });
     drawPart3UpdateBundle({ from: "D", to: "G", cost: 12, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: -26 });
     drawPart3UpdateBundle({ from: "F", to: "K", cost: 10, parent: "F", className: "is-deferred replay-bundle replay-bundle-F", offset: -20 });
-    drawPart3EdgeTrace(["D", "F"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-trace-F", offset: 18 });
-    drawPart3EdgeTrace(["D", "G"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-trace-G", offset: -18 });
+    drawPart3UpdateBundle({ from: "G", to: "K", cost: 11, parent: "G", tone: "warn", className: "is-deferred replay-reject-bundle", offset: 20 });
+    drawPart3EdgeTrace(["D", "F"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-from-D", offset: 18 });
+    drawPart3EdgeTrace(["D", "G"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-from-D", offset: -18 });
+    drawPart3EdgeTrace(["G", "K"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-from-G", offset: 14 });
     drawPart3ParentArrow("K", "F", { className: "is-deferred replay-parent replay-parent-K" });
     drawPart3ParentArrow("F", "E", { className: "is-deferred replay-parent replay-parent-F" });
     drawPart3ParentArrow("E", "B", { className: "is-deferred replay-parent replay-parent-E" });
@@ -5573,7 +5583,7 @@
       });
     }, null, 15.38);
     revealEdges(part2Edges.fromD, 15.46);
-    flashReplayRejectTrace(15.58);
+    flashReplayRejectTrace(15.58, "replay-reject-from-D");
     animateReplayBundles(".replay-reject-bundle", 15.52, 0.96);
     pulsePart3Nodes(tl, ["F", "G"], 16.18, { toScale: 1.08, stagger: 0.08, duration: 0.24 });
 
@@ -5618,97 +5628,143 @@
     revealNodes(["K"], 18.62);
     animateReplayBundles(".replay-bundle-F", 18.56, 0.92);
 
+    // Lượt 7: K đã có Cost 10 nhưng G mới là min (9 < 10) — vòng lặp phải chốt
+    // G trước, thử nốt đường tới K qua G (9 + 2 = 11, không rẻ hơn nên bị chặn),
+    // rồi lượt sau min mới đúng là K.
     tl.call(() => {
       applyReplayFrame({
         lines: [10],
         state: part2States.afterF,
         visible: edgesAfterF,
         locked: treeAfterF,
-        focus: ["K"],
+        focus: ["G"],
         target: ["K"],
-        memoryState: memory.afterF,
-        metrics: ["lượt 7", "min = K", "đã tới đích"],
+        // Tô cả K:10 để người xem tự bắt cặp phép so: G 9 thắng K 10.
+        memoryState: { ...memory.afterF, focus: ["G"], amber: ["K:10"] },
+        metrics: ["lượt 7", "min = G", "9 < 10, chưa tới K"],
       });
     }, null, 20.0);
-    moveReplayProbe("K", 20.1, 0.46);
+    moveReplayProbe("G", 20.1, 0.42);
     tl.call(() => {
       applyReplayFrame({
-        lines: [16],
-        state: part2States.afterF,
+        lines: [17],
+        state: part2States.afterG,
         visible: edgesAfterF,
+        locked: treeAfterF,
+        focus: ["G"],
+        target: ["K"],
+        memoryState: memory.afterG,
+        metrics: ["G không phải K", "Visited[G]", "thử kề G"],
+      });
+    }, null, 20.86);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [21],
+        state: part2States.afterG,
+        visible: edgesAfterG,
+        locked: treeAfterF,
+        context: treeAfterF,
+        focus: ["G", "K"],
+        target: ["K"],
+        memoryState: { ...memory.afterG, danger: ["K:10"] },
+        metrics: ["mở kề G", "9 + 2 = 11 bị chặn", "K giữ Prev = F"],
+      });
+    }, null, 21.5);
+    revealEdges([["G", "K"]], 21.58);
+    flashReplayRejectTrace(21.66, "replay-reject-from-G");
+    pulsePart3Nodes(tl, ["K"], 22.3, { toScale: 1.08, duration: 0.24 });
+
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [10],
+        state: part2States.afterG,
+        visible: edgesAfterG,
         locked: treeAfterF,
         focus: ["K"],
         target: ["K"],
-        memoryState: memory.afterF,
+        memoryState: { ...memory.afterG, focus: ["K"] },
+        metrics: ["lượt 8", "min = K", "đã tới đích"],
+      });
+    }, null, 23.2);
+    moveReplayProbe("K", 23.3, 0.46);
+    tl.call(() => {
+      applyReplayFrame({
+        lines: [16],
+        state: part2States.afterG,
+        visible: edgesAfterG,
+        locked: treeAfterF,
+        focus: ["K"],
+        target: ["K"],
+        memoryState: { ...memory.afterG, focus: ["K"] },
         metrics: ["min == end", "break", "không mở thêm"],
         codeContext: 3,
       });
-    }, null, 20.88);
-    pulsePart3Nodes(tl, ["K"], 21.0, { toScale: 1.16, duration: 0.32 });
+    }, null, 24.08);
+    pulsePart3Nodes(tl, ["K"], 24.2, { toScale: 1.16, duration: 0.32 });
 
-    moveCameraOnTimeline(tl, part2Cameras.full.center, part2Cameras.full.scale, 21.32, 0.92);
-    tl.to(".replay-probe-shell, .replay-bundle, .replay-reject-bundle", { opacity: 0, duration: dur(0.24), ease: "power2.in" }, 21.22);
+    moveCameraOnTimeline(tl, part2Cameras.full.center, part2Cameras.full.scale, 24.52, 0.92);
+    tl.to(".replay-probe-shell, .replay-bundle, .replay-reject-bundle", { opacity: 0, duration: dur(0.24), ease: "power2.in" }, 24.42);
     tl.call(() => {
       applyReplayFrame({
         lines: [27],
-        state: part2States.afterF,
-        visible: edgesAfterF,
+        state: part2States.afterG,
+        visible: edgesAfterG,
         locked: finalEdges,
         context: treeAfterF,
         focus: ["K"],
         target: ["K"],
-        memoryState: memory.afterF,
+        memoryState: { ...memory.afterG, focus: ["K"] },
         metrics: ["return", "Cost[K]=10", "Prev để lần ngược"],
         codeContext: 4,
       });
-    }, null, 21.66);
-    tl.fromTo(".replay-backtrack-strip", { opacity: 0, y: 10, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.34), ease: "power2.out" }, 21.88);
-    tl.fromTo(".replay-backtrack-cursor-shell", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 21.98);
+    }, null, 24.86);
+    tl.fromTo(".replay-backtrack-strip", { opacity: 0, y: 10, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.34), ease: "power2.out" }, 25.08);
+    tl.fromTo(".replay-backtrack-cursor-shell", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 25.18);
 
-    revealReplayParent(".replay-parent-K", 22.22);
-    tl.fromTo(".prev-chain-node-K, .prev-chain-link-F, .prev-chain-node-F", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 22.28);
-    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.F.x} ${nodes.F.y})` }, duration: dur(0.86), ease: "power2.inOut" }, 22.42);
-    pulsePart3Nodes(tl, ["K", "F"], 22.48, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+    revealReplayParent(".replay-parent-K", 25.42);
+    tl.fromTo(".prev-chain-node-K, .prev-chain-link-F, .prev-chain-node-F", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 25.48);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.F.x} ${nodes.F.y})` }, duration: dur(0.86), ease: "power2.inOut" }, 25.62);
+    pulsePart3Nodes(tl, ["K", "F"], 25.68, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
 
-    revealReplayParent(".replay-parent-F", 23.34);
-    tl.fromTo(".prev-chain-link-E, .prev-chain-node-E", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 23.42);
-    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.E.x} ${nodes.E.y})` }, duration: dur(0.86), ease: "power2.inOut" }, 23.52);
-    pulsePart3Nodes(tl, ["F", "E"], 23.58, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+    revealReplayParent(".replay-parent-F", 26.54);
+    tl.fromTo(".prev-chain-link-E, .prev-chain-node-E", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 26.62);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.E.x} ${nodes.E.y})` }, duration: dur(0.86), ease: "power2.inOut" }, 26.72);
+    pulsePart3Nodes(tl, ["F", "E"], 26.78, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
 
-    revealReplayParent(".replay-parent-E", 24.46);
-    tl.fromTo(".prev-chain-link-B, .prev-chain-node-B", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 24.54);
-    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.B.x} ${nodes.B.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 24.64);
-    pulsePart3Nodes(tl, ["E", "B"], 24.7, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+    revealReplayParent(".replay-parent-E", 27.66);
+    tl.fromTo(".prev-chain-link-B, .prev-chain-node-B", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 27.74);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.B.x} ${nodes.B.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 27.84);
+    pulsePart3Nodes(tl, ["E", "B"], 27.9, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
 
-    revealReplayParent(".replay-parent-B", 25.48);
-    tl.fromTo(".prev-chain-link-C, .prev-chain-node-C", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 25.56);
-    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.C.x} ${nodes.C.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 25.66);
-    pulsePart3Nodes(tl, ["B", "C"], 25.72, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+    revealReplayParent(".replay-parent-B", 28.68);
+    tl.fromTo(".prev-chain-link-C, .prev-chain-node-C", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 28.76);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.C.x} ${nodes.C.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 28.86);
+    pulsePart3Nodes(tl, ["B", "C"], 28.92, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
 
-    revealReplayParent(".replay-parent-C", 26.5);
-    tl.fromTo(".prev-chain-link-A, .prev-chain-node-A", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 26.58);
-    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.A.x} ${nodes.A.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 26.68);
-    pulsePart3Nodes(tl, ["C", "A"], 26.74, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
+    revealReplayParent(".replay-parent-C", 29.7);
+    tl.fromTo(".prev-chain-link-A, .prev-chain-node-A", { opacity: 0, scale: 0.78, transformOrigin: "center center" }, { opacity: 1, scale: 1, stagger: dur(0.08), duration: dur(0.24), ease: "back.out(1.35)" }, 29.78);
+    tl.to(".part3-backtrack-cursor", { attr: { transform: `translate(${nodes.A.x} ${nodes.A.y})` }, duration: dur(0.78), ease: "power2.inOut" }, 29.88);
+    pulsePart3Nodes(tl, ["C", "A"], 29.94, { toScale: 1.1, stagger: 0.18, duration: 0.26 });
 
     tl.call(() => {
       applyReplayFrame({
         lines: [27],
-        state: part2States.afterF,
-        visible: edgesAfterF,
+        state: part2States.afterG,
+        visible: edgesAfterG,
         locked: finalEdges,
         context: treeAfterF,
         focus: ["A", "C", "B", "E", "F", "K"],
         target: ["K"],
         correct: ["A", "C", "B", "E", "F"],
-        memoryState: { ...memory.afterF, focus: ["K"] },
+        memoryState: { ...memory.afterG, focus: ["K"] },
         metrics: ["đảo chiều", "A -> ... -> K", "đường cuối"],
         codeContext: 4,
       });
-    }, null, 27.7);
-    tl.to(".part3-prev-chain-back", { opacity: 0.18, duration: dur(0.24), ease: "power2.inOut" }, 27.72);
-    tl.fromTo(".part3-prev-chain-final", { opacity: 0, y: 8, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.36), ease: "power2.out" }, 27.82);
-    tl.fromTo(".replay-final-trace", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 27.9);
-    tl.to(".replay-final-trace .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(1.18), ease: "power2.out" }, 27.98);
+    }, null, 30.9);
+    tl.to(".part3-prev-chain-back", { opacity: 0.18, duration: dur(0.24), ease: "power2.inOut" }, 30.92);
+    tl.fromTo(".part3-prev-chain-final", { opacity: 0, y: 8, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.36), ease: "power2.out" }, 31.02);
+    tl.fromTo(".replay-final-trace", { opacity: 0 }, { opacity: 1, duration: dur(0.24), ease: "power2.out" }, 31.1);
+    tl.to(".replay-final-trace .part3-edge-trace-path", { strokeDashoffset: 0, duration: dur(1.18), ease: "power2.out" }, 31.18);
     return tl;
   }
 
