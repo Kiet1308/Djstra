@@ -5345,7 +5345,7 @@
     drawPart3UpdateBundle({ from: "D", to: "F", cost: 7, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: 22 });
     drawPart3UpdateBundle({ from: "D", to: "G", cost: 12, parent: "D", tone: "warn", className: "is-deferred replay-reject-bundle", offset: -26 });
     drawPart3UpdateBundle({ from: "F", to: "K", cost: 10, parent: "F", className: "is-deferred replay-bundle replay-bundle-F", offset: -20 });
-    drawPart3UpdateBundle({ from: "G", to: "K", cost: 11, parent: "G", tone: "warn", className: "is-deferred replay-reject-bundle", offset: 20 });
+    drawPart3UpdateBundle({ from: "G", to: "K", cost: 11, parent: "G", tone: "warn", className: "is-deferred replay-reject-bundle replay-reject-bundle-G", offset: 20 });
     drawPart3EdgeTrace(["D", "F"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-from-D", offset: 18 });
     drawPart3EdgeTrace(["D", "G"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-from-D", offset: -18 });
     drawPart3EdgeTrace(["G", "K"], { tone: "warn", className: "is-deferred replay-reject-trace replay-reject-from-G", offset: 14 });
@@ -5672,6 +5672,12 @@
     }, null, 21.5);
     revealEdges([["G", "K"]], 21.58);
     flashReplayRejectTrace(21.66, "replay-reject-from-G");
+    // Các bundle khác của replay bị tắt cho đỡ rối, nhưng metric strip lại bị
+    // ẩn ở chế độ code nên phép tính "qua G = 11" không còn kênh nào tới mắt
+    // người xem — riêng khoảnh khắc này cho bundle bay tới K để thấy ứng viên
+    // 11 đến gõ cửa ô đang giữ 10 rồi bị từ chối.
+    animatePart3FlowChips(tl, ".replay-reject-bundle-G", 21.58, 0.7);
+    tl.to(".replay-reject-bundle-G", { opacity: 0, duration: dur(0.24), ease: "power2.in" }, 22.92);
     pulsePart3Nodes(tl, ["K"], 22.3, { toScale: 1.08, duration: 0.24 });
 
     tl.call(() => {
@@ -5718,6 +5724,9 @@
         codeContext: 4,
       });
     }, null, 24.86);
+    // Nhãn trọng số "7" của cạnh A-D nằm ngay dưới hộp lần ngược Prev — ẩn đi
+    // khi hộp hiện (resetVisualState trả opacity về 1 lúc đổi scene).
+    tl.to('.edge-label-group[data-edge="A:D"]', { opacity: 0, duration: dur(0.24), ease: "power2.out" }, 25.0);
     tl.fromTo(".replay-backtrack-strip", { opacity: 0, y: 10, transformOrigin: "center center" }, { opacity: 1, y: 0, duration: dur(0.34), ease: "power2.out" }, 25.08);
     tl.fromTo(".replay-backtrack-cursor-shell", { opacity: 0, scale: 0.84, transformOrigin: "center center" }, { opacity: 1, scale: 1, duration: dur(0.28), ease: "back.out(1.35)" }, 25.18);
 
