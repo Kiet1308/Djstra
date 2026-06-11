@@ -1,0 +1,6 @@
+fe_oa_7ae16324e2afd94c4f8c07a85efb0a45a2f14b3bd4a7a9e2
+# screenshot tooling artifacts (chrome profile + PNG outputs ~200MB)
+.shots/*
+!.shots/shot.js
+!.shots/sweep.js
+!.shots/get-fonts.js

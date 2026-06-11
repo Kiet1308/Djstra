@@ -100,7 +100,7 @@ NganNhat(map,start,end) {
     Cost[start] = 0
 
     // Mục tiêu là chốt hết hoặc tìm được đích
-    while (1) { // cứ while true trước
+    while (true) { // cứ while true trước
         if Chốt hết break;
         if Tìm được đích break;
 

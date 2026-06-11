@@ -3,546 +3,79 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Visualizer Phần 1 - Tìm đường ngắn nhất</title>
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./intro.css" />
+    <title>Đường nào ngắn nhất? — Visualizer</title>
+    <link rel="stylesheet" href="./styles/fonts.css" />
+    <link rel="stylesheet" href="./styles/tokens.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/chrome.css" />
+    <link rel="stylesheet" href="./styles/stage.css" />
+    <link rel="stylesheet" href="./styles/panels.css" />
+    <link rel="stylesheet" href="./styles/intro.css" />
   </head>
   <body>
-    <div class="deck" id="introOverlay" role="dialog" aria-modal="true" aria-label="Phần dẫn nhập">
-      <div class="deck-grain" aria-hidden="true"></div>
+    <div class="app" id="app">
+      <!-- Sân khấu -->
+      <section class="stage" aria-label="Sân khấu minh họa">
+        <svg id="stageSvg" class="stage-svg" viewBox="0 0 1000 640" role="img" aria-label="Đồ thị minh họa các tuyến đường">
+          <g id="cameraLayer">
+            <g id="edgeLayer"></g>
+            <g id="routeLayer"></g>
+            <g id="edgeLabelLayer"></g>
+            <g id="nodeLayer"></g>
+            <g id="badgeLayer"></g>
+          </g>
+          <g id="annotationLayer"></g>
+        </svg>
+        <div class="stage-float" id="stageFloat"></div>
+      </section>
 
-      <header class="deck-topline">
-        <span class="deck-mark" aria-hidden="true"></span>
-        <span class="deck-mark-text">Nhóm 2</span>
-        <span class="deck-topline-right">Thuyết trình tương tác</span>
+      <!-- Đầu trang: tiêu đề scene + chuyển phần -->
+      <header class="head">
+        <div class="scene-heading">
+          <p class="kicker"><span class="part-no" id="partNo">Phần 1</span><span id="sceneKicker"></span></p>
+          <h1 class="scene-title" id="sceneTitle"></h1>
+        </div>
+        <nav class="part-switcher" id="partSwitcher" aria-label="Chọn phần"></nav>
       </header>
 
-      <main class="slides" id="slides">
-        <!-- ============ SLIDE 1: TITLE ============ -->
-        <section class="slide slide-title is-active" id="intro-slide-1" aria-label="Trang tiêu đề">
-          <svg
-            class="net-bg"
-            id="netBg"
-            viewBox="0 0 1200 760"
-            preserveAspectRatio="xMidYMid slice"
-            aria-hidden="true"
-          >
-            <g class="net-edges" id="netEdges"></g>
-            <g class="net-route" id="netRoute"></g>
-            <g class="net-nodes" id="netNodes"></g>
-          </svg>
+      <!-- Số liệu minh họa (không aria-live: cập nhật quá dày khi animation chạy) -->
+      <div class="metrics is-empty" id="metrics"></div>
 
-          <div class="title-stack">
-            <p class="title-eyebrow" id="titleEyebrow">Một câu hỏi quen thuộc</p>
-            <h1 class="title-head" id="titleHead">
-              <span class="line">Đường nào</span>
-              <span class="line accent">ngắn nhất?</span>
-            </h1>
-            <p class="title-sub" id="titleSub">
-              Google Maps trả lời nó trong một cái chớp mắt.
-              Hôm nay, chúng ta sẽ cùng tự tìm ra câu trả lời ấy.
-            </p>
-            <div class="title-cta" id="titleCta">
-              <button class="btn btn-primary" id="startBtn" type="button">
-                Bắt đầu
-                <span class="btn-arrow" aria-hidden="true">&rarr;</span>
-              </button>
-              <span class="title-keys" aria-hidden="true">
-                <kbd>&larr;</kbd><kbd>&rarr;</kbd> để điều khiển
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <!-- ============ SLIDE 2: PROBLEM ============ -->
-        <section class="slide slide-problem" id="intro-slide-2" aria-label="Nêu vấn đề" aria-hidden="true">
-          <div class="problem-grid">
-            <div class="problem-copy">
-              <p class="problem-index" id="problemIndex">Vấn đề</p>
-              <h2 class="problem-head" id="problemHead">
-                Google Maps<br />tìm đường như thế nào?
-              </h2>
-              <p class="problem-lead" id="problemLead">
-                Bạn cần đi từ A đến B. Giữa hai điểm luôn có rất nhiều tuyến,
-                và mỗi tuyến tốn một mức khác nhau.
-              </p>
-
-              <ul class="problem-points" id="problemPoints">
-                <li>
-                  <span class="point-num">01</span>
-                  <div class="point-text">
-                    <span class="point-key">Rất nhiều tuyến</span>
-                    <span class="point-val">Giữa A và B có vô số cách đi</span>
-                  </div>
-                </li>
-                <li>
-                  <span class="point-num">02</span>
-                  <div class="point-text">
-                    <span class="point-key">Mỗi tuyến một chi phí</span>
-                    <span class="point-val">Thời gian, quãng đường, tiền xăng&hellip;</span>
-                  </div>
-                </li>
-                <li>
-                  <span class="point-num">03</span>
-                  <div class="point-text">
-                    <span class="point-key">Mục tiêu</span>
-                    <span class="point-val">Chọn tuyến có tổng chi phí nhỏ nhất</span>
-                  </div>
-                </li>
-              </ul>
-
-              <div class="problem-cta" id="problemCta">
-                <button class="btn btn-primary" id="enterBtn" type="button">
-                  Bắt đầu tìm lời giải
-                  <span class="btn-arrow" aria-hidden="true">&rarr;</span>
-                </button>
-                <button class="btn btn-ghost" id="backBtn" type="button">Quay lại</button>
-              </div>
-            </div>
-
-            <figure class="problem-figure" aria-label="Bản đồ với tuyến đường từ A đến B">
-              <div class="map-frame">
-                <img
-                  class="map-img"
-                  src="./assets/map-base.png"
-                  alt="Bản đồ thành phố với nhiều tuyến đường nối điểm A và điểm B"
-                  width="620"
-                  height="500"
-                  draggable="false"
-                />
-                <svg
-                  class="map-overlay"
-                  id="mapOverlay"
-                  viewBox="0 0 620 500"
-                  role="img"
-                  aria-label="Các tuyến đường khả dĩ từ A đến B trên bản đồ"
-                >
-                  <defs>
-                    <filter id="routeGlow" x="-30%" y="-30%" width="160%" height="160%">
-                      <feGaussianBlur stdDeviation="4" result="b" />
-                      <feMerge>
-                        <feMergeNode in="b" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <g id="mapRoutes" class="map-routes"></g>
-                  <g id="mapFlow" class="map-flow"></g>
-                  <g id="mapBadges" class="map-badges"></g>
-                  <g id="mapPins" class="map-pins"></g>
-                </svg>
-                <span class="map-chip is-more" id="mapChip" aria-hidden="true">
-                  <span class="map-chip-dot"></span>+ hàng nghìn tuyến khác chưa vẽ
-                </span>
-              </div>
-              <figcaption class="route-caption" id="routeCaption">
-                Google chỉ ra tuyến <strong>9 phút</strong> gần như tức thì, giữa hàng nghìn
-                tuyến có thể đi. Làm thế nào nó biết, nếu không phải thử từng tuyến một?
-              </figcaption>
-            </figure>
-          </div>
-        </section>
-      </main>
-
-      <footer class="deck-controls">
-        <button class="ctrl" id="prevSlide" type="button" aria-label="Trang trước">&larr;</button>
-        <div class="deck-dots" id="deckDots" aria-hidden="true"></div>
-        <button class="ctrl ctrl-next" id="nextSlide" type="button">
-          Tiếp <span aria-hidden="true">&rarr;</span>
-        </button>
-      </footer>
-    </div>
-
-    <div class="app-shell">
-      <header class="topbar" aria-label="Thanh điều hướng visualizer">
-        <div class="brand-block">
-          <span class="brand-mark" aria-hidden="true"></span>
-          <div>
-            <p class="brand-kicker" id="brandKicker">Phần 1</p>
-            <h1 id="brandTitle">Google Maps tìm đường như thế nào?</h1>
-          </div>
-        </div>
-
-        <div class="topbar-navigation">
-          <nav class="part-switcher" id="partSwitcher" aria-label="Chọn phần visualizer"></nav>
-          <nav class="scene-tabs" id="sceneTabs" aria-label="Các cảnh thuyết trình"></nav>
-        </div>
-      </header>
-
-      <main class="presenter-grid">
-        <section class="stage-shell" aria-label="Visualizer bản đồ và graph">
-          <div class="stage-glow" aria-hidden="true"></div>
-          <svg
-            id="graphSvg"
-            class="graph-svg"
-            viewBox="0 0 1000 640"
-            role="img"
-            aria-label="Bản đồ graph minh họa các tuyến đường từ A đến B"
-          >
-            <defs>
-              <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="6" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <filter id="tightGlow" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="2.5" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <g id="cameraLayer" class="camera-layer">
-              <g id="mapTexture" class="map-texture"></g>
-              <g id="baseEdges" class="base-edges"></g>
-              <g id="routeCloud" class="route-cloud"></g>
-              <g id="activeRouteLayer" class="active-route-layer"></g>
-              <g id="cutLayer" class="cut-layer"></g>
-              <g id="edgeLabels" class="edge-label-layer"></g>
-              <g id="nodeLayer" class="node-layer"></g>
-            </g>
-            <g id="annotationLayer" class="annotation-layer"></g>
-          </svg>
-
-          <div class="stage-copy">
-            <p class="scene-kicker" id="sceneKicker"></p>
-            <h2 id="sceneTitle"></h2>
-            <p id="sceneBody"></p>
-          </div>
-
-          <div class="metric-strip" aria-label="Số liệu minh họa" aria-live="polite">
-            <div>
-              <span class="metric-label" id="currentRouteMetricLabel">Đang thử</span>
-              <strong id="currentRouteLabel">-</strong>
-            </div>
-            <div>
-              <span class="metric-label" id="currentCostMetricLabel">Chi phí</span>
-              <strong id="currentCostLabel">-</strong>
-            </div>
-            <div>
-              <span class="metric-label" id="bestCostMetricLabel">Tốt nhất</span>
-              <strong id="bestCostLabel">-</strong>
-            </div>
-          </div>
-
-          <div class="workbench" id="workbench" aria-hidden="true">
-            <div class="workbench-head">
-              <div>
-                <p class="panel-kicker" id="workbenchKicker">Khối lượng việc</p>
-                <h3 id="workbenchTitle">Các tuyến phải xét</h3>
-              </div>
-              <strong id="workbenchStatus">0/0</strong>
-            </div>
-            <div class="workload-progress" aria-hidden="true">
-              <span id="workloadProgressFill"></span>
-            </div>
-            <div class="workload-grid" id="workloadGrid" aria-label="Mỗi ô là một tuyến đường"></div>
-            <div class="workload-compare" id="workloadCompare" aria-hidden="true">
-              <div class="compare-row">
-                <span>Thử tất cả</span>
-                <div><i id="bruteBar"></i></div>
-                <strong id="bruteSegmentsLabel">0 đoạn</strong>
-              </div>
-              <div class="compare-row is-pruned">
-                <span>Cắt nhánh</span>
-                <div><i id="prunedBar"></i></div>
-                <strong id="prunedSegmentsLabel">0 đoạn</strong>
-              </div>
-            </div>
-          </div>
-
-          <div class="prune-lens" id="pruneLens" aria-hidden="true" data-state="walk">
-            <div class="prune-lens-head">
-              <p class="panel-kicker">Một tuyến đang thử</p>
-              <strong id="pruneDecision">Tiếp tục</strong>
-            </div>
-            <div class="prune-equation">
-              <div>
-                <span>Chi phí đang đi</span>
-                <strong id="pruneCurrentCost">0</strong>
-              </div>
-              <em id="pruneOperator">&le;</em>
-              <div>
-                <span>Mốc hiện tại</span>
-                <strong id="pruneBestCost">16</strong>
-              </div>
-            </div>
-            <div class="prune-route-line">
-              <span id="prunePrefix">A</span>
-              <i></i>
-              <span id="pruneRemaining">B</span>
-            </div>
-            <p id="pruneReason">Chưa vượt mốc tốt nhất, tuyến này vẫn được đi tiếp.</p>
-          </div>
-
-          <div class="comparison-panel" id="comparisonPanel" aria-hidden="true">
-            <div class="comparison-col">
-              <span>Thử tất cả</span>
-              <strong id="bruteCount">0</strong>
-              <p>Đi đến cuối rất nhiều tuyến rồi mới so sánh.</p>
-            </div>
-            <div class="comparison-col is-better">
-              <span>Cắt nhánh</span>
-              <strong id="pruneCount">0</strong>
-              <p>Dừng sớm khi chi phí đã vượt đường tốt nhất.</p>
-            </div>
-            <div class="comparison-col is-next">
-              <span>Điểm còn thiếu</span>
-              <strong>?</strong>
-              <p>Ta vẫn đang thử đường. Cần một cách nghĩ khác.</p>
-            </div>
-          </div>
-
-          <div class="code-panel" id="codePanel" aria-hidden="true">
-            <div class="code-panel-head">
-              <div>
-                <p class="panel-kicker">Mã giả</p>
-                <h3 id="codePanelTitle">Xây từng dòng</h3>
-              </div>
-              <strong id="codePanelStatus">nháp</strong>
-            </div>
-            <pre class="code-block" id="codeBlock"></pre>
-            <p id="codeNote"></p>
-          </div>
-
-          <div class="memory-panel" id="memoryPanel" aria-hidden="true">
-            <div class="memory-rail">
-              <span>Cost</span>
-              <div id="costMemory"></div>
-            </div>
-            <div class="memory-rail">
-              <span>Visited</span>
-              <div id="visitedMemory"></div>
-            </div>
-            <div class="memory-rail">
-              <span>Prev</span>
-              <div id="prevMemory"></div>
-            </div>
-          </div>
-
-          <div class="part4-workspace" id="part4Workspace" aria-hidden="true">
-            <section class="part4-view part4-complexity-view" id="part4ComplexityView" aria-label="Phần 4 độ phức tạp">
-              <aside class="part4-code-card">
-                <div class="part4-card-head">
-                  <div>
-                    <p class="panel-kicker">Mã giả đang chạy</p>
-                    <h3>FOR 1 và FOR 2</h3>
-                  </div>
-                  <strong id="part4CodePhase">FOR 1</strong>
-                </div>
-                <p class="part4-status" id="part4CodeStatus">Sẵn sàng quét mảng để tìm đỉnh có cost nhỏ nhất.</p>
-                <pre class="part4-code-block" id="part4CodeBlock"></pre>
-              </aside>
-
-              <div class="part4-graph-card">
-                <div class="part4-graph-head">
-                  <div>
-                    <p class="panel-kicker">Đếm việc phải làm</p>
-                    <h3 id="part4PhaseTitle">FOR 1: quét toàn bộ đỉnh</h3>
-                  </div>
-                  <span id="part4PhaseBadge">O(V)</span>
-                </div>
-                <svg id="part4GraphSvg" class="part4-graph-svg" viewBox="0 0 820 680" role="img" aria-label="Graph minh họa vòng quét mảng và duyệt cạnh"></svg>
-                <div class="part4-overlay">
-                  <strong id="part4OverlayTitle">Sẵn sàng chạy FOR 1</strong>
-                  <span id="part4OverlayText">Mỗi lượt chọn min phải nhìn qua các ô Cost đang có.</span>
-                </div>
-                <div class="part4-scan-strip" id="part4ScanStrip" aria-label="Thứ tự scan các đỉnh"></div>
-              </div>
-
-              <aside class="part4-side-card">
-                <div class="part4-formula">
-                  <span>Đếm theo cách quét mảng</span>
-                  <strong id="part4Formula">O(V^2 + E)</strong>
-                  <small id="part4FormulaNote">FOR 1 tạo phần V lần x V đỉnh, FOR 2 cộng thêm số cạnh đã duyệt.</small>
-                </div>
-                <div class="part4-counters">
-                  <div>
-                    <strong id="part4RoundCounter">1</strong>
-                    <span>vòng lặp</span>
-                  </div>
-                  <div>
-                    <strong id="part4ScanCounter">0</strong>
-                    <span>đỉnh đã quét</span>
-                  </div>
-                  <div>
-                    <strong id="part4EdgeCounter">0</strong>
-                    <span>cạnh đã xét</span>
-                  </div>
-                </div>
-                <div class="part4-mini-controls" aria-label="Điều khiển phụ phần độ phức tạp">
-                  <button class="part4-mini-button" id="part4BackButton" type="button">Lùi bước</button>
-                  <button class="part4-mini-button" id="part4ResetButton" type="button">Đặt lại</button>
-                  <button class="part4-mini-button" id="part4TreeButton" type="button">Hiện cây</button>
-                </div>
-                <table class="part4-dist-table" id="part4DistTable" aria-label="Bảng Cost và trạng thái"></table>
-                <div class="part4-result" id="part4Result">Nhấn Tiếp để chạy một vòng FOR.</div>
-              </aside>
-            </section>
-
-            <section class="part4-view part4-heap-view" id="part4HeapView" aria-label="Phần 4 tối ưu chọn min">
-              <div class="part4-heap-copy">
-                <p class="panel-kicker">Tối ưu điểm nghẽn</p>
-                <h2>Không quét lại hết mọi đỉnh</h2>
-                <p>
-                  Nếu có một cấu trúc luôn để cost nhỏ nhất nổi lên đầu, bước chọn min không còn cần quét cả mảng.
-                  Ta trả thêm một ít công khi cập nhật, nhưng mỗi lần lấy min chỉ còn cỡ log V.
-                </p>
-              </div>
-              <div class="part4-compare-board">
-                <div class="part4-compare-card">
-                  <span>Quét mảng</span>
-                  <strong>O(V^2)</strong>
-                  <div class="part4-bar"><i id="part4ArrayBar"></i></div>
-                  <p>Mỗi vòng hỏi min bằng cách nhìn lại toàn bộ danh sách đỉnh.</p>
-                </div>
-                <div class="part4-compare-card is-better">
-                  <span>Hàng đợi ưu tiên</span>
-                  <strong>O((V + E) log V)</strong>
-                  <div class="part4-bar"><i id="part4HeapBar"></i></div>
-                  <p>Min được giữ ở đầu hàng đợi, lấy ra nhanh hơn nhiều khi đồ thị lớn.</p>
-                </div>
-              </div>
-              <div class="part4-heap-visual" aria-hidden="true">
-                <div class="part4-array-row" id="part4ArrayRow"></div>
-                <div class="part4-heap-stack" id="part4HeapStack"></div>
-              </div>
-            </section>
-
-            <section class="part4-view part4-negative-view" id="part4NegativeView" aria-label="Phần 4 cạnh âm">
-              <aside class="part4-negative-story">
-                <p class="panel-kicker">Điều kiện chạy đúng</p>
-                <h2 id="part4NegativeTitle">Khởi tạo</h2>
-                <p id="part4NegativeText">Ta muốn tìm đường ngắn nhất từ A đến B. Ban đầu chỉ A có khoảng cách 0.</p>
-                <ol class="part4-negative-steps" id="part4NegativeSteps"></ol>
-                <div class="part4-negative-result" id="part4NegativeResult">
-                  <span>Thuật toán giữ Cost[B]</span>
-                  <strong id="part4NegativeDijkstra">?</strong>
-                  <small id="part4NegativeResultText">Chưa có kết quả cho B.</small>
-                </div>
-              </aside>
-
-              <div class="part4-negative-graph">
-                <svg id="part4NegativeSvg" viewBox="0 0 760 430" role="img" aria-label="Ví dụ cạnh âm làm thuật toán sai">
-                  <defs>
-                    <marker id="part4NegArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
-                      <path d="M0,0 L12,6 L0,12 Z" fill="#6f7971"></path>
-                    </marker>
-                    <marker id="part4NegArrowActive" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
-                      <path d="M0,0 L12,6 L0,12 Z" fill="#f4c96d"></path>
-                    </marker>
-                    <marker id="part4NegArrowGood" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
-                      <path d="M0,0 L12,6 L0,12 Z" fill="#42f2a1"></path>
-                    </marker>
-                    <marker id="part4NegArrowBad" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
-                      <path d="M0,0 L12,6 L0,12 Z" fill="#ff7659"></path>
-                    </marker>
-                  </defs>
-                  <path id="part4NegEdgeAB" class="part4-neg-edge" marker-end="url(#part4NegArrow)" d="M 160 205 C 265 132, 390 118, 526 146"></path>
-                  <text id="part4NegWeightAB" class="part4-neg-weight" x="338" y="118" text-anchor="middle">+2</text>
-                  <path id="part4NegEdgeAC" class="part4-neg-edge" marker-end="url(#part4NegArrow)" d="M 160 235 C 268 304, 390 350, 526 326"></path>
-                  <text id="part4NegWeightAC" class="part4-neg-weight" x="340" y="360" text-anchor="middle">+5</text>
-                  <path id="part4NegEdgeCB" class="part4-neg-edge is-negative" marker-end="url(#part4NegArrowBad)" d="M 592 298 C 640 260, 640 214, 592 182"></path>
-                  <text id="part4NegWeightCB" class="part4-neg-weight is-negative" x="646" y="224" text-anchor="middle">-4</text>
-
-                  <g id="part4NegNodeA" class="part4-neg-node is-source" transform="translate(120 220)">
-                    <circle r="34"></circle>
-                    <text class="part4-neg-name" y="8">A</text>
-                    <text class="part4-neg-dist" id="part4NegNodeDistA" y="58">Cost 0</text>
-                  </g>
-                  <g id="part4NegNodeB" class="part4-neg-node" transform="translate(560 150)">
-                    <circle r="34"></circle>
-                    <text class="part4-neg-name" y="8">B</text>
-                    <text class="part4-neg-dist" id="part4NegNodeDistB" y="58">Cost ?</text>
-                  </g>
-                  <g id="part4NegNodeC" class="part4-neg-node" transform="translate(560 330)">
-                    <circle r="34"></circle>
-                    <text class="part4-neg-name" y="8">C</text>
-                    <text class="part4-neg-dist" id="part4NegNodeDistC" y="58">Cost ?</text>
-                  </g>
-                </svg>
-                <div class="part4-negative-callout" id="part4NegativeCallout">
-                  Luật ta vừa xây: đỉnh đã được chốt là nhỏ nhất thì không bị mở lại nữa.
-                </div>
-              </div>
-
-              <aside class="part4-negative-side">
-                <div class="part4-neg-dist-grid" id="part4NegativeDistGrid"></div>
-                <div class="part4-negative-compare">
-                  <span>Đường đúng</span>
-                  <strong id="part4NegativeTruthValue">?</strong>
-                  <p id="part4NegativeCompare">Cạnh âm chưa làm hỏng gì ở bước đầu. Nó chỉ trở thành vấn đề khi xuất hiện sau lúc B đã bị chốt.</p>
-                </div>
-              </aside>
-            </section>
-
-            <section class="part4-view part4-final-view" id="part4FinalView" aria-label="Kết phần 4">
-              <div class="part4-final-copy">
-                <p class="panel-kicker">Kết bài</p>
-                <p class="part4-final-lead">Thuật toán ta vừa tự xây bằng suy luận, thế giới gọi nó là…</p>
-                <h2 class="part4-final-name" id="part4FinalName" aria-label="Dijkstra">
-                  <span>D</span><span>i</span><span>j</span><span>k</span><span>s</span><span>t</span><span>r</span><span>a</span>
-                </h2>
-                <p class="part4-final-sub">
-                  Edsger W. Dijkstra nghĩ ra nó năm 1956, trong khoảng 20 phút bên một tách cà phê, không cần giấy nháp.
-                  Nhưng như ta vừa thấy: chỉ cần đặt đúng câu hỏi, bất kỳ ai cũng có thể tự suy luận ra nó. Bạn vừa làm điều đó.
-                </p>
-              </div>
-              <div class="part4-final-grid">
-                <div>
-                  <span>Bản vừa xây</span>
-                  <strong>O(V^2)</strong>
-                  <p>Chọn min bằng cách quét mảng.</p>
-                </div>
-                <div>
-                  <span>Bản tối ưu</span>
-                  <strong>O((V + E) log V)</strong>
-                  <p>Dùng hàng đợi ưu tiên để lấy min nhanh hơn.</p>
-                </div>
-                <div>
-                  <span>Điều kiện</span>
-                  <strong>Không có cạnh âm</strong>
-                  <p>Vì thuật toán dựa vào lời hứa đã chốt là chắc.</p>
-                </div>
-              </div>
-            </section>
-          </div>
-
-        </section>
-
-        <aside class="guide-panel" aria-label="Nội dung dành cho khán giả">
-          <div class="guide-header">
-            <p class="panel-kicker">Ý chính</p>
-            <h2 id="audienceTitle"></h2>
-          </div>
-          <ul id="audienceBullets" class="audience-list"></ul>
-
-          <div class="route-panel">
-            <div class="route-panel-head">
-              <p class="panel-kicker">Bảng theo dõi</p>
-              <span id="routeCountLabel">0 tuyến</span>
-            </div>
-            <div class="route-list" id="routeList" aria-live="polite"></div>
-          </div>
+      <!-- Dải dưới: lời dẫn — điều khiển — ý chính -->
+      <div class="bottom-band">
+        <aside class="caption" id="caption">
+          <p class="caption-body" id="captionBody"></p>
         </aside>
-      </main>
 
-      <footer class="control-bar">
-        <button class="control-button" id="prevButton" type="button">Lùi</button>
-        <button class="control-button" id="replayButton" type="button">Chạy lại</button>
-        <button class="control-button control-button-muted" id="pauseButton" type="button" aria-pressed="false">Tạm dừng</button>
-        <div class="progress-track" aria-hidden="true">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <button class="control-button control-button-primary" id="nextButton" type="button">Tiếp</button>
-      </footer>
+        <footer class="controls" aria-label="Điều khiển trình chiếu">
+          <button class="ctrl-btn" id="prevBtn" type="button">&larr; Lùi</button>
+          <div class="scene-dots" id="sceneDots"></div>
+          <button class="ctrl-btn is-primary" id="nextBtn" type="button">Tiếp &rarr;</button>
+          <button class="ctrl-btn is-icon" id="replayBtn" type="button" title="Chạy lại cảnh (R)" aria-label="Chạy lại cảnh">&#8635;</button>
+          <button class="ctrl-btn is-icon" id="pauseBtn" type="button" title="Tạm dừng (P)" aria-pressed="false" aria-label="Tạm dừng">&#10073;&#10073;</button>
+        </footer>
+
+        <aside class="notes" id="notes">
+          <h2 class="notes-title" id="notesTitle"></h2>
+          <ul class="notes-list" id="notesList"></ul>
+        </aside>
+      </div>
+
+      <div class="pause-flag" aria-hidden="true">Tạm dừng</div>
     </div>
+
+    <!-- Intro deck (overlay, dựng bởi js/intro.js) -->
+    <div id="introRoot"></div>
 
     <script src="./vendor/gsap.min.js"></script>
-    <script src="./app.js"></script>
-    <script src="./intro.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/stage.js"></script>
+    <script src="./js/fx.js"></script>
+    <script src="./js/part1.js"></script>
+    <script src="./js/part2.js"></script>
+    <script src="./js/part3.js"></script>
+    <script src="./js/part4.js"></script>
+    <script src="./js/intro.js"></script>
+    <script src="./js/engine.js"></script>
   </body>
 </html>

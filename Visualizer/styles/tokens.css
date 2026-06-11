@@ -1,0 +1,48 @@
+/* ============================================================
+   Design tokens — "Bản thảo của người dẫn chuyện"
+   Light editorial: giấy ấm, mực đậm, một accent son đỏ-cam.
+   Tối ưu cho share màn hình: hình khối rõ, không texture mịn.
+   ============================================================ */
+:root {
+  color-scheme: light;
+
+  /* Paper & ink */
+  --paper: #f8f4ea;
+  --paper-high: #fffdf7;
+  --paper-dim: #efe9db;
+  --ink: #211c15;
+  --ink-soft: #575044;
+  --ink-faint: #8b8377;
+
+  /* Semantic — trạng thái thuật toán */
+  --accent: #d8451f;            /* son đỏ-cam: đáp án, đường tốt nhất, điểm nhấn */
+  --accent-deep: #b23615;
+  --accent-wash: #f7ddd2;
+  --amber: #a87a10;             /* hổ phách trầm: đang mở, đang thử */
+  --amber-wash: #f3e3bd;
+  --moss: #34603f;              /* xanh rêu: đã chốt, chắc chắn */
+  --moss-wash: #d9e6d4;
+  --mist: #a39b8d;              /* xám ấm: chưa biết, mờ */
+  --mist-wash: #e7e1d4;
+
+  /* Lines & shadow */
+  --hairline: rgba(33, 28, 21, 0.16);
+  --hairline-strong: rgba(33, 28, 21, 0.34);
+  --shadow-soft: 0 18px 50px -22px rgba(33, 28, 21, 0.35);
+  --shadow-card: 0 10px 34px -16px rgba(33, 28, 21, 0.3);
+
+  /* Type */
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --font-body: "Be Vietnam Pro", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Consolas", monospace;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.32, 0.72, 0, 1);
+  --t-fast: 220ms;
+  --t-med: 420ms;
+  --t-slow: 650ms;
+
+  --radius: 10px;
+  --radius-lg: 16px;
+}

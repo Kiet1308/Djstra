@@ -1,0 +1,271 @@
+/* ============================================================
+   Stage — đồ thị vẽ kiểu mực trên giấy.
+   States: unknown (mờ, nét đứt) → open (hổ phách) → settled (rêu)
+   Đường tốt nhất / điểm nhấn: son đỏ-cam.
+   ============================================================ */
+
+/* ---------- Cạnh ---------- */
+.edge {
+  stroke: rgba(33, 28, 21, 0.3);
+  stroke-width: 2.25;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.edge.is-dim {
+  stroke: rgba(33, 28, 21, 0.1);
+}
+
+.edge.is-soft {
+  stroke: rgba(33, 28, 21, 0.18);
+}
+
+.edge.is-lit {
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+.edge.is-walk {
+  stroke: var(--amber);
+  stroke-width: 3.5;
+}
+
+.edge.is-good {
+  stroke: var(--moss);
+  stroke-width: 3.5;
+}
+
+.edge.is-cut {
+  stroke: var(--mist);
+  stroke-width: 2.25;
+  stroke-dasharray: 5 6;
+}
+
+.edge.is-counter {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 7 6;
+}
+
+/* ---------- Nhãn chi phí trên cạnh ---------- */
+.edge-label rect {
+  fill: var(--paper-high);
+  stroke: var(--hairline);
+  rx: 6;
+}
+
+.edge-label text {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 600;
+  fill: var(--ink-soft);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.edge-label.is-dim {
+  opacity: 0.35;
+}
+
+.edge-label.is-lit text {
+  fill: var(--accent);
+}
+
+.edge-label.is-lit rect {
+  stroke: var(--accent);
+}
+
+/* ---------- Đỉnh ---------- */
+.node {
+  cursor: default;
+}
+
+.node .node-ring {
+  fill: var(--paper-high);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.node .node-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.node .node-halo {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 5;
+}
+
+/* Chưa biết: chỉ là phác mờ trên giấy */
+.node.is-unknown .node-ring {
+  fill: var(--paper);
+  stroke: var(--mist);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+
+.node.is-unknown .node-name {
+  fill: var(--mist);
+}
+
+/* Đang mở: hổ phách, là ứng viên */
+.node.is-open .node-ring {
+  stroke: var(--amber);
+}
+
+.node.is-open .node-halo {
+  stroke: var(--amber-wash);
+}
+
+/* Đã chốt: đĩa rêu đặc — chắc chắn, không đổi nữa */
+.node.is-settled .node-ring {
+  fill: var(--moss);
+  stroke: var(--moss);
+}
+
+.node.is-settled .node-name {
+  fill: var(--paper-high);
+}
+
+/* Điểm đầu / đích */
+.node.is-terminal .node-ring {
+  stroke-width: 3;
+}
+
+.node.is-goal .node-ring {
+  stroke: var(--accent);
+}
+
+.node.is-goal .node-name {
+  fill: var(--accent);
+}
+
+.node.is-goal.is-settled .node-ring {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.node.is-goal.is-settled .node-name {
+  fill: var(--paper-high);
+}
+
+/* Đỉnh bấm được (quiz) — halo thở nhẹ để mời bấm */
+.node.is-clickable {
+  cursor: pointer;
+}
+
+.node.is-clickable .node-halo {
+  stroke: var(--amber-wash);
+  animation: halo-breathe 1.8s ease-in-out infinite;
+}
+
+@keyframes halo-breathe {
+  0%, 100% { stroke-width: 5; opacity: 0.7; }
+  50% { stroke-width: 11; opacity: 1; }
+}
+
+.node.is-clickable:hover .node-ring {
+  stroke-width: 3.5;
+}
+
+/* Chọn sai trong quiz */
+.node.is-wrong .node-ring {
+  stroke: var(--accent);
+  fill: var(--accent-wash);
+}
+
+.node.is-wrong {
+  animation: node-shake 0.4s ease-in-out;
+}
+
+@keyframes node-shake {
+  0%, 100% { translate: 0 0; }
+  25% { translate: -4px 0; }
+  75% { translate: 4px 0; }
+}
+
+/* Vừa chọn đúng */
+.node.is-correct .node-ring {
+  stroke-width: 3.5;
+}
+
+/* ---------- Huy hiệu cost ở góc đỉnh ---------- */
+.cost-badge rect {
+  fill: var(--paper-high);
+  stroke: var(--amber);
+  stroke-width: 1.5;
+  rx: 7;
+}
+
+.cost-badge text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--amber);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.cost-badge.is-settled rect {
+  fill: var(--moss);
+  stroke: var(--moss);
+}
+
+.cost-badge.is-settled text {
+  fill: var(--paper-high);
+}
+
+.cost-badge.is-best rect {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.cost-badge.is-best text {
+  fill: var(--paper-high);
+}
+
+/* ---------- Ghi chú trên sân khấu (SVG) ---------- */
+.stage-note text {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  fill: var(--ink-soft);
+}
+
+.stage-note .note-strong {
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+/* ---------- Card HTML nổi trên stage ---------- */
+.float-card {
+  position: absolute;
+  padding: 14px 18px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+  max-width: 330px;
+}
+
+.float-card .kicker {
+  font-size: 11.5px;
+}
+
+.float-card h3 {
+  margin: 4px 0 6px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.float-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}

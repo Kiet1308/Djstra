@@ -1,0 +1,938 @@
+/* ============================================================
+   panels.css — card tương tác nổi trên stage (quiz, hành động,
+   công thức, bước thủ công) + panel chuyên biệt các phần.
+   ============================================================ */
+
+/* ---------- Card quiz / hành động (giữa trên stage) ---------- */
+.quiz-card {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 22px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+  max-width: 360px;
+}
+
+.quiz-card .quiz-status {
+  text-align: center;
+  max-width: 320px;
+}
+
+.quiz-card .quiz-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.quiz-card .quiz-status {
+  font-size: 13px;
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+
+.quiz-card .quiz-status.is-wrong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.quiz-card .quiz-status.is-correct {
+  color: var(--moss);
+  font-weight: 600;
+}
+
+.quiz-choices {
+  display: flex;
+  gap: 10px;
+}
+
+.candidate-chip {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-width: 86px;
+  padding: 9px 14px;
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: var(--radius);
+  background: var(--paper-high);
+  transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+}
+
+.candidate-chip:hover:not(:disabled) {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.candidate-chip strong {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.candidate-chip span {
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.candidate-chip.is-wrong {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+}
+
+.candidate-chip.is-correct {
+  border-color: var(--moss);
+  background: var(--moss-wash);
+}
+
+.candidate-chip.is-next-step {
+  border-color: var(--amber);
+  background: var(--amber-wash);
+}
+
+.candidate-chip:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.candidate-chip.is-correct:disabled,
+.candidate-chip.is-wrong:disabled {
+  opacity: 1;
+}
+
+/* Nút hành động lớn (Hiện cost…) */
+.action-button {
+  padding: 10px 26px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper-high);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+
+.action-button:hover:not(:disabled) {
+  background: #000;
+  transform: translateY(-2px);
+}
+
+.action-button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* ---------- Phần 1: lưới khối lượng việc ---------- */
+.work-card {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 308px;
+  padding: 14px 18px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.work-card .work-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.work-card .work-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.work-card .work-head strong {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.work-grid {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 3px;
+}
+
+.work-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--mist-wash);
+  border: 1px solid rgba(33, 28, 21, 0.08);
+  transition: background 160ms, border-color 160ms;
+}
+
+.work-cell.is-current {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+.work-cell.is-done {
+  background: #cfc8ba;
+  border-color: transparent;
+}
+
+.work-cell.is-best {
+  background: var(--moss);
+  border-color: var(--moss);
+}
+
+.work-cell.is-pruned {
+  background: var(--paper-dim);
+  border-color: var(--accent);
+  position: relative;
+}
+
+.work-cell.is-pruned::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(135deg, transparent 44%, var(--accent) 46%, var(--accent) 54%, transparent 56%);
+}
+
+/* Thanh so sánh khối lượng */
+.compare-rows {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 64px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.compare-row .bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--mist-wash);
+  overflow: hidden;
+}
+
+.compare-row .bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--ink-faint);
+}
+
+.compare-row.is-better .bar i {
+  background: var(--moss);
+}
+
+.compare-row strong {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Phần 1: ống kính cắt nhánh ---------- */
+.lens-card {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 300px;
+  padding: 14px 18px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.lens-card .lens-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.lens-card .lens-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.lens-decision {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--moss);
+}
+
+.lens-decision.is-stop {
+  color: var(--accent);
+}
+
+.lens-equation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.lens-equation > div {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.lens-equation span {
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+.lens-equation strong {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lens-equation .lens-op {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--ink-soft);
+}
+
+.lens-equation .is-walk-cost strong {
+  color: var(--amber);
+}
+
+.lens-equation .is-bench strong {
+  color: var(--moss);
+}
+
+.lens-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ---------- Phần 1: kết luận 3 cột ---------- */
+.verdict-row {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  translate: -50% 0;
+  display: flex;
+  gap: 14px;
+}
+
+.verdict-col {
+  width: 240px;
+  padding: 16px 20px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.verdict-col span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.verdict-col strong {
+  display: block;
+  margin: 6px 0 4px;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.verdict-col p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.verdict-col.is-better strong {
+  color: var(--moss);
+}
+
+.verdict-col.is-next {
+  border-left: 4px solid var(--accent);
+}
+
+.verdict-col.is-next strong {
+  color: var(--accent);
+}
+
+/* ---------- Phần 3: card mã giả ---------- */
+.code-card {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 414px;
+  max-height: calc(100% - 8px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.code-card .code-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.code-card .code-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.code-card .code-head span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.code-body {
+  padding: 8px 0 10px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12.3px;
+  line-height: 1.42;
+  scrollbar-width: none; /* không để scrollbar mặc định phá card */
+}
+
+.code-body::-webkit-scrollbar {
+  display: none;
+}
+
+.code-line {
+  display: flex;
+  gap: 10px;
+  padding: 0 14px 0 10px;
+  white-space: pre;
+  color: var(--ink-soft);
+}
+
+.code-line .ln {
+  width: 20px;
+  text-align: right;
+  color: var(--ink-faint);
+  opacity: 0.6;
+  user-select: none;
+  flex: none;
+}
+
+.code-line.is-inserted {
+  background: var(--amber-wash);
+  color: var(--ink);
+}
+
+.code-line.is-changed {
+  background: var(--accent-wash);
+  color: var(--ink);
+}
+
+.code-line.is-active {
+  position: relative;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.code-line.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.code-line.is-todo {
+  font-style: italic;
+  color: var(--amber);
+}
+
+.code-note {
+  margin: 0;
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.code-note strong {
+  color: var(--ink);
+}
+
+/* ---------- Phần 3: bộ nhớ Cost / Visited / Prev ---------- */
+.mem-card {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.mem-rail {
+  display: grid;
+  grid-template-columns: 64px repeat(8, 36px);
+  align-items: center;
+  gap: 5px;
+}
+
+.mem-rail > span {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.mem-rail.is-header > i {
+  font-style: normal;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+
+.mem-chip {
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+
+.mem-chip.has-value {
+  color: var(--ink);
+  border-color: var(--amber);
+  background: var(--amber-wash);
+}
+
+.mem-chip.is-settled {
+  color: var(--paper-high);
+  border-color: var(--moss);
+  background: var(--moss);
+}
+
+.mem-chip.is-scan {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-wash);
+}
+
+.mem-chip.is-flash {
+  animation: chip-flash 0.6s ease-out;
+}
+
+@keyframes chip-flash {
+  0% { background: var(--accent-wash); border-color: var(--accent); }
+  100% { }
+}
+
+/* Gói chi phí chạy trên cạnh */
+.cost-packet rect {
+  fill: var(--amber);
+  rx: 7;
+}
+
+.cost-packet text {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--paper-high);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* ---------- Phần 4: bộ đếm việc ---------- */
+.counter-card {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.counter-card > div {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 86px;
+}
+
+.counter-card strong {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.counter-card span {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.counter-card > div.is-for1 strong { color: var(--amber); }
+.counter-card > div.is-for2 strong { color: var(--accent); }
+
+/* ---------- Phần 4: mảng vs hàng đợi ưu tiên ---------- */
+.duel-row {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -52%;
+  display: flex;
+  gap: 26px;
+  align-items: stretch;
+}
+
+.duel-card {
+  width: 360px;
+  padding: 20px 24px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.duel-card h3 {
+  margin: 0 0 2px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.duel-card .duel-big {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.duel-card.is-better .duel-big {
+  color: var(--moss);
+}
+
+.duel-card p {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.duel-chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  min-height: 76px;
+  align-items: flex-end;
+}
+
+.duel-chip {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: 7px;
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+
+.duel-chip.is-scan {
+  border-color: var(--amber);
+  background: var(--amber-wash);
+}
+
+.duel-chip.is-min {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent-deep);
+}
+
+.duel-heap {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 5px;
+  margin-top: 14px;
+  min-height: 76px;
+  align-items: flex-start;
+}
+
+.duel-heap .duel-chip {
+  width: 110px;
+  height: 24px;
+}
+
+.duel-heap .duel-chip:last-child {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent-deep);
+}
+
+.duel-bar {
+  height: 10px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: var(--mist-wash);
+  overflow: hidden;
+}
+
+.duel-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--amber);
+}
+
+.duel-card.is-better .duel-bar i {
+  background: var(--moss);
+}
+
+/* ---------- Phần 4: cạnh âm ---------- */
+.neg-verdict {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  width: 300px;
+  padding: 16px 20px;
+  border: 1px solid var(--hairline);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.neg-verdict h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.neg-verdict .neg-pair {
+  display: flex;
+  gap: 14px;
+  margin: 10px 0;
+}
+
+.neg-verdict .neg-pair div {
+  display: grid;
+  gap: 2px;
+}
+
+.neg-verdict .neg-pair span {
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+.neg-verdict .neg-pair strong {
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+.neg-verdict .neg-pair .is-held strong { color: var(--moss); }
+.neg-verdict .neg-pair .is-truth strong { color: var(--accent); }
+
+.neg-verdict p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.neg-arrow {
+  fill: var(--ink-soft);
+}
+
+.neg-edge.is-neg .neg-arrow {
+  fill: var(--accent);
+}
+
+/* ---------- Phần 4: màn kết ---------- */
+.finale {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 18px;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+/* quầng giấy sau khối chữ — đồ thị nền không cắt ngang wordmark */
+.finale::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: min(1020px, 92%);
+  height: min(640px, 100%);
+  background: radial-gradient(closest-side, var(--paper) 48%, rgba(248, 244, 234, 0.85) 68%, transparent);
+  z-index: -1;
+}
+
+.finale .finale-lead {
+  margin: 0;
+  font-size: 19px;
+  color: var(--ink-soft);
+}
+
+.finale .finale-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 124px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.finale .finale-name span {
+  display: inline-block;
+}
+
+.finale .finale-name span.is-accent {
+  color: var(--accent);
+}
+
+.finale .finale-sub {
+  margin: 0;
+  max-width: 640px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.finale .finale-facts {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.finale .finale-facts > div {
+  width: 220px;
+  padding: 14px 18px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-card);
+}
+
+.finale .finale-facts span {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.finale .finale-facts strong {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--ink);
+}
+
+/* ---------- Card công thức (SVG annotation, vẽ bằng HTML) ---------- */
+.formula-card {
+  position: absolute;
+  padding: 14px 20px;
+  border: 1px solid var(--hairline);
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius);
+  background: var(--paper-high);
+  box-shadow: var(--shadow-soft);
+}
+
+.formula-card .kicker {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+.formula-card .formula-line {
+  margin: 6px 0 0;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.formula-card .formula-line em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.formula-card .formula-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  max-width: 280px;
+}
